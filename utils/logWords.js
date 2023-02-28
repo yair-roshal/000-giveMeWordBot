@@ -4,7 +4,7 @@ const getPathToFolder = require('./getPathToFolder')
 
 module.exports = function logWords(wordLine) {
     let nameFile = 'log-words.txt'
-    let path = getPathToFolder('data/logs')
+    let path = getPathToFolder('data/logs/')
 
     console.log('path_logWords : ', path)
 

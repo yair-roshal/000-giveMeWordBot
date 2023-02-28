@@ -7,7 +7,7 @@ const getPathToFolder = require('./getPathToFolder')
 
 module.exports = function dictionaryTextToFile() {
     let nameFileCache = 'cache_allWords.txt'
-    let path = getPathToFolder('data')
+    let path = getPathToFolder('data/')
 
     fs.writeFile(`${path}${nameFileCache}`, dictionaryText, function (err) {
         if (err) {

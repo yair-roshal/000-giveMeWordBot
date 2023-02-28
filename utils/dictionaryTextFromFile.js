@@ -3,7 +3,7 @@ const getPathToFolder = require('./getPathToFolder')
 
 module.exports = function dictionaryTextFromFile(nameFile) {
     nameFile = 'allWords.txt'
-    let path = getPathToFolder("data")
+    let path = getPathToFolder("data/")
 
     try {
         const data = fs.readFileSync(`${path}${nameFile}`, 'utf8')

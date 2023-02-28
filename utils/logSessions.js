@@ -10,7 +10,7 @@ module.exports = function dictionaryTextToFile() {
     const formattedDate = formatDate(timestamp)
     let lineText = formattedDate + '\r\n'
 
-    let path = getPathToFolder('data/logs')
+    let path = getPathToFolder('data/logs/')
     console.log('path_dictionaryTextToFile : ', path)
 
     fs.appendFile(`${path}${nameFile}`, lineText, (err) => {
