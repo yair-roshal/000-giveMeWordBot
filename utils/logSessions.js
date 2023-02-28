@@ -1,13 +1,14 @@
 let fs = require('fs')
 let appendFile = require('node:fs')
-const getPathLogs = require('./getPathLogs')
+const getPathToFolder = require('./getPathToFolder')
 
 module.exports = function dictionaryTextToFile() {
-    let nameFileLog = 'log-sessions.txt'
+    let nameFile = 'log-sessions.txt'
     let lineText = Date(Date.now()).toString() + '\r\n'
-    let path = getPathLogs()
+    let path = getPathToFolder('data/logs')
+    console.log('path_dictionaryTextToFile : ', path)
 
-    fs.appendFile(`${path}${nameFileLog}`, lineText, (err) => {
+    fs.appendFile(`${path}${nameFile}`, lineText, (err) => {
         if (!err) {
             console.log(`log for this session added`)
         } else {

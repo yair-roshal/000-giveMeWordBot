@@ -1,12 +1,14 @@
 let fs = require('fs')
 let appendFile = require('node:fs')
-const getPathLogs = require('./getPathLogs')
+const getPathToFolder = require('./getPathToFolder')
 
 module.exports = function logWords(wordLine) {
-    let nameFileLog = 'log-words.txt'
+    let nameFile = 'log-words.txt'
+    let path = getPathToFolder('data/logs')
 
-    let path = getPathLogs()
-    fs.appendFile(`${path}${nameFileLog}`, wordLine + '\r\n', (err) => {
+    console.log('path_logWords : ', path)
+
+    fs.appendFile(`${path}${nameFile}`, wordLine + '\r\n', (err) => {
         if (!err) {
         } else {
             console.log(err)

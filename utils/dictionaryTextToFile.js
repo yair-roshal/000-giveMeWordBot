@@ -3,18 +3,16 @@ let fs = require('fs')
 const dictionaryTextFromFile = require('./dictionaryTextFromFile.js')
 const dictionaryText = dictionaryTextFromFile()
 let appendFile = require('node:fs')
+const getPathToFolder = require('./getPathToFolder')
 
 module.exports = function dictionaryTextToFile() {
-    let nameFileCache = 'cache_allwords.txt'
+    let nameFileCache = 'cache_allWords.txt'
+    let path = getPathToFolder('data')
 
-    fs.writeFile(
-        `/Users/yair/Desktop/dev/000-telegram-bot-english-words/data/${nameFileCache}`,
-        dictionaryText,
-        function (err) {
-            if (err) {
-                return console.log(err)
-            }
-            console.log(`The file was saved! With name : ${nameFileCache}`)
-        },
-    )
+    fs.writeFile(`${path}${nameFileCache}`, dictionaryText, function (err) {
+        if (err) {
+            return console.log(err)
+        }
+        console.log(`The file was saved! With name : ${nameFileCache}`)
+    })
 }

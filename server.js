@@ -16,10 +16,13 @@ const { sec, ms, interval } = require('./constants/interval.js')
 var _ = require('lodash')
 const getWordFromDictionary = require('./utils/getWordFromDictionary.js')
 
-const dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
-
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
 dictionaryTextToFile()
+
+if (dictionaryText) {
+    console.log('dictionaryText', dictionaryText)
+    dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
+}
 
 function openStartMenu(chatId) {
     bot.sendMessage(chatId, 'The keyboard is open', startMenu)
