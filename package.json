@@ -3,8 +3,8 @@
     "version": "1.0.0",
     "main": "server.js",
     "scripts": {
-        "start": "node server.js",
-        "dev": "NODE_ENV=dev node server.js",
+        "start": "NODE_ENV=prod node server.js",
+        "dev": "NODE_ENV=dev nodemon server.js",
         "prod": "NODE_ENV=prod node server.js"
     },
     "author": "Yair Roshal",
