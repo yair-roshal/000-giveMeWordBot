@@ -10,9 +10,11 @@ module.exports = function dictionaryTextToFile() {
     let pathFile = getPathToFolder('data/') + `${nameFile}`
 
     fs.writeFile(pathFile, dictionaryText, function (err) {
-        if (err) {
-            return console.log(err)
+        if (!err) {
+            console.log(`The file was saved! With name : ${nameFile}`)
+        } else {
+            return console.log('err4444_dictionaryTextToFile', err)
+            // return console.log(err)
         }
-        console.log(`The file was saved! With name : ${nameFile}`)
     })
 }

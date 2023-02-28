@@ -17,8 +17,11 @@ var _ = require('lodash')
 const getWordFromDictionary = require('./utils/getWordFromDictionary.js')
 
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
+
+//caching allWords.txt
 dictionaryTextToFile()
 
+let dictionary
 if (dictionaryText) {
      dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
 }

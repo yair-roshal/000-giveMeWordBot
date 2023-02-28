@@ -1,6 +1,7 @@
 const translateText = require('./translateText')
 const getIamToken = require('./getIamToken')
 const logWords = require('../utils/logWords')
+const formatDate = require('./formatDate.js')
 
 let token
 
@@ -80,11 +81,12 @@ module.exports = async function prepareMessage(
                 ? `${response[0]?.phonetics[1]?.audio}`
                 : ''
 
-        date = new Date()
-
-        let message = `${randomIndex + 1}.${word}  -  ` + date.toString()
-        console.log(message)
-        logWords(message)
+                const timestamp = Date.now()
+                const formattedDate = formatDate(timestamp)
+                
+        let logMessage = `${randomIndex + 1}.${word}  -  ` + formattedDate
+        console.log(logMessage)
+        logWords(logMessage)
 
         return (
             `<b>__________________</b>
