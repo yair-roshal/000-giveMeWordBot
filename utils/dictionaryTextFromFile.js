@@ -14,7 +14,7 @@ module.exports = function dictionaryTextFromFile(nameFile) {
         console.log(data)
         return data
     } catch (err) {
-        console.error(`err_readFileSync in  :   ${path}${nameFile}`)
-        // console.error(err)
+        // console.error(`err_readFileSync in  :   ${path}${nameFile}`)
+        console.error(err)
     }
 }
