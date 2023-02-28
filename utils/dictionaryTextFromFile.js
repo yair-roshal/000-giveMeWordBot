@@ -1,5 +1,6 @@
 let fs = require('fs')
 const getPathToFolder = require('./getPathToFolder')
+const checkExistFile = require('./checkExistFile')
 let path = require('path')
 
 module.exports = function dictionaryTextFromFile(nameFile) {
