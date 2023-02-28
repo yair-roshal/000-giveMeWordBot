@@ -5,7 +5,7 @@ const checkExistFile = require('./checkExistFile')
 module.exports = function dictionaryTextFromFile() {
     let nameFile = 'allWords.txt'
     let pathFile = getPathToFolder('data/') + `${nameFile}`
-console.log('pathFile4444', pathFile)
+    console.log('pathFile4444', pathFile)
     //  checkExistFile(pathFile)
 
     try {
