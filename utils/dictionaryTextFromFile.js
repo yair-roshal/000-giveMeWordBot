@@ -1,17 +1,16 @@
 let fs = require('fs')
 const getPathToFolder = require('./getPathToFolder')
-let path = require('path');
+let path = require('path')
 
 module.exports = function dictionaryTextFromFile(nameFile) {
     nameFile = 'allWords.txt'
     let pathToFolder = getPathToFolder('data/')
 
+    let pathFile = path.join(__dirname, `../${pathToFolder}`) + `${nameFile}`
+    checkExistFile(pathFile)
+
     try {
-        const data = fs.readFileSync(
-            // path.join(__dirname, `../data`) + `${nameFile}`,
-            path.join(__dirname, `../${pathToFolder}`) + `${nameFile}`,
-            'utf8',
-        )
+        const data = fs.readFileSync(pathFile, 'utf8')
 
         console.log(data)
         return data
