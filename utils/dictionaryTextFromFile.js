@@ -4,7 +4,7 @@ const checkExistFile = require('./checkExistFile')
 let path = require('path')
 
 module.exports = function dictionaryTextFromFile(nameFile) {
-    nameFile = 'allWords.txt'
+    nameFile = 'allwords.txt'
     let pathToFolder = getPathToFolder('data/')
 
     let pathFile = path.join(__dirname, `../${pathToFolder}`) + `${nameFile}`

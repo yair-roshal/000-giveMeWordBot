@@ -6,7 +6,7 @@ const dictionaryText = dictionaryTextFromFile()
  let path = require('path');
 
 module.exports = function dictionaryTextToFile() {
-    let nameFile = 'cache_allWords.txt'
+    let nameFile = 'cache_allwords.txt'
     let pathToFolder = getPathToFolder('data/')
 
     
