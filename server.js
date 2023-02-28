@@ -20,8 +20,7 @@ const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
 dictionaryTextToFile()
 
 if (dictionaryText) {
-    // console.log('dictionaryText', dictionaryText)
-    dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
+     dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
 }
 
 function openStartMenu(chatId) {

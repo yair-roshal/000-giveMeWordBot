@@ -7,7 +7,8 @@ module.exports = function checkExistFile(filePath) {
         if (!err) {
             console.log('New empty File was created .')
         } else {
-            console.log('Error:', err)
+            console.log('Error555: file already exists')
+            // console.log('Error555: file already exists', err)
         }
     })
 

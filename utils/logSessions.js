@@ -2,7 +2,7 @@ let fs = require('fs')
 let appendFile = require('node:fs')
 const getPathToFolder = require('./getPathToFolder')
 const formatDate = require('./formatDate.js')
-let path = require('path');
+let path = require('path')
 
 module.exports = function dictionaryTextToFile() {
     let nameFile = 'log-sessions.txt'
@@ -11,14 +11,9 @@ module.exports = function dictionaryTextToFile() {
     const formattedDate = formatDate(timestamp)
     let lineText = formattedDate + '\r\n'
 
-    let pathToFolder = getPathToFolder('data/logs/')
-    console.log('path_dictionaryTextToFile : ', path)
+    let pathFile = getPathToFolder('data/') + `${nameFile}`
 
-    fs.appendFile(
-        // path.join(__dirname, `../${pathToFolder}${nameFile}`), 
-        path.join(__dirname, `../${pathToFolder}`) + `${nameFile}`,
-
-        lineText, (err) => {
+    fs.appendFile(pathFile, lineText, (err) => {
         if (!err) {
             console.log(`log for this session added`)
         } else {
