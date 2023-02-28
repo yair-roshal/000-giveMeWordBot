@@ -8,7 +8,7 @@ module.exports = function logWords(wordLine) {
 
     console.log('path_logWords : ', path)
 
-    fs.appendFile(`${path}${nameFile}`, wordLine + '\r\n', (err) => {
+    fs.appendFile(path.join(__dirname, `../${path}${nameFile}`), wordLine + '\r\n', (err) => {
         if (!err) {
         } else {
             console.log(err)

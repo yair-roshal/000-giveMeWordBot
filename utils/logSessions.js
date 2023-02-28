@@ -13,7 +13,7 @@ module.exports = function dictionaryTextToFile() {
     let path = getPathToFolder('data/logs/')
     console.log('path_dictionaryTextToFile : ', path)
 
-    fs.appendFile(`${path}${nameFile}`, lineText, (err) => {
+    fs.appendFile(path.join(__dirname, `../${path}${nameFile}`), lineText, (err) => {
         if (!err) {
             console.log(`log for this session added`)
         } else {
