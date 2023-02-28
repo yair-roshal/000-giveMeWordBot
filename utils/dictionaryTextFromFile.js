@@ -13,7 +13,8 @@ module.exports = function dictionaryTextFromFile(nameFile) {
     try {
         const data = fs.readFileSync(pathFile, 'utf8')
 
-        console.log(data)
+        console.log(pathFile,"--- was read")
+        // console.log(data)
         return data
     } catch (err) {
         // console.error(`err_readFileSync in  :   ${pathToFolder}${nameFile}`)
