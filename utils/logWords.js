@@ -11,7 +11,7 @@ module.exports = function logWords(wordLine) {
 
     fs.appendFile(
         // path.join(__dirname, `../${pathToFolder}${nameFile}`),
-        path.join(__dirname, `..${pathToFolder}`) + `${nameFile}`,
+        path.join(__dirname, `../${pathToFolder}`) + `${nameFile}`,
 
         wordLine + '\r\n', (err) => {
         if (!err) {

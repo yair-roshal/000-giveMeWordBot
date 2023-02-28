@@ -16,7 +16,7 @@ module.exports = function dictionaryTextToFile() {
 
     fs.appendFile(
         // path.join(__dirname, `../${pathToFolder}${nameFile}`), 
-        path.join(__dirname, `..${pathToFolder}`) + `${nameFile}`,
+        path.join(__dirname, `../${pathToFolder}`) + `${nameFile}`,
 
         lineText, (err) => {
         if (!err) {

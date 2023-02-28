@@ -8,7 +8,8 @@ module.exports = function dictionaryTextFromFile(nameFile) {
 
     try {
         const data = fs.readFileSync(
-            path.join(__dirname, `..${pathToFolder}`) + `${nameFile}`,
+            // path.join(__dirname, `../data`) + `${nameFile}`,
+            path.join(__dirname, `../${pathToFolder}`) + `${nameFile}`,
             'utf8',
         )
 

@@ -12,7 +12,7 @@ module.exports = function dictionaryTextToFile() {
     
     fs.writeFile(
         // path.join(__dirname, `../${pathToFolder}${nameFile}`),
-        path.join(__dirname, `..${pathToFolder}`) + `${nameFile}`,
+        path.join(__dirname, `../${pathToFolder}`) + `${nameFile}`,
 
          dictionaryText, function (err) {
         if (err) {
