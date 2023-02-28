@@ -6,6 +6,8 @@ module.exports = function getPathToFolder(folder) {
     }
 
     if (process.env.NODE_ENV === 'prod') {
-        return `${folder}`
+        // return `${folder}`
+        return path.join(__dirname, `../${folder}`)
+
     }
 }
