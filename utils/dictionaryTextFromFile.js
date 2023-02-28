@@ -5,10 +5,10 @@ module.exports = function dictionaryTextFromFile(nameFile) {
     nameFile = 'allWords.txt'
     let path = getPathToFolder('data/')
 
-    console.log(
-        'path.join(__dirname, `../${path}${nameFile}`)',
-        path.join(__dirname, `../${path}${nameFile}`),
-    )
+    // console.log(
+    //     'path.join(__dirname, `../${path}${nameFile}`)',
+    //     path.join(__dirname, `../${path}${nameFile}`),
+    // )
 
     console.log(' __dirname, `)', __dirname)
 
