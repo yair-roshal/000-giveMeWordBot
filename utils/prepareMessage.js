@@ -105,6 +105,7 @@ module.exports = async function prepareMessage(
             `
 ${exampleLine}
 <a href="${audioLine}">.</a>
+<a href="${linkToTranslate}">See on Context</a>
 <b>__________________</b>`
         )
     })
