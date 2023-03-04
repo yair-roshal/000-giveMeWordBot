@@ -42,6 +42,8 @@ const getWordFromDictionary = (dictionary) => {
                     firstEnglishWord,
                     dictionary.length,
                 ).then((textMessage) => {
+                    // bot.sendMessage(chatId, "Вот ссылка на наш сайт: http://example.com", { disable_web_page_preview: false });
+
                     bot.sendMessage(chatIdAdmin, textMessage, {
                         parse_mode: 'HTML',
                     })

@@ -32,16 +32,23 @@ module.exports = async function prepareMessage(
                     examples +=
                         '\r\n' +
                         `- ${response[0].meanings[key0].definitions[key].example}`
-
-                    let translateTextVar
+                    console.log(
+                        'text_for_translate',
+                        response[0].meanings[key0].definitions[key].example,
+                    )
                     await translateText(
                         response[0].meanings[key0].definitions[key].example,
                         token,
-                    ).then((res) => {
-                        translateTextVar = res
-                        console.log('translateTextVar222', translateTextVar)
-                        examples += '\r\n' + '-' + translateTextVar + '\r\n'
-                    })
+                    )
+                        .then((translateTextVar) => {
+                            console.log('translateTextVar222', translateTextVar)
+                            if (translateTextVar)
+                                examples +=
+                                    '\r\n' + '-' + translateTextVar + '\r\n'
+                        })
+                        .catch((err) =>
+                            console.log('err_translateText() : ', err),
+                        )
                 }
             }
         }
@@ -65,7 +72,7 @@ module.exports = async function prepareMessage(
             audio = `https://translate.google.com.vn/translate_tts?ie=UTF-8&q=${firstEnglishWord}&tl=en&client=tw-ob`
         }
 
-        let phoneticLine = phonetic
+        let phoneticLine = phonetic //pronunciation
             ? `${phonetic} - `
             : response[0]?.phonetic
             ? `${response[0]?.phonetic} - `
