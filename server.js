@@ -18,8 +18,7 @@ const getWordFromDictionary = require('./utils/getWordFromDictionary.js')
 
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
 
-// import LogRocket from 'logrocket';
-// LogRocket.init('pfrm00/givemewordbot');
+ 
 
 //caching allWords.txt
 dictionaryTextToFile()
