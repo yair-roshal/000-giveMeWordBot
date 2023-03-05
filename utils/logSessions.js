@@ -1,5 +1,5 @@
 let fs = require('fs')
-let appendFile = require('node:fs')
+let appendFile = require('fs')
 const getPathToFolder = require('./getPathToFolder')
 const formatDate = require('./formatDate.js')
 let path = require('path')
