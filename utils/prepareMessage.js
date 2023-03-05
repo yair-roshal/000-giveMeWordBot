@@ -1,9 +1,9 @@
+'use strict'
+
 const translateText = require('./translateText')
 const getIamToken = require('./getIamToken')
 const logWords = require('../utils/logWords')
 const formatDate = require('./formatDate.js')
-
-let token
 
 module.exports = async function prepareMessage(
     response,
@@ -19,9 +19,7 @@ module.exports = async function prepareMessage(
         })
     }
 
-    return getIamTokenNow().then(async function (result) {
-        token = result
-
+    return getIamTokenNow().then(async function (token) {
         let examples = ''
         for (const key0 in response[0].meanings) {
             for (const key in response[0].meanings[key0].definitions) {
@@ -71,6 +69,7 @@ module.exports = async function prepareMessage(
         if (!audio) {
             audio = `https://translate.google.com.vn/translate_tts?ie=UTF-8&q=${firstEnglishWord}&tl=en&client=tw-ob`
         }
+        // const phonetic = response[0] && response[0].phonetic;
 
         let phoneticLine = phonetic //pronunciation
             ? `${phonetic} - `
