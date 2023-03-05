@@ -69,22 +69,23 @@ module.exports = async function prepareMessage(
         if (!audio) {
             audio = `https://translate.google.com.vn/translate_tts?ie=UTF-8&q=${firstEnglishWord}&tl=en&client=tw-ob`
         }
-        // const phonetic = response[0] && response[0].phonetic;
 
         let phoneticLine = phonetic //pronunciation
             ? `${phonetic} - `
-            : response[0]?.phonetic
-            ? `${response[0]?.phonetic} - `
+            : response[0] && response[0].phonetic
+            ? `${response[0] && response[0].phonetic} - `
             : ''
         phoneticLine = isOneWord ? phoneticLine : ''
 
         let exampleLine = examples && isOneWord ? `${examples}` : ''
 
         let audioLine =
-            audio && isOneWord
+            audio && isOneWord && response[0]
                 ? `${audio}`
-                : response[0]?.phonetics[1]?.audio
-                ? `${response[0]?.phonetics[1]?.audio}`
+                : response[0].phonetics[1] && response[0].phonetics[1].audio
+                ? `${
+                      response[0].phonetics[1] && response[0].phonetics[1].audio
+                  }`
                 : ''
 
         linkToTranslate = `https://context.reverso.net/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4/%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9/${firstEnglishWord}`
