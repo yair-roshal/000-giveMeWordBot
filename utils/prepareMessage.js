@@ -1,5 +1,3 @@
-'use strict'
-
 const translateText = require('./translateText')
 const getIamToken = require('./getIamToken')
 const logWords = require('../utils/logWords')
