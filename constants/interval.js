@@ -10,7 +10,8 @@ if (process.env.NODE_ENV === 'dev') {
     min = 0.1 //6sec
 }
 if (process.env.NODE_ENV === 'prod') {
-    min = 10 // 10min
+    // min = 10 // 10min
+    min = 60 // 60min
 }
 
 let interval = min * sec * ms
