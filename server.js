@@ -18,8 +18,6 @@ const getWordFromDictionary = require('./utils/getWordFromDictionary.js')
 
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
 
- 
-
 //caching allWords.txt
 dictionaryTextToFile()
 
@@ -68,7 +66,7 @@ bot.on('message', (msg) => {
     }
 })
 
-console.log('server started with interval:', interval / ms / sec, ' min')
+console.log('server started with interval:', interval / ms / sec, 'min')
 
 getWordFromDictionary(dictionary) //first run at the start of the server
 

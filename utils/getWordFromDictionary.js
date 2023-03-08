@@ -53,7 +53,7 @@ const getWordFromDictionary = (dictionary) => {
                     'error_api.dictionaryapi.dev for word : ' +
                         firstEnglishWord,
                 )
-                console.log('axios_error_api.dictionaryapi ===', error)
+                // console.log('axios_error_api.dictionaryapi ===', error)
             })
 }
 

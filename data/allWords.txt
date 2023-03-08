@@ -29,13 +29,13 @@ by then - к тому времени
 
   
 сокращения - abbreviations
-gonna - going to- собираюсь, (буду)
+gonna - going to- собираюсь, буду/ет
 gotta - have got to - have to - got to-должен
 coulda - could have - мог
 woulda - would have - могло бы
 shoulda - should have следовало бы», «нужно было
 musta - must have должно быть», причем в прошедшем времени.
-got 'em - got them взял их ( подловил)
+got 'em - got them взял их ( подловил )
 i'ma - i'm going to
 kinda - kind of
 wanna - want to
@@ -61,198 +61,101 @@ ain’t ← be not (не спрашивайте почему!) в любом в
 
 
 
- Словарь  - dictionary 
+Словарь  - dictionary 
 
-Make, made - заставлять
-negotiate - вести переговоры
-commute - заменить
-How much length of their commute - Какова продолжительность их поездок на работу
-Data Hoarders - Накопители данных
-Examples of impacted features - Примеры затронутых функций
-impacted - затронутых
-minefields - минные поля
-disrupt - разрывать, разрушать
-dense - пустой тупой глупый
-fade - затухать , вять выгорать
-ensure - убедиться
-credentials - учетные данные
-Whale - кит
- though - однако , несмотря на 
-Expose - Разоблачение
-Definitive - Окончательный
-Assignment - Задание
-Ensure - обеспечить
-Patience - Терпение
-Fraud - Мошенничество 
-Appointment - Назначение
-attractive - привлекательный
- spell, spelt, spelled - писать или произносить (слово) по буквам 
-зависит - depends
-sometimes - иногда
-anytime - в любое время
-if any changes occur, i log them - если происходят какие-либо изменения, я записываю их в журнал
-politeness-вежливость
-upright - вертикальный
-beliefs - вера, убеждения
-sufficient-достаточно
-frequently-часто
-subject  - подлежащее
-predicate -сказуемое
-object - дополнение
-attribute - опредиление
-adverbal modifer -обстоятельство
-formerly  - бывший  
-obtained - получено
-string obtained from the name property - строка, полученная из свойства name
-though - хотя, однако, несмотря на
-occasion - случай, мероприятие, возможность
-appropriate - соответствующий
-mapping table - таблица отображения
- resolution of these errors -  разрешение этих ошибок
-above keywords - вышеуказанные ключевые слова
-persist - сохраняться
-tough - жесткий
-literally - буквально
-participle - причастие
-permanent - постоянный
-suspended - приостановлено
-widely - широко
-definitely worth exploring - определенно стоит изучить.
-ultimately - в конечном итоге
-capabilities - возможности
-lacking  - отсутствует ,не хватает
-thirsty  - жаждущий
-thirst - жажда
-chatgpt is at capacity right now - chatgpt сейчас работает на полную мощность
-impressed - впечатлен
-approve - утверждать, утвердить
-attendance - посещаемость
-invoke - вызвать
-revoke - отозвать
-so far - до сих пор
-we've only had one honest man so far - до сих пор у нас был только один честный человек
-leaked - утекли
-hurry up - торопиться
-apologize and maybe i'll consider.. - извиняйся и может быть, я решу..
-deserve - заслужить
-forgive - прощать, простить
-she was doing it on purpose - она дела это нарочно ( с целью)
-populate fields - заполните поля
-survey - опрос
-feel free to attend - не стесняйтесь посещать
-staring to my ass - пялится на мою задницу
-custom - пользовательский
-confirmation - подтверждение
-brew me in - заваривай меня
-embed - встраивать
-comes up - подходит, поднимается
-strip - полоса
-afford - позволить , приобрести 
-onboarding - адаптация
-immersion - погружение
-retired - в отставке
-former experience -  прежний опыт
-what do you do for a living - чем ты зарабатываешь на жизнь 
-annually- ежегодно
-competed - соревновались
-conduct - проводить, поведение
-consent - согласие
-consuming - потребление
-cruel - жестокий
-desperate - отчаянный
-disappear - пропадать
-distinct=(different) values - разные=( уникальные )  значения 
-eternal - вечный
-explicitly - явно
-implicit - неявно
-leverage - рычаг, кредитное плечо
-reasserted - подтверждено
-regret - сожалеть
-retired - в отставке
-sequentially - последовательно
-statement - оператор
-suppose - предполагать
-trap - лестница 
-unholy - wicked - плохой (злой, нечестивый)
-within the async function -внутри асинхронной функции
-голос знакомый - the voice is familiar
-на кого я похож - who do i look like
-ближайшее - nearest
-вести дневник - keep a diary
-вместе - together
-возраст - age
-зарабатываю - earn
-начало - begining
-не уверен - not sure
-потерял - lost
-привычка - habit
-произношение - pronunciation
-совмещать - combine
-устал - tired 
+
 a simple approach - простой подход
 above [əbˈʌv] - выше
 above approach - вышеуказанный подход
+above keywords - вышеуказанные ключевые слова
 accidentally - случайно
+acquainted - знакомый
+act of violence — акт насилия
 addicted - зависимый
 adjust - настроить
 admire - восхищаться
 adore - обожать
 advantages - преимущества
+adverbal modifer -обстоятельство
+afford - позволить , приобрести 
 agility - проворство
 alias - псевдоним
+align [ɐlˈaɪn] - выровнять
 allow [əˈlaʊ] - позволять
 alumnus [əˈlʌmnəs] - выпускник
-apart - в стороне, отдельно
-apart - отдельно. друг от друга. на части
+and tearing us up - и разрывая наши отношения
+annually- ежегодно
+anytime - в любое время
+apart - в стороне, отдельно. друг от друга. на части
 apart from - exept - кроме
+apologize and maybe i'll consider.. - извиняйся и может быть, я решу..
 appear - появиться
 application - заявление
+appoint - назначать
 appointment -[əˈpɔɪntmənt]  назначение, прием
 appreciate - ценить, оценивать
-approach  - [ɐpɹˈəʊtʃ ]подход
+approach [ɐpɹˈəʊtʃ ] - подход
 approach ladder - приставная лестница
-appropriate - соответствующий
+appropriate - подходящий, соответствующий
+approve - утверждать, утвердить
 apropriation - присвоение
 arable and grassland - пашня и пастбища
 are you willing to relocate - готовы ли вы переехать
-arrange  - [əˈreɪnʤ] организовать, устраивать
+arrange [əˈreɪnʤ] - организовать, устраивать
 artificial intelligence - [ɑːtɪˈfɪʃəl ɪnˈtelɪʤəns] искусственный интеллект
 assessment - оценка
 assets - активы
-assign  - [əˈsaɪn]назначить
-assure - гарантировать
-assure - заверить
-attempt -  [ɐtˈɛmpt ] попытка,пытаться
+assign [əˈsaɪn] - назначить
+assignment - задание
+assure - гарантировать, заверить
+attempt [ɐtˈɛmpt ] - пытаться, попытка
 attend -посещать, присутствовать
+attendance - посещаемость
+attended - присутствовал 
 attitude - отношение
+attribute - определение
 authorities - полномочия
-avoid - [əˈvɔɪd] - избегать
+avoid [əˈvɔɪd] - избегать 
 backslash - обратная косая черта
+bangers - sausages 
 bankruptcy - банкротство
 basically like - в принципе как
-begging - прошу, умоляю
-benefit-  [ˈbenɪfɪt]  преимущество
+begging - прошу, умоляю 
+beliefs - вера, убеждения
+benefit [ˈbenɪfɪt] - преимущество
 benefits and limitations - преимущества и ограничения
 beyond - вдали
 bounties - вознаграждения, щедрость
+brew me in - заваривай меня
 bring, carry - приносить
+buck - один доллар
 bush - куст
 buy the stock - купить акции
-cause  - [kɔːz] причина
+by then - к тому времени
+calls - случаи
+capabilities - возможности
+cause [kɔːz] - причина
 cedar - кедр
+cereal bowl - миска для хлопьев
 certain - определенный
 chart - график
+chatgpt is at capacity right now - chatgpt сейчас работает на полную мощность
 chest - грудь
 choosey - привередливый
 chunks - куски
+clearly -явно 
 clue - путеводная нить, информировать, расскрыть тайну
 coastal area - прибрежная зона
 cocky - дерзкий. самоуверенный
-coercion - [kˌəʊˈɜːʃən]  принуждение
+code snippet - фрагмент кода
+coercion [kˌəʊˈɜːʃən] - принуждение
 collect yeast - собрать дрожжи
+comes up - подходит, поднимается
 committed - привержен
-commute- [kəˈmjuːt] добираться
+common sense - здравый смысл
+commute- [kəˈmjuːt] добираться, поездка на работу и обратно , заменять
 compassion - сострадание
+competed - соревновались
 competitive - конкурентоспособный
 complain - жаловаться
 complicated - сложный, запутанный
@@ -260,37 +163,54 @@ compose - составлять, сочинять, компоновать
 composing - составление
 comprehension - понимание
 concern - беспокойство
+conduct - проводить, поведение
 confidence - уверенность
 confident - уверенный
+confirmation - подтверждение
 confuse - путать
 consent - согласие
 consider - рассматривать, сравнить, решать
 considered -  [kənˈsɪdəd] рассмотрен
-consistent - [kənsˈɪstənt] совместимый
+consistent [kənsˈɪstənt] - совместимый
+Consume - потреблять( видеоматериалы) 
+consuming - потребление
 convenient - удобный
 correspond to the reducers and state - соответствуют редукторам и состоянию.
-corresponding -  [kɒrɪsˈpɒndɪŋ] соответствующий
+corresponding [kɒrɪsˈpɒndɪŋ] - соответствующий
 crawler - обходчик, сканер, гусеница
 credential - удостоверение
-cringe - страх, ужас,отвращение
-crop - [krɒp]  урожай, посев
+credentials - учетные данные
+cringe - страх, ужас, отвращение
+crisps lorry - truck 
+crop [krɒp] - урожай, посев 
 crossbow bolt - арбалетная стрела
+cruel - жестокий
 cuddles - обнимашки
 cure - средства, лекарство
-curious - любознательный
-curious - любопытный
+curious - любопытный, любознательный
 currently been rolled out to the beta tester - в настоящее время развернута для бета тестеров 
+custom - пользовательский
 dairy - молочные продукты
-dedicate -посвящять
+data hoarders - накопители данных
+day care - садик
+dedicate -посвящать
 deduced - выведенный
+definitely worth exploring - определенно стоит изучить.
+definitive - окончательный
+dense - пустой тупой глупый
 deny - отрицать
+deserve - заслужить
 desire - желание
+desperate - отчаянный
 diary of a wimpy kid - дневник бесхарактерного ребенка
 disadvantages - недостатки
 disappear - пропадать
+disappointed - разочарован
 disarm - разоружать
 disgust - отвращение
-disruption -  [dɪsɹˈʌpʃən] разрушение, нарушение
+disrupt - разрывать, разрушать
+disruption [dɪsɹˈʌpʃən] - разрушение, нарушение
+distinct=(different) values - разные=( уникальные )  значения 
 distract - отвлекать
 disturb - беспокоить, мешать
 diversity  - [daɪˈvɜːsɪtɪ] разнообразие
@@ -300,27 +220,35 @@ draw - приманить
 drill - дрель, учения
 drills - сверла
 due - подобающий, должное
+dumb gimmicks - тупые уловки
+dumps - выбрасывает
 dumpster - мусорный контейнер
 dunno - do not know
 durability - долговечность
 eccentric - чудак
 efficient - эффективный
 either direction - любое направление
+embed - встраивать
 embedded - встроенный
 embraces - охватывает
 emulate - подражать
 encountered - встречал, встречающийся
-engage - вступать(в бой), заниматься, привлекать,
+end up - в итоге
+engage - вступать(в бой, в брак), заниматься, привлекать,
 engaged - вступил( в брак )=помолвлен, вовлечен, занят,
 engagement - обручение, помолвка
-english proficiency level assessment - оценка уровнявладения английским языком
+english proficiency level assessment - оценка уровня владения английским языком
+ensure - обеспечить, убедиться
 entertaining - интересный, занимательный
 entire - [ɪnˈtaɪə]  весь
-essence- [ˈes(ə)ns]суть, сущность
+essence [ˈes(ə)ns] - суть, сущность
 essential-  [ɪˈsenʃəl] необходимый
 established - [ɪsˈtæblɪʃt] установленный
+eternal - вечный
+even though - хотя
 exact - точное
 exactly - именно, точно
+examples of impacted features - примеры затронутых функций
 except - исключая, кроме
 excepted - исключенный
 excited - воодушевлен
@@ -328,14 +256,18 @@ exclaimed - восклицать
 expect - ожидать
 expend - расходовать
 explain - объяснить
+explicitly - явно
 exploit - эксплуатировать
+expose - разоблачение
 expressing certain opinions - выражение определенных мнений
 external -[ɪkˈstɜːn(ə)l]  внешний
 fabulous - поразительный
+fade - затухать , вять выгорать
 fair - честный, справедливый ,светлый, ясный, хороший
 faithfully - верно
 familiar-[fəˈmɪlɪə]  знакомый, хорошо знакомый
-feature - особенный
+feature- особенность, особенный
+feel free to attend - не стесняйтесь посещать
 fever - жар
 flares - сигнальные ракеты ( сигналки )
 flavour - вид
@@ -344,96 +276,139 @@ flexibility - гибкость
 fluency - беглость, плавность
 fluently - бегло, плавно
 foam - пена
+for goodness sake! — ради бога!
+forgive - прощать, простить
+former experience -  прежний опыт
+formerly  - бывший  
 fortunately, that approach is changing - к счастью, данныйподход меняется
+fraud - мошенничество 
 freed - освобожденный
 freely - свободно
 frequent errors - частые ошибки
 frequently - часто
-further [fɜːðə] - дальнейший, последующий, следующий, будущий
+further [ˈfɜːðə] - дальнейший, последующий, следующий, будущий
 gap - зазор
 gather - [ˈɡæðə][газэ]  собирать
-generic-  [dʒənˈɛɹɪk] общий
+generic [dʒənˈɛɹɪk] - общий
+gets up - встает
 getting - становится, получение
 gloomy - мрачный
+goodness knows! — кто его знает!
 guilty - виновен
 handle  - [hændl] управлять
 hang - повесить
+hassling, getting on - достает/наседает/заебует
+he's addicted to this game - он пристрастился к этой игре
 hereby - настоящим
-however - [haʊˈevə] однако
+how much length of their commute - какова продолжительность их поездок на работу
+however [haʊˈevə] - однако 
+hurry up - торопиться
 i gotta share - я должен поделиться
 i really appreciate your comment - я очень ценю ваш комментарий
-in essence - по сути
+i'm getting a little sick - мне становится немного плохо
+if any changes occur, i log them - если происходят какие-либо изменения, я записываю их в журнал
+if you do not intend - если вы не намерены
+immersion - погружение
+impacted - затронутых
+implement all your desires - осуществит все ваши желания 
+implicit - неявно
+impressed - впечатлен
 in essence - [ɪn ˈes(ə)ns][ин эсэнс] по сути
-indent - [ˌɪndˈɛnt]   отступ
+inbound rules - входящие правила 
+indent [ˌɪndˈɛnt] - отступ
 indices - индексы
 influence - влияние
 inspiration - вдохновение
 instance - экземпляр
+intend - намерены
 intended - [ɪnˈtendɪd]  предназначенный
-interact - [ɪntərˈækt]  взаимодействовать
+interact [ɪntərˈækt] - взаимодействовать
 interrupt - прерывать
 interrupted - прерванный
 investigate - расследовать
+invoke - вызвать
 invoking - [ɪnˈvəʊkɪŋ] - вызов, вызывающий
-involves - [ɪnvˈɒlvz] - включает в себя
+involves [ɪnvˈɒlvz] - включает в себя
 irregular verb - неправильный глагол
+jerk - ничтожество, сопляк
 kerchief - платок
+kind of backfire - своего рода обратный эффект
+knees weak - колени слабые
+lacking  - отсутствует ,не хватает
 lawfully - законно
-layout-  [ˈleɪaʊt] - расположение
+layout [ˈleɪaʊt] - расположение
+leaked - утекли
 leaves - листья
 lets tie it all up - давайте свяжем все это воедино
+leverage - рычаг, кредитное плечо
 likewise - также
+literally - буквально
 looking forward to it - с нетерпением жду этого
 loot - добыча, грабить
 magnifier лупа
 maid - служанка
 maintains speech - поддерживает речь
 make sense - иметь смысл, осмысление
-mandatory - [ˈmændətərɪ] - обязательный, необходимый
+make, made - заставлять
+mandatory [ˈmændətərɪ] - обязательный, необходимый 
+mapping table - таблица отображения
 maybe together we could figure out - может быть, вместе мыбы смогли выяснить
 measure - мера, мерить
-mention - [mˈɛnʃən] - упомянуть
+mention [mˈɛnʃən] - упомянуть
 mess - беспорядок
 mind - ум, разум, обратить внимание
+minefields - минные поля
 miserable - жалкий, несчастный,
 misprint - опечатка
 mistake in your duties - ошибка в ваших обязанностях
 mockup - макет
 most anticipated - самый ожидаемый
-native - [ˈneɪtɪv] - родной, собственный
+my goodness! — боже мой!
+native [ˈneɪtɪv] - родной, собственный 
+negotiate - вести переговоры
 nested - вложенный
-nevermind-  [nˌɛvəmˈaɪnd] - не берите в голову
+nevermind [nˌɛvəmˈaɪnd] - не берите в голову
 nevertheless - тем не менее
 number - количество
+object - дополнение
+obtained - получено
 obviously - очевидно
+occasion - случай, мероприятие, возможность
 occupation - занятие (род деятельности)
 odds - шансы
 onboarding - адаптация
 others' feeds - ленты других
+outbound rules - исходящие правила 
 overflow occurs - переполнение происходит
 overhelming - подавляющее большинство, перевешивание
-override - [əʊvəˈraɪd] - переопределение
+override [əʊvəˈraɪd] - переопределение
 partial [ˈpɑːʃəl] - частичный
 participate - участвовать
+participle - причастие
 particularly - особенно
+patience - терпение
 payload-  [ˈpeɪləʊd] - полезная нагрузка
 peer-  [pɪə] - равный, равноправный одноранговая
-performance - [pəˈfɔːməns] - показатели, производительность
-perhaps - возможно
+performance - [pəˈfɔːməns] - производительность, показатели 
+perhaps - возможно, наверно, видимо
 perhaps-  [pəhˈaps] - возможно, наверно, видимо
+permanent - постоянный
 permitted - разрешено
+persist - сохраняться
 pipeline - конвейер
 pivot - опорный
 please kindly - пожалуйста, будьте добры
 pleasure, enjoyment - наслаждение
-point-  [pɔɪnt] - указывать, указать
+point [pɔɪnt] - смысл, суть, указывать
 pointer - указатель, стрелка
 politness - вежливость
-preceding-  [pɹɪsˈiːdɪŋ] - предшествующий
-predicament - затруднительное положение
-predicament - [prɪˈdɪkəmənt] - затруднение
+populate fields - заполните поля
+potty - горшок
+preceding [pɹɪsˈiːdɪŋ] - предшествующий
+predicament - [prɪˈdɪkəmənt] - затруднение, затруднительное положение
+predicate -сказуемое
 preference - предпочтение
-preserve - [pɹɪsˈɜːv] - сохранять
+preserve [pɹɪsˈɜːv] - сохранять
 pretty cool breakdown - довольно крутая разбивка
 prevent - предотвращать, препятствовать
 prevented - предотвращено
@@ -441,132 +416,156 @@ proficiency - профессионализм
 profound - глубокий
 promoted - повысить
 prompts - подсказки
+properly indent - правильно расставляйте отступы
 propose - предлагать
+pulls on me - проделывает со мной
 purpose - цель, назначение
-quietly - [ˈkwaɪətlɪ] - тихо
+quietly [ˈkwaɪətlɪ] - тихо
+reasserted - подтверждено
 rectify - исправить
-redundant-  [rɪˈdʌndənt] - избыточный
+redundant [rɪˈdʌndənt] - избыточный 
 refuse - откажусь
 regarding your application - относительно вашего заявления.
-regular- [ˈregjʊlə] - обычный
+regret - сожалеть
+regular [ˈregjʊlə] - обычный
 reliable - надежный
 remain - оставаться, пребывать
 remain engaged throughout the class - [ ɹɪmˈeɪn ɛnɡˈeɪdʒd θɹuːˈaʊt ðə klˈas ] оставайтесь вовлеченными на протяжении всего занятия
 remaining files - оставшиеся файлы
 resigned - уволился, уходить в отставку
+resolution of these errors -  разрешение этих ошибок
 responsibility - зона ответственности
 restricted mode - ограниченный режим
+retired - в отставке
 retrieval - извлечение
-reveal - показать
-reveal - раскрыть
+reveal - показать, раскрыть
 revenue - доход
- rippers - потрошители
+revoke - отозвать
+rippers - потрошители
 run out of - израсходовать, истощать запасы
 sapling - деревце
+sausages barrister - attorney 
 sawblade - диск(болгарки)( лезвие пилы)
 scrapping - соскоб
+seize , capture - захватить
 selfless - самоотверженный
 semiconductor - полупроводник
 seniority - старшинство
-sequence - [sˈiːkwəns] - последовательность
-sequences - последовательности
+sequence [sˈiːkwəns] - последовательность
+sequentially - последовательно
 set an appointment - назначить встречу
 share with your thoughts - поделитесь своими мыслями
+she was doing it on purpose - она дела это нарочно ( с целью)
 shiv - заточка
 sight - взгляд, зрение
 sinking - тонет
-skew - [skjˈuː] - наклон
+skew [skjˈuː] - наклон
+slip - ускользнуть 
 sneeze - чихать
+so far - до сих пор
 society - общество
+sometimes - иногда
+sore subject - больная тема
 specified - указанный
+spell, spelt, spelled - писать или произносить (слово) по буквам 
 spelling - написание
 splice - соединение
 spoil - портить
 stabbed - порезана
+staring to my ass - пялится на мою задницу
+statement - оператор
 stay abreast - будьте в курсе
-stripy - [ˈstraɪpɪ] - полосатый
+string obtained from the name property - строка, полученная из свойства name
+strip - полоса
+stripy [ˈstraɪpɪ] - полосатый
 struggle - борьба, боролся
 students should attend classes regularly - студенты должны присутствовать на уроках регулярно
+subject  - подлежащее
+successfully terminated - успешно завершено 
 suddenly - внезапно, вдруг
-supply - поставка
-supply - [səˈplaɪ] - поставка, подача,
-suppose - предполагать, предположить
+sufficient-достаточно
+supply [səˈplaɪ] - поставка, подача, 
+suppose - предполагать
 suppressor - глушитель
 surgery - хирургия
+survey - опрос
 suspect - подозревают
+suspended - приостановлено
 sway - качание
 swear - клятва
 swear to me - поклянись мне
+sweaty palms - потные ладони 
 syllable - cлог
+tailor your cv - составьте свое резюме
+tearing - разрыв
 ternary - троичный
 they will schedule another meeting - они назначат другую встречу
+thirst - жажда
+thirsty  - жаждущий
 this case is useful for either application - этот случайполезен для любого приложения
-though - хотя
+though - однако , несмотря на 
+though - хотя, однако, несмотря на
+three years tout - scalper 
 threshold - порог
 through - прямо, насквозь, через
 throw - бросить, бросок
 tight - крепко
 to find out what time the film starts - выяснить, когданачинается фильм.
+To go over everything - чтобы обсудить все.(пройтись по всему)
+tough - жесткий
 tow - буксир
 towel - полотенце
 traction - тяга
+trap - лестница 
 truce - перемирие
-typo - [ˈtaɪpəʊ] - опечатка
+truncate сокращать
+typo [ˈtaɪpəʊ] - опечатка
+ultimately - в конечном итоге
 underfucked - недоебанный
 unexpected token - неожиданный знак
+unholy - wicked - плохой (злой, нечестивый)
 upcoming - предстоящий
+upright - вертикальный
 upstairs - наверху
 vault - хранилище, подвал, склеп
 we are sinking - мы тонем
+we've only had one honest man so far - до сих пор у нас был только один честный человек
 wealth - богатство
 wealthy - состоятельный
+whale - кит
+what do you do for a living - чем ты зарабатываешь на жизнь 
+widely - широко
 wisdom - мудрость
 wise - мудрый
 within - внутри
-worth-  [wɜːθ] - стоить
+within the async function -внутри асинхронной функции
+worth [wɜːθ] - стоить
 would like to - хотел бы
 wounds - раны
 yarn - [jɑːn] - пряжа, нить, волокно, нитка
 you may assume - вы можете предположить
 you were mentioned in this post - вы были упомянуты в этом посте
-crisps lorry - truck 
-sausages barrister - attorney 
-three years tout - scalper 
- bangers - sausages 
-If you do not intend - Если вы не намерены
-intend - намерены
-Properly indent - Правильно расставляйте отступы
-My goodness! — боже мой!
-for goodness sake! — ради бога!
-goodness knows! — кто его знает!
-act of violence — акт насилия
-Successfully terminated i0e3df06280cbec2fa - Успешно завершено i0e3df06280cbec2fa 
-Inbound rules - Входящие правила 
-Outbound rules - Исходящие правила 
-Jerk - ничтожество, сопляк
-sore subject - больная тема
-buck - один доллар
-He's addicted to this game - Он пристрастился к этой игре
-Seize , capture - Захватить
-Slip - ускользнуть 
-Sweaty palms - Потные ладони 
-Knees weak - колени слабые
-acquainted - знакомый
-Tailor your CV - Составьте свое резюме
-kind of backfire - своего рода обратный эффект
-I'm getting a little sick - Мне становится немного плохо
-Hassling, Getting on - достает/наседает/заебует
-common sense - здравый смысл
-Day care - садик
-gets up - встает
-dumps - выбрасывает
-cereal bowl - миска для хлопьев
-Potty - горшок
-Calls - случаи
-dumb gimmicks - тупые уловки
-pulls on ME - проделывает со мной
-end up - в итоге
-Disappointed - Разочарован
-Appoint - назначать
-Appointment - назначение на..
-even though - хотя
+ближайшее - nearest
+бросить - throw ,drop
+вести дневник - keep a diary
+вместе - together
+возраст - age
+голос знакомый - the voice is familiar
+зависит - depends
+заказать - to order 
+зарабатываю - earn
+маке sense - имееть смысл
+мешаю - interrupt 
+мудрый - wise 
+на кого я похож - who do i look like
+начало - begining
+не уверен - not sure
+перерыв - break 
+потерял - lost
+привычка - habit
+произношение - pronunciation
+путать - confuse
+совмещать - combine
+согласен - agree 
+тем не менее - nevertheless
+устал - tired

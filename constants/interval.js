@@ -7,7 +7,8 @@ let min = 0.1 //6sec
 // const min = 30 // 30min
 
 if (process.env.NODE_ENV === 'dev') {
-    min = 0.1 //6sec
+    // min = 0.1 //6sec
+    min = 1 //1min
 }
 if (process.env.NODE_ENV === 'prod') {
     // min = 10 // 10min
