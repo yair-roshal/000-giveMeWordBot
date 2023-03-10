@@ -3,10 +3,10 @@
     "version": "1.0.0",
     "main": "server.js",
     "scripts": {
-        "start": "NODE_ENV=prod DEBUG=*  node server.js",
+        "start": "NODE_ENV=prod node server.js",
         "dev": "NODE_ENV=dev nodemon server.js",
-        "dev-debug": "NODE_ENV=dev DEBUG=*  nodemon server.js",
-        "prod": "NODE_ENV=prod DEBUG=*  node server.js"
+        "dev-debug": "NODE_ENV=dev DEBUG=* nodemon server.js",
+        "prod": "NODE_ENV=prod node server.js"
     },
     "author": "Yair Roshal",
     "license": "ISC",
@@ -20,7 +20,8 @@
         "node-jose": "^2.1.1",
         "node-telegram-bot-api": "^0.61.0",
         "nodemon": "^2.0.3",
-        "path": "^0.12.7"
+        "path": "^0.12.7",
+        "pm2": "^5.2.2"
     },
     "description": ""
 }

@@ -12,6 +12,7 @@ module.exports = async function prepareMessage(
     dictionaryLength,
 ) {
     let getIamTokenNow = function () {
+        // await getIamToken().then((res) => {
         return getIamToken().then((res) => {
             return res
         })
