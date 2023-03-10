@@ -33,7 +33,9 @@ const sendingMessage = (dictionary) => {
         isTimeForSending = true
     } else {
         isTimeForSending = false
-        console.log(`'it isn't time for sending messages' - ${new Date().toDateString}`)
+        console.log(
+            `'it isn't time for sending messages' - ${new Date().toDateString}`,
+        )
     }
 
     isTimeForSending &&
@@ -68,10 +70,4 @@ const sendingMessage = (dictionary) => {
             })
 }
 
-console.log(module)
-
-// module.exports = [  sendingMessage ,prepareMessage ]
-// module.exports = {  sendingMessage }
 module.exports = sendingMessage
-
-console.log(module)
