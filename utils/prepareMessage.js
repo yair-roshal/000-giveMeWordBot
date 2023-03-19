@@ -19,7 +19,7 @@ module.exports = async function prepareMessage(
     }
 
     return getIamTokenNow().then(async function (token) {
-        console.log('token==', token)
+        console.log('token === ', token)
         let examples = ''
         for (const key0 in response[0].meanings) {
             for (const key in response[0].meanings[key0].definitions) {
@@ -100,7 +100,7 @@ module.exports = async function prepareMessage(
         return (
             `<b>__________________</b>
 ${formattedDate}
- <b>${randomIndex + 1}/(${dictionaryLength}). 
+ <b>${randomIndex + 1}/(${dictionaryLength}) 
 ${phoneticLine}${word} </b>` +
             // '\r\n' +
             // '\r\n' +

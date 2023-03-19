@@ -10,10 +10,20 @@ const sendingMessage = (dictionary, bot) => {
     console.warn(
         'start new interval!!!_sendingMessage______________________________________',
     )
-    const randomIndex = Math.floor(Math.random() * dictionary.length)
-    let wordLineDictionary = dictionary[randomIndex]
-    const leftEnglishWords = wordLineDictionary.split('-')[0].trim()
-    firstEnglishWord = leftEnglishWords.split(' ')[0]
+    const randomIndexForDictionary = Math.floor(
+        Math.random() * dictionary.length,
+    )
+    let wordLineDictionary = dictionary[randomIndexForDictionary]
+
+    const symbol = '-'
+    let firstEnglishWord = ''
+    let leftEnglishWords = ''
+    if (wordLineDictionary.indexOf(symbol) === -1) {
+        console.log(`we don't have "-" in line :>> ', we don't have - in line`)
+    } else {
+        const leftEnglishWords = wordLineDictionary.split('-')[0].trim()
+        firstEnglishWord = leftEnglishWords.split(' ')[0]
+    }
 
     let isEnglishLanguage = false
     if (/[a-zA-Z]/.test(firstEnglishWord)) {
@@ -56,7 +66,7 @@ const sendingMessage = (dictionary, bot) => {
                 console.log('in then dictionaryapi')
                 prepareMessage(
                     response.data,
-                    randomIndex,
+                    randomIndexForDictionary,
                     wordLineDictionary,
                     isOneWord,
                     firstEnglishWord,
