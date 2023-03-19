@@ -1,26 +1,27 @@
 const axios = require('axios')
-const TelegramBot = require('node-telegram-bot-api')
+// const TelegramBot = require('node-telegram-bot-api')
 const token = process.env.TELEGRAM_BOT_TOKEN
-const bot = new TelegramBot(token, { polling: true })
+// const bot = new TelegramBot(token, { polling: true })
 const chatIdAdmin = process.env.CHAT_ID_ADMIN
 const prepareMessage = require('./prepareMessage')
 const { clockStart, clockEnd } = require('../constants/interval.js')
 
-const sendingMessage = (dictionary) => {
+const sendingMessage = (dictionary, bot) => {
+    console.warn(
+        'start new interval!!!_sendingMessage______________________________________',
+    )
     const randomIndex = Math.floor(Math.random() * dictionary.length)
     let wordLineDictionary = dictionary[randomIndex]
     const leftEnglishWords = wordLineDictionary.split('-')[0].trim()
-    console.log('sendingMessage________________________')
     firstEnglishWord = leftEnglishWords.split(' ')[0]
 
-    let isEnglishLanguage
+    let isEnglishLanguage = false
     if (/[a-zA-Z]/.test(firstEnglishWord)) {
-        // only english char
         isEnglishLanguage = true
-    } else {
-        // not only english char
-        isEnglishLanguage = false
     }
+    // else {
+    //     isEnglishLanguage = false
+    // }
 
     let isOneWord = true
     if (leftEnglishWords.split(' ').length > 1) {
@@ -37,16 +38,22 @@ const sendingMessage = (dictionary) => {
             `'it isn't time for sending messages' - ${new Date().toDateString}`,
         )
     }
-
+    console.log(
+        '  isTimeForSending isEnglishLanguage isOneWord :',
+        isTimeForSending,
+        isEnglishLanguage,
+        isOneWord,
+    )
     isTimeForSending &&
         isEnglishLanguage &&
-        isOneWord &&
+        // isOneWord &&
         axios
             .get(
                 'https://api.dictionaryapi.dev/api/v2/entries/en/' +
                     firstEnglishWord,
             )
             .then(function (response) {
+                console.log('in then dictionaryapi')
                 prepareMessage(
                     response.data,
                     randomIndex,
@@ -55,10 +62,17 @@ const sendingMessage = (dictionary) => {
                     firstEnglishWord,
                     dictionary.length,
                 ).then((textMessage) => {
+                    console.warn(
+                        'textMessage_prepareMessage_sendingMessage________VVV',
+                        '\n',
+                        textMessage,
+                    )
                     bot.sendMessage(chatIdAdmin, textMessage, {
                         parse_mode: 'HTML',
                         disable_web_page_preview: false,
                     })
+
+                    // return textMessage
                 })
             })
             .catch(function (error) {
@@ -66,6 +80,12 @@ const sendingMessage = (dictionary) => {
                     'error_api.dictionaryapi.dev for word : ' +
                         firstEnglishWord,
                 )
+
+                bot.sendMessage(chatIdAdmin, wordLineDictionary, {
+                    parse_mode: 'HTML',
+                    disable_web_page_preview: false,
+                })
+
                 // console.log('axios_error_api.dictionaryapi ===', error)
             })
 }

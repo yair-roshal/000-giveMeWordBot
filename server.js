@@ -1,10 +1,10 @@
-const TelegramBot = require('node-telegram-bot-api')
 const dotenv = require('dotenv')
 dotenv.config()
-const token = process.env.TELEGRAM_BOT_TOKEN
 
+const TelegramBot = require('node-telegram-bot-api')
+const token = process.env.TELEGRAM_BOT_TOKEN
 const bot = new TelegramBot(token, { polling: true })
-const chatIdAdmin = process.env.CHAT_ID_ADMIN
+// const chatIdAdmin = process.env.CHAT_ID_ADMIN
 
 // const dictionaryText = require('./data/dictionaryText.js')
 const dictionaryTextFromFile = require('./utils/dictionaryTextFromFile.js')
@@ -69,6 +69,6 @@ if (dictionaryText) {
 
 console.log('server started with interval:', interval / ms / sec, 'min')
 
-sendingMessage(dictionary) //first run at the start of the server
+sendingMessage(dictionary, bot) //first run at the start of the server
 
-setInterval(() => sendingMessage(dictionary), interval) //  start function by interval
+setInterval(() => sendingMessage(dictionary, bot), interval) //  start function by interval

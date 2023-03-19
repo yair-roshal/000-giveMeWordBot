@@ -19,6 +19,7 @@ module.exports = async function prepareMessage(
     }
 
     return getIamTokenNow().then(async function (token) {
+        console.log('token==', token)
         let examples = ''
         for (const key0 in response[0].meanings) {
             for (const key in response[0].meanings[key0].definitions) {
@@ -30,7 +31,7 @@ module.exports = async function prepareMessage(
                         '\r\n' +
                         `- ${response[0].meanings[key0].definitions[key].example}`
                     console.log(
-                        'text_for_translate',
+                        'text_for_translate : ',
                         response[0].meanings[key0].definitions[key].example,
                     )
                     await translateText(
@@ -98,14 +99,15 @@ module.exports = async function prepareMessage(
 
         return (
             `<b>__________________</b>
- <b>${randomIndex + 1}/(${dictionaryLength}).  ${phoneticLine}${word} </b>` +
-            '\r\n' +
-            '\r\n' +
+${formattedDate}
+ <b>${randomIndex + 1}/(${dictionaryLength}). 
+${phoneticLine}${word} </b>` +
+            // '\r\n' +
+            // '\r\n' +
             `
 ${exampleLine}
-<a href="${audioLine}">.</a>
-<a href="${linkToTranslate}">See on Context</a>
-<b>__________________</b>`
+<a href="${audioLine}">   </a>
+<a href="${linkToTranslate}">See on Context</a>`
         )
     })
 }
