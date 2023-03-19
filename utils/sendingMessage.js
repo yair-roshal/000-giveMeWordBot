@@ -77,10 +77,15 @@ const sendingMessage = (dictionary, bot) => {
                         '\n',
                         textMessage,
                     )
-                    bot.sendMessage(chatIdAdmin, textMessage, {
-                        parse_mode: 'HTML',
-                        disable_web_page_preview: false,
-                    })
+
+                    bot.sendMessage(
+                        chatIdAdmin,
+                        isOneWord ? wordLineDictionary : textMessage,
+                        {
+                            parse_mode: 'HTML',
+                            disable_web_page_preview: false,
+                        },
+                    )
 
                     // return textMessage
                 })

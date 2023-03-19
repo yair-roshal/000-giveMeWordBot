@@ -7,8 +7,6 @@ const keyId = process.env.KEY_ID
 const now = Math.floor(new Date().getTime() / 1000)
 const axios = require('axios')
 
-let IAM_TOKEN
-
 async function changeTokenToIAM(body) {
     try {
         const result = await axios
@@ -31,26 +29,18 @@ module.exports = async function getIamToken() {
         exp: now + 3600,
     }
 
-    jose.JWK.asKey(private_key, 'pem', { kid: keyId, alg: 'PS256' }).then(
-        function (result) {
-            jose.JWS.createSign({ format: 'compact' }, result)
-                .update(JSON.stringify(payload))
-                .final()
-                .then(function (result) {
-                    const jwt_token = result
-                    const body = {
-                        //  includes only one of the fields `yandexPassportOauthToken`, `jwt`
-                        // "yandexPassportOauthToken": process.env.OAUTH_TOKEN,
-                        jwt: jwt_token,
-                        // end of the list of possible fields
-                    }
+    const key = await jose.JWK.asKey(private_key, 'pem', {
+        kid: keyId,
+        alg: 'PS256',
+    })
+    const token = await jose.JWS.createSign({ format: 'compact' }, key)
+        .update(JSON.stringify(payload))
+        .final()
 
-                    changeTokenToIAM(body).then((res) => {
-                        IAM_TOKEN = res
-                        return IAM_TOKEN
-                    })
-                })
-        },
-    )
-    return IAM_TOKEN
+    const body = {
+        jwt: token,
+    }
+
+    const res = await changeTokenToIAM(body)
+    return res
 }

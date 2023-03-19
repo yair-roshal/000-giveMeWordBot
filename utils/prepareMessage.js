@@ -14,14 +14,13 @@ module.exports = async function prepareMessage(
     firstEnglishWord,
     dictionaryLength,
 ) {
-    let getIamTokenNow = function () {
-        // await getIamToken().then((res) => {
-        return getIamToken().then((res) => {
-            return res
-        })
-    }
+    // let getIamTokenNow = function () {
+    //     return getIamToken().then((res) => {
+    //         return res
+    //     })
+    // }
 
-    return getIamTokenNow().then(async function (token) {
+    return getIamToken().then(async function (token) {
         console.log('token === ', token)
         let examples = ''
         for (const key0 in response[0].meanings) {
