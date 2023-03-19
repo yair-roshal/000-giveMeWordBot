@@ -62,10 +62,10 @@ const sendingMessage = (dictionary, bot) => {
                 'https://api.dictionaryapi.dev/api/v2/entries/en/' +
                     firstEnglishWord,
             )
-            .then(function (response) {
-                console.log('in then dictionaryapi')
+            .then(function (response_dictionaryapi) {
+                console.log('sendingMessage_then_dictionaryapi')
                 prepareMessage(
-                    response.data,
+                    response_dictionaryapi.data,
                     randomIndexForDictionary,
                     wordLineDictionary,
                     isOneWord,

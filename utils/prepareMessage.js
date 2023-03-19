@@ -3,6 +3,9 @@ const getIamToken = require('./getIamToken')
 const logWords = require('../utils/logWords')
 const formatDate = require('./formatDate.js')
 
+const dotenv = require('dotenv')
+dotenv.config()
+
 module.exports = async function prepareMessage(
     response,
     randomIndex,
@@ -99,7 +102,7 @@ module.exports = async function prepareMessage(
 
         return (
             `<b>__________________</b>
-${formattedDate}
+${process.env.NODE_ENV === 'prod' ? '' : formattedDate}
  <b>${randomIndex + 1}/(${dictionaryLength}) 
 ${phoneticLine}${word} </b>` +
             // '\r\n' +
