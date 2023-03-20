@@ -8,7 +8,9 @@
 # **/.env
 **/.eslintcache 
 0-save
-log-words.txt
+
+**/log-words.txt
+**/data/logs
 
 
 
