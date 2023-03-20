@@ -9,7 +9,7 @@ dotenv.config()
 module.exports = async function prepareMessage(
     response,
     randomIndex,
-    word,
+    wordLineDictionary,
     isOneWord,
     firstEnglishWord,
     dictionaryLength,
@@ -95,22 +95,31 @@ module.exports = async function prepareMessage(
         const timestamp = Date.now()
         const formattedDate = formatDate(timestamp)
 
-        let logMessage = `${randomIndex + 1}.${word}  -  ` + formattedDate
-        console.log(logMessage)
+        let logMessage =
+            `${randomIndex + 1}.${wordLineDictionary}  -  ` + formattedDate
+        console.log("logMessage = ",logMessage)
         logWords(logMessage)
 
-        return (
-            `<b>____________________________________</b>
-${process.env.NODE_ENV === 'prod' ? '' : formattedDate}
- <b>${randomIndex + 1}/(${dictionaryLength}) 
-${phoneticLine}${word} </b>` +
-            // '\r\n' +
-            // '\r\n' +
-            `
-${exampleLine}
-<a href="${audioLine}">   </a>
-<a href="${linkToTranslate}">See on Context</a>`
-        )
+        if (isOneWord) {
+            return (
+                `<b>_______________________________</b>
+    ${process.env.NODE_ENV === 'prod' ? '' : formattedDate}
+     <b>${randomIndex + 1}/(${dictionaryLength}) 
+    ${phoneticLine}${wordLineDictionary} </b>` +
+                // '\r\n' +
+                // '\r\n' +
+                `
+    ${exampleLine}
+    <a href="${audioLine}">   </a>
+    <a href="${linkToTranslate}">See on Context</a>`
+            )
+        } else {
+            return `<b>_______________________________</b>
+    ${process.env.NODE_ENV === 'prod' ? '' : formattedDate}
+     <b>${randomIndex + 1}/(${dictionaryLength}) 
+     ${wordLineDictionary} </b> 
+`
+        }
     })
 }
 

@@ -6,7 +6,7 @@ const chatIdAdmin = process.env.CHAT_ID_ADMIN
 const prepareMessage = require('./prepareMessage')
 const { clockStart, clockEnd } = require('../constants/interval.js')
 
-const sendingMessage = (dictionary, bot) => {
+const sendingMessage = async (dictionary, bot) => {
     const randomIndexForDictionary = Math.floor(
         Math.random() * dictionary.length,
     )
@@ -56,35 +56,19 @@ const sendingMessage = (dictionary, bot) => {
         isEnglishLanguage,
         isOneWord,
     )
-    isTimeForSending &&
+
+    // isTimeForSending
+    //     isEnglishLanguage && (
+    let response_dictionaryapi =
         isEnglishLanguage &&
-        // isOneWord &&
-        axios
+        (await axios
             .get(
                 'https://api.dictionaryapi.dev/api/v2/entries/en/' +
                     firstEnglishWord,
             )
             .then(function (response_dictionaryapi) {
                 console.log('sendingMessage_then_dictionaryapi')
-                prepareMessage(
-                    response_dictionaryapi.data,
-                    randomIndexForDictionary,
-                    wordLineDictionary,
-                    isOneWord,
-                    firstEnglishWord,
-                    dictionary.length,
-                ).then((textMessage) => {
-                    bot.sendMessage(
-                        chatIdAdmin,
-                        isOneWord ? textMessage : wordLineDictionary,
-                        {
-                            parse_mode: 'HTML',
-                            disable_web_page_preview: false,
-                        },
-                    )
-
-                    // return textMessage
-                })
+                return response_dictionaryapi
             })
             .catch(function (error) {
                 console.log(
@@ -92,13 +76,42 @@ const sendingMessage = (dictionary, bot) => {
                         firstEnglishWord,
                 )
 
-                bot.sendMessage(chatIdAdmin, wordLineDictionary, {
-                    parse_mode: 'HTML',
-                    disable_web_page_preview: false,
-                })
+                // bot.sendMessage(chatIdAdmin, wordLineDictionary, {
+                //     parse_mode: 'HTML',
+                //     disable_web_page_preview: false,
+                // })
 
                 // console.log('axios_error_api.dictionaryapi ===', error)
-            })
+            }))
+
+    console.log(
+        'response_dictionaryapi.data :>> ',
+        !!response_dictionaryapi.data,
+    )
+
+    let textMessage = await prepareMessage(
+        response_dictionaryapi.data,
+        randomIndexForDictionary,
+        wordLineDictionary,
+        isOneWord,
+        firstEnglishWord,
+        dictionary.length,
+    ).then((textMessage) => {
+        return textMessage
+    })
+
+    console.log('textMessage :>> ', textMessage)
+
+    isTimeForSending &&
+        bot.sendMessage(
+            chatIdAdmin,
+            textMessage,
+            // isOneWord ? textMessage : wordLineDictionary,
+            {
+                parse_mode: 'HTML',
+                disable_web_page_preview: false,
+            },
+        )
 }
 
 module.exports = sendingMessage
