@@ -5,7 +5,7 @@ let path = require('path')
 
 module.exports = function logWords(wordLine) {
     let nameFile = 'log-words.txt'
-    let pathFile = getPathToFolder('data/') + `${nameFile}`
+    let pathFile = getPathToFolder('data/logs/') + `${nameFile}`
 
     fs.appendFile(pathFile, wordLine + '\r\n', (err) => {
         if (!err) {
