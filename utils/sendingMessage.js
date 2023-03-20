@@ -20,6 +20,7 @@ const sendingMessage = async (dictionary, bot) => {
 
     if (wordLineDictionary.indexOf(symbol) === -1) {
         console.log(`we don't have "-" in line :>> ', we don't have - in line`)
+        return
     } else {
         leftEnglishWords = wordLineDictionary.split('-')[0].trim()
         firstEnglishWord = leftEnglishWords.split(' ')[0]

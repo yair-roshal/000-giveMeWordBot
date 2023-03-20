@@ -14,12 +14,6 @@ module.exports = async function prepareMessage(
     firstEnglishWord,
     dictionaryLength,
 ) {
-    // let getIamTokenNow = function () {
-    //     return getIamToken().then((res) => {
-    //         return res
-    //     })
-    // }
-
     return getIamToken().then(async function (token) {
         console.log('token === ', !!token)
 
@@ -97,7 +91,7 @@ module.exports = async function prepareMessage(
 
         let logMessage =
             `${randomIndex + 1}.${wordLineDictionary}  -  ` + formattedDate
-        console.log("logMessage = ",logMessage)
+        console.log('logMessage = ', logMessage)
         logWords(logMessage)
 
         if (isOneWord) {
