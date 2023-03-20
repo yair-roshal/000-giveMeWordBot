@@ -101,7 +101,7 @@ module.exports = async function prepareMessage(
         logWords(logMessage)
 
         return (
-            `<b>__________________</b>
+            `<b>____________________________________</b>
 ${process.env.NODE_ENV === 'prod' ? '' : formattedDate}
  <b>${randomIndex + 1}/(${dictionaryLength}) 
 ${phoneticLine}${word} </b>` +
