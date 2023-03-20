@@ -5,17 +5,26 @@ const token = process.env.TELEGRAM_BOT_TOKEN
 const chatIdAdmin = process.env.CHAT_ID_ADMIN
 const prepareMessage = require('./prepareMessage')
 const { clockStart, clockEnd } = require('../constants/interval.js')
-
-let textMessage
-let isTimeForSending = false
+const formatDate = require('./formatDate.js')
 
 const sendingMessage = async (dictionary, bot) => {
+    const timestamp = Date.now()
+    const formattedDate = formatDate(timestamp)
+
+    let textMessage
+    let isTimeForSending = false
+
     const randomIndexForDictionary = Math.floor(
         Math.random() * dictionary.length,
     )
     let wordLineDictionary = dictionary[randomIndexForDictionary]
     console.log('______________________________ :>> ')
-    console.warn('wordLineDictionary :>> ', wordLineDictionary)
+    console.warn(
+        'wordLineDictionary :>> ',
+        wordLineDictionary,
+        '  ',
+        formattedDate,
+    )
 
     let firstEnglishWord = ''
     let leftEnglishWords = ''
@@ -41,9 +50,6 @@ const sendingMessage = async (dictionary, bot) => {
     if (/[a-zA-Z]/.test(firstEnglishWord)) {
         isEnglishLanguage = true
     }
-    // else {
-    //     isEnglishLanguage = false
-    // }
 
     let isOneWord = true
     arrayEnglishWords = leftEnglishWords.split(' ')
@@ -89,9 +95,8 @@ const sendingMessage = async (dictionary, bot) => {
     }
     console.log('response_dictionaryapi :>> ', !!response_dictionaryapi)
 
-    // response_dictionaryapi &&
     textMessage = await prepareMessage(
-        response_dictionaryapi.data,
+        response_dictionaryapi,
         randomIndexForDictionary,
         wordLineDictionary,
         isOneWord,
