@@ -21,7 +21,8 @@ module.exports = async function prepareMessage(
     // }
 
     return getIamToken().then(async function (token) {
-        console.log('token === ', token)
+        console.log('token === ', !!token)
+
         let examples = ''
         for (const key0 in response[0].meanings) {
             for (const key in response[0].meanings[key0].definitions) {
@@ -32,16 +33,16 @@ module.exports = async function prepareMessage(
                     examples +=
                         '\r\n' +
                         `- ${response[0].meanings[key0].definitions[key].example}`
-                    console.log(
-                        'text_for_translate : ',
-                        response[0].meanings[key0].definitions[key].example,
-                    )
+                    // console.log(
+                    //     'text_for_translate : ',
+                    //     response[0].meanings[key0].definitions[key].example,
+                    // )
                     await translateText(
                         response[0].meanings[key0].definitions[key].example,
                         token,
                     )
                         .then((translateTextVar) => {
-                            console.log('translateTextVar222', translateTextVar)
+                            // console.log('translateTextVar222', translateTextVar)
                             if (translateTextVar)
                                 examples +=
                                     '\r\n' + '-' + translateTextVar + '\r\n'

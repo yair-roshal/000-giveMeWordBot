@@ -7,14 +7,12 @@ const prepareMessage = require('./prepareMessage')
 const { clockStart, clockEnd } = require('../constants/interval.js')
 
 const sendingMessage = (dictionary, bot) => {
-    console.warn(
-        'start new interval!!!_sendingMessage______________________________________',
-    )
     const randomIndexForDictionary = Math.floor(
         Math.random() * dictionary.length,
     )
     let wordLineDictionary = dictionary[randomIndexForDictionary]
-
+    console.log('new word______________________________ :>> ')
+    console.warn('wordLineDictionary :>> ', wordLineDictionary)
     const symbol = '-'
     let firstEnglishWord = ''
     let leftEnglishWords = ''
@@ -53,7 +51,7 @@ const sendingMessage = (dictionary, bot) => {
         )
     }
     console.log(
-        '  isTimeForSending isEnglishLanguage isOneWord :',
+        'isTimeForSending -  isEnglishLanguage - isOneWord :',
         isTimeForSending,
         isEnglishLanguage,
         isOneWord,
@@ -76,12 +74,6 @@ const sendingMessage = (dictionary, bot) => {
                     firstEnglishWord,
                     dictionary.length,
                 ).then((textMessage) => {
-                    console.warn(
-                        'textMessage_prepareMessage_sendingMessage________VVV',
-                        '\n',
-                        textMessage,
-                    )
-
                     bot.sendMessage(
                         chatIdAdmin,
                         isOneWord ? textMessage : wordLineDictionary,
