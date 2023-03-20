@@ -18,10 +18,12 @@ const sendingMessage = (dictionary, bot) => {
     const symbol = '-'
     let firstEnglishWord = ''
     let leftEnglishWords = ''
+    let arrayEnglishWords = []
+
     if (wordLineDictionary.indexOf(symbol) === -1) {
         console.log(`we don't have "-" in line :>> ', we don't have - in line`)
     } else {
-        const leftEnglishWords = wordLineDictionary.split('-')[0].trim()
+        leftEnglishWords = wordLineDictionary.split('-')[0].trim()
         firstEnglishWord = leftEnglishWords.split(' ')[0]
     }
 
@@ -34,7 +36,9 @@ const sendingMessage = (dictionary, bot) => {
     // }
 
     let isOneWord = true
-    if (leftEnglishWords.split(' ').length > 1) {
+    arrayEnglishWords = leftEnglishWords.split(' ')
+    console.log('arrayEnglishWords :>> ', arrayEnglishWords)
+    if (arrayEnglishWords.length > 1) {
         isOneWord = false
     }
 
@@ -80,7 +84,7 @@ const sendingMessage = (dictionary, bot) => {
 
                     bot.sendMessage(
                         chatIdAdmin,
-                        isOneWord ? wordLineDictionary : textMessage,
+                        isOneWord ? textMessage : wordLineDictionary,
                         {
                             parse_mode: 'HTML',
                             disable_web_page_preview: false,

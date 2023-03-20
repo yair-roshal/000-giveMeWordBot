@@ -1,44 +1,29 @@
-# giveMeWordBot - Telegram Bot For sending your card with Translation,pronunciation, examples and link to all meanings
+# giveMeWord - Telegram Bot For sending your card with Translation, pronunciation, examples and link to all meanings
 
-# Demo of App :
+#### Notifications :
 
-![alt text](images/img_for_github.png 'Illustration for the project')
+<!-- ![alt text](images/1.png 'Message') -->
+<img src="images/1.png"  width="300"/>
 
-## What I want to do:
+### Full version of Message :
 
-### Russian version
+<img src="images/2.png"  />
+<!-- <img src="images/2.png"  width="400"/> -->
 
-<img src=" images/tehilimRu.jpg"  width="400"/>
+# How to Contribute to Open Source:
 
-### Mobile version
+## Forking a Project :
 
-<img src=" images/mobile.jpeg"  width="400"/>
-
-### French version
-
- <img src=" images/tehilFr.jpg"  width="400"/>
-
-### Tasks (What I need TODO)
-
-2. Connect a translator (Google, Yandex) via the API to translate individual words.
-3. Create a system of registration and accounts.
-4. Make it possible to select text.
-5. Rewrite requests to the server to Nest.js
-
-## How to Contribute to Open Source
-
-## Forking a Project
-
-`git clone https://github.com/yair-roshal/UnderText-Node-Express-Next-SQL-React.git`
+`git clone https://github.com/yair-roshal/000-giveMeWordBot.git`
 
 Once you're done making changes, you can upload the updated files back to GitHub using the command
 `git push origin master`
 
-## Keeping Track of Upstream
+## Keeping Track of Upstream :
 
 If you'd like to keep track of the upstream project (the one that you forked to create your own), then you'll need to add what's called an additional remote. This is basically just another keyword you can use while you're inside your application's folder. To create the new remote, run the command
 
-`git remote add upstream https://github.com/yair-roshal/UnderText-Node-Express-Next-SQL-React.git`
+`git remote add upstream https://github.com/yair-roshal/000-giveMeWordBot.git`
 
 ## Merging Upstream Changes
 
@@ -55,14 +40,12 @@ https://www.freecodecamp.org/news/how-to-contribute-to-open-source-projects-begi
 ## Installation instructions
 
 1. in main folder, text in the terminal `npm install`
-2. `npm run start-client` -start of the project
-3. after that go to the `server` folder ,text in the terminal `cd..` and `cd server`
-4. text in the terminal `npm install`
-5. `npm run start-server` -start of the project
+2. `npm run start` - start of the project
+3. `npm run dev` - start of the project in dev mode
+4. `npm run dev-debug` - start of the project in dev-debug mode
+5. `npm run prod` - start of the project in prod mode
 
 ## This project used
 
-1. Next
-2. Node
-3. React
-4. SQL
+1. Node
+1. TelegramBot for Node
