@@ -11,7 +11,7 @@ const sendingMessage = (dictionary, bot) => {
         Math.random() * dictionary.length,
     )
     let wordLineDictionary = dictionary[randomIndexForDictionary]
-    console.log('new word______________________________ :>> ')
+    console.log('______________________________ :>> ')
     console.warn('wordLineDictionary :>> ', wordLineDictionary)
     const symbol = '-'
     let firstEnglishWord = ''

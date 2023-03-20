@@ -53,7 +53,6 @@ module.exports = async function prepareMessage(
                 }
             }
         }
-
         let phonetic = ''
         for (const key in response[0].phonetics) {
             if (response[0].phonetics[key].text != undefined) {
