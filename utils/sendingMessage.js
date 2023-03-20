@@ -58,11 +58,9 @@ const sendingMessage = async (dictionary, bot) => {
         isOneWord,
     )
 
-    // isTimeForSending
-    //     isEnglishLanguage && (
-    let response_dictionaryapi =
-        isEnglishLanguage &&
-        (await axios
+    let response_dictionaryapi
+    if (isTimeForSending && isEnglishLanguage) {
+        response_dictionaryapi = await axios
             .get(
                 'https://api.dictionaryapi.dev/api/v2/entries/en/' +
                     firstEnglishWord,
@@ -76,43 +74,37 @@ const sendingMessage = async (dictionary, bot) => {
                     'error_api.dictionaryapi.dev for word : ' +
                         firstEnglishWord,
                 )
-
-                // bot.sendMessage(chatIdAdmin, wordLineDictionary, {
-                //     parse_mode: 'HTML',
-                //     disable_web_page_preview: false,
-                // })
-
                 // console.log('axios_error_api.dictionaryapi ===', error)
-            }))
+            })
+    }
 
-    console.log(
-        'response_dictionaryapi.data :>> ',
-        !!response_dictionaryapi.data,
-    )
+    let textMessage
+    if (response_dictionaryapi) {
+        console.log(
+            'response_dictionaryapi.data :>> ',
+            !!response_dictionaryapi.data,
+        )
 
-    let textMessage = await prepareMessage(
-        response_dictionaryapi.data,
-        randomIndexForDictionary,
-        wordLineDictionary,
-        isOneWord,
-        firstEnglishWord,
-        dictionary.length,
-    ).then((textMessage) => {
-        return textMessage
-    })
+        textMessage = await prepareMessage(
+            response_dictionaryapi.data,
+            randomIndexForDictionary,
+            wordLineDictionary,
+            isOneWord,
+            firstEnglishWord,
+            dictionary.length,
+        ).then((textMessage) => {
+            return textMessage
+        })
+    }
 
     console.log('textMessage :>> ', textMessage)
 
     isTimeForSending &&
-        bot.sendMessage(
-            chatIdAdmin,
-            textMessage,
-            // isOneWord ? textMessage : wordLineDictionary,
-            {
-                parse_mode: 'HTML',
-                disable_web_page_preview: false,
-            },
-        )
+        textMessage &&
+        bot.sendMessage(chatIdAdmin, textMessage, {
+            parse_mode: 'HTML',
+            disable_web_page_preview: false,
+        })
 }
 
 module.exports = sendingMessage
