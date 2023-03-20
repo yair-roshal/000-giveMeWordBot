@@ -91,7 +91,7 @@ module.exports = async function prepareMessage(
 
         let logMessage =
             `${randomIndex + 1}.${wordLineDictionary}  -  ` + formattedDate
-        console.log('logMessage = ', logMessage)
+        console.log('logMessage=== ', logMessage)
         logWords(logMessage)
 
         if (isOneWord) {

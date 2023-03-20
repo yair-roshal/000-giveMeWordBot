@@ -6,6 +6,9 @@ const chatIdAdmin = process.env.CHAT_ID_ADMIN
 const prepareMessage = require('./prepareMessage')
 const { clockStart, clockEnd } = require('../constants/interval.js')
 
+let textMessage
+let isTimeForSending = false
+
 const sendingMessage = async (dictionary, bot) => {
     const randomIndexForDictionary = Math.floor(
         Math.random() * dictionary.length,
@@ -13,18 +16,26 @@ const sendingMessage = async (dictionary, bot) => {
     let wordLineDictionary = dictionary[randomIndexForDictionary]
     console.log('______________________________ :>> ')
     console.warn('wordLineDictionary :>> ', wordLineDictionary)
-    const symbol = '-'
+
     let firstEnglishWord = ''
     let leftEnglishWords = ''
     let arrayEnglishWords = []
 
-    if (wordLineDictionary.indexOf(symbol) === -1) {
-        console.log(`we don't have "-" in line :>> ', we don't have - in line`)
-        return
-    } else {
-        leftEnglishWords = wordLineDictionary.split('-')[0].trim()
-        firstEnglishWord = leftEnglishWords.split(' ')[0]
-    }
+    const symbolsArray = ['-', '—', '&shy;']
+
+    symbolsArray.forEach((symbol) => {
+        if (wordLineDictionary.indexOf(symbol) !== -1) {
+            leftEnglishWords = wordLineDictionary.split(symbol)[0].trim()
+            firstEnglishWord = leftEnglishWords.split(' ')[0]
+            return
+        }
+    })
+
+    console.log(
+        'leftEnglishWords,firstEnglishWord :>> ',
+        leftEnglishWords,
+        firstEnglishWord,
+    )
 
     let isEnglishLanguage = false
     if (/[a-zA-Z]/.test(firstEnglishWord)) {
@@ -43,10 +54,10 @@ const sendingMessage = async (dictionary, bot) => {
 
     let currentDate = new Date()
     let nowHours = currentDate.getHours()
+
     if (nowHours < clockEnd && nowHours > clockStart) {
         isTimeForSending = true
     } else {
-        isTimeForSending = false
         console.log(
             `'it isn't time for sending messages' - ${new Date().toDateString}`,
         )
@@ -66,7 +77,6 @@ const sendingMessage = async (dictionary, bot) => {
                     firstEnglishWord,
             )
             .then(function (response_dictionaryapi) {
-                console.log('sendingMessage_then_dictionaryapi')
                 return response_dictionaryapi
             })
             .catch(function (error) {
@@ -77,30 +87,24 @@ const sendingMessage = async (dictionary, bot) => {
                 // console.log('axios_error_api.dictionaryapi ===', error)
             })
     }
+    console.log('response_dictionaryapi :>> ', !!response_dictionaryapi)
 
-    let textMessage
-    if (response_dictionaryapi) {
-        console.log(
-            'response_dictionaryapi.data :>> ',
-            !!response_dictionaryapi.data,
-        )
+    // response_dictionaryapi &&
+    textMessage = await prepareMessage(
+        response_dictionaryapi.data,
+        randomIndexForDictionary,
+        wordLineDictionary,
+        isOneWord,
+        firstEnglishWord,
+        dictionary.length,
+    ).then((res) => {
+        return res
+    })
 
-        textMessage = await prepareMessage(
-            response_dictionaryapi.data,
-            randomIndexForDictionary,
-            wordLineDictionary,
-            isOneWord,
-            firstEnglishWord,
-            dictionary.length,
-        ).then((textMessage) => {
-            return textMessage
-        })
-    }
-
-    console.log('textMessage :>> ', textMessage)
-
-    isTimeForSending &&
-        textMessage &&
+    console.log('isTimeForSending :>> ', isTimeForSending)
+    console.log('textMessage :>> ', !!textMessage)
+    textMessage &&
+        isTimeForSending &&
         bot.sendMessage(chatIdAdmin, textMessage, {
             parse_mode: 'HTML',
             disable_web_page_preview: false,

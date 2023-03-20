@@ -14,6 +14,7 @@ if (process.env.NODE_ENV === 'dev') {
 
     clockStart = 0
     clockEnd = 24
+    console.log('bot working in period:', clockStart, '-', clockEnd)
 }
 if (process.env.NODE_ENV === 'prod') {
     // min = 10 // 10min
