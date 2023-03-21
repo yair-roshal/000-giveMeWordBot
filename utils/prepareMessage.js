@@ -14,6 +14,20 @@ module.exports = async function prepareMessage(
     firstEnglishWord,
     dictionaryLength,
 ) {
+    const timestamp = Date.now()
+    const formattedDate = formatDate(timestamp)
+
+    console.log(
+        'timestamp, formattedDate :>> ',
+        timestamp,
+        ' - ',
+        formattedDate,
+    )
+
+    let logMessage =
+        `${randomIndex + 1}.${wordLineDictionary}  -  ` + formattedDate
+    logWords(logMessage)
+
     let responseData
     if (response != undefined && isOneWord) {
         responseData = response.data
@@ -92,20 +106,6 @@ module.exports = async function prepareMessage(
                     : ''
 
             linkToTranslate = `https://context.reverso.net/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4/%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9/${firstEnglishWord}`
-
-            const timestamp = Date.now()
-            const formattedDate = formatDate(timestamp)
-
-            console.log(
-                'timestamp, formattedDate :>> ',
-                timestamp,
-                ' - ',
-                formattedDate,
-            )
-
-            let logMessage =
-                `${randomIndex + 1}.${wordLineDictionary}  -  ` + formattedDate
-            logWords(logMessage)
 
             return `<b>_______________________________</b>
 ${process.env.NODE_ENV === 'prod' ? '' : formattedDate}
