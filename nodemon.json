@@ -1,6 +1,13 @@
 {
     "watch": ["."],
     "ext": "js",
-    "ignore": ["*.json", "*.test.ts", ".next", "*.txt"],
+    "ignore": [
+        "*.json",
+        "*.test.ts",
+        ".next",
+        "*.txt",
+        "data/cache_allWords.txt"
+    ],
+
     "delay": "1"
 }
