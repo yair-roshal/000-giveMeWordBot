@@ -5,7 +5,9 @@
         "*.json",
         "*.test.ts",
         ".next",
+        
         "*.txt",
+        "data/",
         "data/cache_allWords.txt"
     ],
 
