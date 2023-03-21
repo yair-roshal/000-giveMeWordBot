@@ -9,7 +9,11 @@ module.exports = {
                 '*.txt',
                 'data/',
                 'data/cache_allWords.txt',
+                'node_modules',
             ],
+
+            watch_delay: 1000,
+
             watch_options: {
                 ignored: 'data/**',
             },
