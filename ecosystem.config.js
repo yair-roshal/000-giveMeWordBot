@@ -4,7 +4,15 @@ module.exports = {
             name: 'engBot',
             script: 'server.js',
             watch: true,
-            ignore_watch: ['*.txt', 'data/', 'data/cache_allWords.txt'],
+            ignore_watch: [
+                'data/**',
+                '*.txt',
+                'data/',
+                'data/cache_allWords.txt',
+            ],
+            watch_options: {
+                ignored: 'data/**',
+            },
         },
     ],
 }
