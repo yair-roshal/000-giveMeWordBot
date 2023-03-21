@@ -96,6 +96,13 @@ module.exports = async function prepareMessage(
             const timestamp = Date.now()
             const formattedDate = formatDate(timestamp)
 
+            console.log(
+                'timestamp, formattedDate :>> ',
+                timestamp,
+                ' - ',
+                formattedDate,
+            )
+
             let logMessage =
                 `${randomIndex + 1}.${wordLineDictionary}  -  ` + formattedDate
             logWords(logMessage)
