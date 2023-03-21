@@ -1,6 +1,6 @@
 {
     "watch": ["."],
     "ext": "js",
-    "ignore": ["*.json", "*.test.ts", ".next"],
+    "ignore": ["*.json", "*.test.ts", ".next", "*.txt"],
     "delay": "1"
 }
