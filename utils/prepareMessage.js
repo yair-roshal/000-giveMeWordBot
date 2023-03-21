@@ -6,9 +6,6 @@ const formatDate = require('./formatDate.js')
 const dotenv = require('dotenv')
 dotenv.config()
 
-const timestamp = Date.now()
-const formattedDate = formatDate(timestamp)
-
 module.exports = async function prepareMessage(
     response,
     randomIndex,
@@ -96,22 +93,20 @@ module.exports = async function prepareMessage(
 
             linkToTranslate = `https://context.reverso.net/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4/%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9/${firstEnglishWord}`
 
+            const timestamp = Date.now()
+            const formattedDate = formatDate(timestamp)
+
             let logMessage =
                 `${randomIndex + 1}.${wordLineDictionary}  -  ` + formattedDate
             logWords(logMessage)
 
-            return (
-                `<b>_______________________________</b>
+            return `<b>_______________________________</b>
 ${process.env.NODE_ENV === 'prod' ? '' : formattedDate}
 <b>${randomIndex + 1}/(${dictionaryLength}) 
-${phoneticLine}${wordLineDictionary} </b>` +
-                // '\r\n' +
-                // '\r\n' +
-                `
-    ${exampleLine}
-    <a href="${audioLine}">   </a>
-    <a href="${linkToTranslate}">See on Context</a>`
-            )
+${phoneticLine}${wordLineDictionary} </b>
+${exampleLine}
+<a href="${audioLine}">   </a>
+<a href="${linkToTranslate}">See on Context</a>`
         })
     } else {
         return `<b>_______________________________</b>
