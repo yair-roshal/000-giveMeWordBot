@@ -1,7 +1,7 @@
 module.exports = {
     apps: [
         {
-            name: 'give_me_word',
+            name: 'engBot',
             script: 'server.js',
             watch: true,
             ignore_watch: ['*.txt', 'data/', 'data/cache_allWords.txt'],
