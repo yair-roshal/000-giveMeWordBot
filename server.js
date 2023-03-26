@@ -27,45 +27,45 @@ if (dictionaryText) {
     dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
 }
 
-// function openStartMenu(chatId) {
-//     bot.sendMessage(chatId, 'The keyboard is open', startMenu)
-// }
+function openStartMenu(chatId) {
+    bot.sendMessage(chatId, 'The keyboard is open', startMenu)
+}
 
-// bot.onText(/\/start/, (msg, match) => {
-//     const chatId = msg.chat.id
-//     bot.sendMessage(chatId, 'Hello, ' + msg.chat.first_name + '!', mainMenu)
-//     openStartMenu(chatId)
-// })
+bot.onText(/\/start/, (msg, match) => {
+    const chatId = msg.chat.id
+    bot.sendMessage(chatId, 'Hello, ' + msg.chat.first_name + '!', mainMenu)
+    openStartMenu(chatId)
+})
 
-// bot.onText(/\/keyboard/, (msg) => {
-//     bot.sendMessage(msg.chat.id, 'Alternative keyboard layout', mainMenu)
-// })
+bot.onText(/\/keyboard/, (msg) => {
+    bot.sendMessage(msg.chat.id, 'Alternative keyboard layout', mainMenu)
+})
 
-// bot.on('callback_query', (query) => {
-//     if (query.data === 'development') {
-//         bot.sendMessage(chatIdAdmin, 'development menu', mainMenu)
-//     }
-//     if (query.data === 'lifestyle') {
-//         bot.sendMessage(chatIdAdmin, 'lifestyle menu', mainMenu)
-//     }
-//     if (query.data === 'other') {
-//         bot.sendMessage(chatIdAdmin, 'other menu', mainMenu)
-//     }
-// })
+bot.on('callback_query', (query) => {
+    if (query.data === 'development') {
+        bot.sendMessage(chatIdAdmin, 'development menu', mainMenu)
+    }
+    if (query.data === 'lifestyle') {
+        bot.sendMessage(chatIdAdmin, 'lifestyle menu', mainMenu)
+    }
+    if (query.data === 'other') {
+        bot.sendMessage(chatIdAdmin, 'other menu', mainMenu)
+    }
+})
 
-//отправив список слов добавляем их в словарь
-// bot.on('message', (msg) => {
-//     console.log('msg.text===', msg.text)
-//     if (msg.text == '/start') {
-//         bot.sendMessage(chatIdAdmin, `Server-Bot successfully started  `)
-//     } else if (!dictionary.includes(msg.text) && msg.text !== '/start') {
-//         dictionary = dictionary.concat(msg.text.split(/\r?\n/))
-//         bot.sendMessage(
-//             chatIdAdmin,
-//             `Successfully added "${msg.text}" to the dictionary.`,
-//         )
-//     }
-// })
+// sending a list of words and adding them to the dictionary
+bot.on('message', (msg) => {
+    console.log('msg.text===', msg.text)
+    if (msg.text == '/start') {
+        bot.sendMessage(chatIdAdmin, `Server-Bot successfully started  `)
+    } else if (!dictionary.includes(msg.text) && msg.text !== '/start') {
+        dictionary = dictionary.concat(msg.text.split(/\r?\n/))
+        bot.sendMessage(
+            chatIdAdmin,
+            `Successfully added "${msg.text}" to the dictionary.`,
+        )
+    }
+})
 
 console.log('server started with interval:', interval / ms / sec, 'min')
 

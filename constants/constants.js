@@ -1,24 +1,23 @@
-  
 const startMenu = {
     reply_markup: {
         keyboard: [
             [
                 {
-                    text: 'Классика',
+                    text: 'Main',
                 },
                 {
-                    text: 'Закрыть',
+                    text: 'Description',
                 },
             ],
             [
                 {
-                    text: 'Заказать разработку бота',
+                    text: 'Order bot development',
                     request_contact: true,
                 },
             ],
             [
                 {
-                    text: 'Про автора',
+                    text: 'About me',
                 },
             ],
         ],
