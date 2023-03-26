@@ -2,6 +2,7 @@ const translateText = require('./translateText')
 const getIamToken = require('./getIamToken')
 const logWords = require('../utils/logWords')
 const formatDate = require('./formatDate.js')
+const checkTokenExpiration = require('./checkTokenExpiration.js')
 
 const dotenv = require('dotenv')
 dotenv.config()
@@ -33,7 +34,8 @@ module.exports = async function prepareMessage(
         responseData = response.data
 
         return getIamToken().then(async function (token) {
-            console.log('token === ', !!token)
+            console.log('token === ', token)
+            // console.log('token === ', !!token)
 
             let examples = ''
             for (const key0 in responseData[0].meanings) {
@@ -45,10 +47,18 @@ module.exports = async function prepareMessage(
                         examples +=
                             '\r\n' +
                             `- ${responseData[0].meanings[key0].definitions[key].example}`
-                        // console.log(
-                        //     'text_for_translate : ',
-                        //     responseData[0].meanings[key0].definitions[key].example,
-                        // )
+
+                        // await checkTokenExpiration(token)
+                        //     .then(( ) => {
+                        //         console.log(
+                        //             '==token good========== res===',
+                        //             res,
+                        //         )
+                        //     })
+                        //     .catch((err) =>
+                        //         console.log('==checkTokenExpiration() : ', err),
+                        //     )
+
                         await translateText(
                             responseData[0].meanings[key0].definitions[key]
                                 .example,
@@ -106,8 +116,6 @@ module.exports = async function prepareMessage(
                     : ''
 
             linkToTranslate = `https://context.reverso.net/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4/%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9/${firstEnglishWord}`
-
-            // ${process.env.NODE_ENV === 'prod' ? '' : formattedDate}
 
             return `<b>_______________________________</b>
 <b>${phoneticLine}${wordLineDictionary} </b>
