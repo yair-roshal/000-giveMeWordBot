@@ -7,6 +7,11 @@ const prepareMessage = require('./prepareMessage')
 const { clockStart, clockEnd } = require('../constants/interval.js')
 const formatDate = require('./formatDate.js')
 
+// const LanguageDetect = require('languagedetect')
+
+// OR
+const LanguageDetect = new (require('languagedetect'))()
+
 const sendingMessage = async (dictionary, bot) => {
     const timestamp = Date.now()
     const formattedDate = formatDate(timestamp)
@@ -50,6 +55,14 @@ const sendingMessage = async (dictionary, bot) => {
     if (/[a-zA-Z]/.test(firstEnglishWord)) {
         isEnglishLanguage = true
     }
+
+    // const language = languageDetect(firstEnglishWord)
+    // console.log('language :>> ', language)
+
+    // const LanguageDetect = new LanguageDetect()
+
+    console.log('firstEnglishWord :>> ', firstEnglishWord)
+    console.log(LanguageDetect.detect(firstEnglishWord, 2))
 
     let isOneWord = true
     arrayEnglishWords = leftEnglishWords.split(' ')

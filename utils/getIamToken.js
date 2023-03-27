@@ -8,16 +8,18 @@ const now = Math.floor(new Date().getTime() / 1000)
 const axios = require('axios')
 
 async function changeTokenToIAM(body) {
+    console.log('body :>> ', body)
     try {
         const result = await axios
             .post('https://iam.api.cloud.yandex.net/iam/v1/tokens', body)
             .then((response) => {
                 let IAM_TOKEN = response.data.iamToken
+                console.log('IAM_TOKEN :>> ', IAM_TOKEN)
                 return IAM_TOKEN
             })
         return result
     } catch (error) {
-        console.log('AXIOS ERROR_jwt: ', error.response)
+        console.log('AXIOS ERROR _ changeTokenToIAM: ', error.response)
     }
 }
 
