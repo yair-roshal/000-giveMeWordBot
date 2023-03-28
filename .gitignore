@@ -11,8 +11,7 @@
 
 **/log-words.txt
 /logs
-
-
+data/logs/
 
 # classic ignoring files===============
 
