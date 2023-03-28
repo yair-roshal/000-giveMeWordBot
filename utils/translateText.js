@@ -3,6 +3,7 @@ const {
     source_language,
     target_language,
 } = require('../constants/languages.js')
+const logAlerts = require('./logAlerts')
 
 module.exports = async function translateText(texts, IAM_TOKEN) {
     let translate
@@ -25,7 +26,9 @@ module.exports = async function translateText(texts, IAM_TOKEN) {
             translate = response.data.translations[0].text
             return translate
         })
-        .catch((error) => {
+        .catch((err) => {
+            logAlerts(err)
+
             console.log('ERROR_translate: ')
         })
     return translate

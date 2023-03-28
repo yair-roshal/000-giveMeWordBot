@@ -1,4 +1,5 @@
 const fs = require('fs')
+const logAlerts = require('./logAlerts')
 
 module.exports = function checkExistFile(filePath) {
     const fileContent = ''
@@ -7,6 +8,7 @@ module.exports = function checkExistFile(filePath) {
         if (!err) {
             console.log('New empty File was created .')
         } else {
+            logAlerts('Error555: file already exists')
             console.log('Error555: file already exists')
             // console.log('Error555: file already exists', err)
         }

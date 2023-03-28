@@ -4,6 +4,7 @@ const prepareMessage = require('./prepareMessage')
 const { clockStart, clockEnd } = require('../constants/interval.js')
 const formatDate = require('./formatDate.js')
 const langdetect = require('langdetect')
+const logAlerts = require('./logAlerts')
 
 const sendingMessage = async (dictionary, bot) => {
     const timestamp = Date.now()
@@ -77,17 +78,19 @@ const sendingMessage = async (dictionary, bot) => {
     )
 
     let response_dictionaryapi
-    if (isTimeForSending && isEnglishLanguage) {
+    if (isTimeForSending && isEnglishLanguage && isOneWord) {
         response_dictionaryapi = await axios
             .get('https://api.dictionaryapi.dev/api/v2/entries/en/' + firstWord)
             .then(function (response_dictionaryapi) {
                 return response_dictionaryapi
             })
-            .catch(function (error) {
+            .catch(function (err) {
+                logAlerts(err)
+
                 console.log(
                     'error_api.dictionaryapi.dev for word : ' + firstWord,
                 )
-                // console.log('axios_error_api.dictionaryapi ===', error)
+                // console.log('axios_error_api.dictionaryapi ===', err)
             })
     }
     console.log('response_dictionaryapi :>> ', !!response_dictionaryapi)

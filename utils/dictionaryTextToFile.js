@@ -3,6 +3,7 @@ let fs = require('fs')
 const dictionaryTextFromFile = require('./dictionaryTextFromFile.js')
 const dictionaryText = dictionaryTextFromFile()
 const getPathToFolder = require('./getPathToFolder')
+const logAlerts = require('./logAlerts')
 let path = require('path')
 
 module.exports = function dictionaryTextToFile() {
@@ -13,8 +14,12 @@ module.exports = function dictionaryTextToFile() {
         if (!err) {
             console.log(`The file was saved! With name : ${nameFile}`)
         } else {
+            logAlerts(err)
+
             return console.log('err4444_dictionaryTextToFile', err)
             // return console.log(err)
+            logAlerts(err)
+
         }
     })
 }

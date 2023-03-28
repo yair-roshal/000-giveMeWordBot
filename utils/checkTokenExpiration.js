@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken')
+const logAlerts = require('./logAlerts')
 
 module.exports = function checkTokenExpiration(token, req, res, next) {
     try {
@@ -20,8 +21,8 @@ module.exports = function checkTokenExpiration(token, req, res, next) {
         next()
     } catch (err) {
         console.log('err :>> ', err);
-        // return res
-        //     .status(401)
-        //     .json({ message: 'Authentication token is invalid' })
+        logAlerts(err)
+
+         
     }
 }

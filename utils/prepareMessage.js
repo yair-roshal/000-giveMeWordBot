@@ -6,6 +6,7 @@ const translateText = require('./translateText')
 const logWords = require('../utils/logWords')
 const formatDate = require('./formatDate.js')
 const checkTokenExpiration = require('./checkTokenExpiration.js')
+const logAlerts = require('./logAlerts')
 
 const dotenv = require('dotenv')
 dotenv.config()
@@ -76,9 +77,10 @@ module.exports = async function prepareMessage(
                                 examples +=
                                     '\r\n' + '-' + translateTextVar + '\r\n'
                         })
-                        .catch((err) =>
-                            console.log('err_translateText() : ', err),
-                        )
+                        .catch((err) => {
+                            logAlerts(err)
+                            console.log('err_translateText() : ', err)
+                        })
                 }
             }
         }
@@ -137,6 +139,7 @@ ${exampleLine}
         `
         return `<b>_______________________________</b>
 <b>${wordLineDictionary} </b>
+
 <b>${randomIndex + 1}/(${dictionaryLength})</b>
 
 <a href="${linkToTranslate}">Translate with Google</a>

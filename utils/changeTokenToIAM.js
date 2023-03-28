@@ -6,6 +6,7 @@ const serviceAccountId = process.env.SERVICE_ACCOUNT_ID
 const keyId = process.env.KEY_ID
 const now = Math.floor(new Date().getTime() / 1000)
 const axios = require('axios')
+const logAlerts = require('./logAlerts')
 
 module.exports = async function changeTokenToIAM(body) {
     console.log('body :>> ', body)
@@ -18,7 +19,8 @@ module.exports = async function changeTokenToIAM(body) {
                 return IAM_TOKEN
             })
         return result
-    } catch (error) {
-        console.log('AXIOS ERROR _ changeTokenToIAM: ', error.response)
+    } catch (err) {
+        logAlerts(err)
+        console.log('AXIOS ERROR _ changeTokenToIAM: ', err.response)
     }
 }

@@ -16,11 +16,13 @@ const mainMenu = require('./constants/constants.js')
 const { sec, ms, interval } = require('./constants/interval.js')
 var _ = require('lodash')
 const sendingMessage = require('./utils/sendingMessage.js')
+const logSessions = require('./utils/logSessions.js')
 
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
 
 //caching allWords.txt
 dictionaryTextToFile()
+logSessions()
 
 let dictionary
 if (dictionaryText) {

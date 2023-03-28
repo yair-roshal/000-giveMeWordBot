@@ -1,6 +1,7 @@
 let fs = require('fs')
 const getPathToFolder = require('./getPathToFolder')
 // const checkExistFile = require('./checkExistFile')
+const logAlerts = require('./logAlerts')
 
 module.exports = function dictionaryTextFromFile() {
     let nameFile = 'allWords.txt'
@@ -13,7 +14,10 @@ module.exports = function dictionaryTextFromFile() {
         // console.log('data999', data)
         return data
     } catch (err) {
+        logAlerts(err)
+
         console.error(
+            
             `err_readFileSync in  :    ${pathFile}`,
             // err,
         )
