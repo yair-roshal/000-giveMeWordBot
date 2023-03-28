@@ -93,19 +93,20 @@ const sendingMessage = async (dictionary, bot) => {
         firstWord,
         dictionary.length,
         isEnglishLanguage,
-        leftWords
+        leftWords,
     ).then((res) => {
         return res
     })
 
     console.log('isTimeForSending :>> ', isTimeForSending)
     console.log('textMessage :>> ', !!textMessage)
-    textMessage &&
-        isTimeForSending &&
+
+    if (textMessage && isTimeForSending) {
         bot.sendMessage(chatIdAdmin, textMessage, {
             parse_mode: 'HTML',
-            disable_web_page_preview: false,
+            disable_web_page_preview: isOneWord ? false : true,
         })
+    }
 }
 
 module.exports = sendingMessage

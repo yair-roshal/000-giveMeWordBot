@@ -44,7 +44,6 @@ module.exports = async function prepareMessage(
         const tokenIAM = await changeTokenToIAM({
             jwt: tokenJWT,
         })
-        console.log('tokenIAM :>> ', tokenIAM)
 
         let examples = ''
         for (const key0 in responseData[0].meanings) {
@@ -137,13 +136,11 @@ ${exampleLine}
             isEnglishLanguage ? 'en' : 'ru'
         }&sl=auto&tl=ru&text=${leftWords}&op=translate
         `
-
         return `<b>_______________________________</b>
 <b>${wordLineDictionary} </b>
+<b>${randomIndex + 1}/(${dictionaryLength})</b>
 
 <a href="${linkToTranslate}">Translate with Google</a>
-
-<b>${randomIndex + 1}/(${dictionaryLength})  </b>
 `
     }
 }
