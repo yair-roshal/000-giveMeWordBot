@@ -3,6 +3,7 @@ const chatIdAdmin = process.env.CHAT_ID_ADMIN
 const prepareMessage = require('./prepareMessage')
 const { clockStart, clockEnd } = require('../constants/interval.js')
 const formatDate = require('./formatDate.js')
+const langdetect = require('langdetect')
 
 const sendingMessage = async (dictionary, bot) => {
     const timestamp = Date.now()
@@ -41,9 +42,15 @@ const sendingMessage = async (dictionary, bot) => {
 
     // Language detect
     let isEnglishLanguage = false
-    if (/[a-zA-Z]/.test(firstWord)) {
+    if (/[a-zA-Z]/.test(leftWords)) {
         isEnglishLanguage = true
     }
+
+    const language = langdetect.detect(leftWords)
+    console.log('language===', language)
+
+    // const languages = langdetect.detectAll(leftWords)
+    // console.log("languages===",languages)
 
     let isOneWord = true
     arrayEnglishWords = leftWords.split(' ')

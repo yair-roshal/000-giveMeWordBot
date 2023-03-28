@@ -39,7 +39,6 @@ module.exports = async function prepareMessage(
         responseData = response.data
 
         const tokenJWT = await getTokenJWT()
-        // console.log('tokenJWT :>> ', tokenJWT)
 
         const tokenIAM = await changeTokenToIAM({
             jwt: tokenJWT,

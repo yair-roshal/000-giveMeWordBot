@@ -17,6 +17,7 @@
         "fs": "^0.0.1-security",
         "fs-extra": "^11.1.0",
         "jsonwebtoken": "^9.0.0",
+        "langdetect": "^0.2.1",
         "lodash": "^4.17.21",
         "node-jose": "^2.1.1",
         "node-telegram-bot-api": "^0.61.0",
