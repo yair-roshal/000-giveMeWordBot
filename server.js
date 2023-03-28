@@ -55,13 +55,15 @@ bot.on('callback_query', (query) => {
 
 // sending a list of words and adding them to the dictionary
 bot.on('message', (msg) => {
+    const chatId = msg.chat.id
+
     console.log('msg.text===', msg.text)
     if (msg.text == '/start') {
-        bot.sendMessage(chatIdAdmin, `Server-Bot successfully started  `)
+        bot.sendMessage(chatId, `Server-Bot successfully started  `)
     } else if (!dictionary.includes(msg.text) && msg.text !== '/start') {
         dictionary = dictionary.concat(msg.text.split(/\r?\n/))
         bot.sendMessage(
-            chatIdAdmin,
+            chatId,
             `Successfully added "${msg.text}" to the dictionary.`,
         )
     }

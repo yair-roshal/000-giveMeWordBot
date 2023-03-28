@@ -1,16 +1,8 @@
 const axios = require('axios')
-// const TelegramBot = require('node-telegram-bot-api')
-const token = process.env.TELEGRAM_BOT_TOKEN
-// const bot = new TelegramBot(token, { polling: true })
 const chatIdAdmin = process.env.CHAT_ID_ADMIN
 const prepareMessage = require('./prepareMessage')
 const { clockStart, clockEnd } = require('../constants/interval.js')
 const formatDate = require('./formatDate.js')
-
-// const LanguageDetect = require('languagedetect')
-
-// OR
-const LanguageDetect = new (require('languagedetect'))()
 
 const sendingMessage = async (dictionary, bot) => {
     const timestamp = Date.now()
@@ -31,41 +23,30 @@ const sendingMessage = async (dictionary, bot) => {
         formattedDate,
     )
 
-    let firstEnglishWord = ''
-    let leftEnglishWords = ''
+    let firstWord = ''
+    let leftWords = ''
     let arrayEnglishWords = []
 
     const symbolsArray = ['-', '—', '&shy;']
 
     symbolsArray.forEach((symbol) => {
         if (wordLineDictionary.indexOf(symbol) !== -1) {
-            leftEnglishWords = wordLineDictionary.split(symbol)[0].trim()
-            firstEnglishWord = leftEnglishWords.split(' ')[0]
+            leftWords = wordLineDictionary.split(symbol)[0].trim()
+            firstWord = leftWords.split(' ')[0]
             return
         }
     })
 
-    console.log(
-        'leftEnglishWords,firstEnglishWord :>> ',
-        leftEnglishWords,
-        firstEnglishWord,
-    )
+    console.log('leftWords ', leftWords)
 
+    // Language detect
     let isEnglishLanguage = false
-    if (/[a-zA-Z]/.test(firstEnglishWord)) {
+    if (/[a-zA-Z]/.test(firstWord)) {
         isEnglishLanguage = true
     }
 
-    // const language = languageDetect(firstEnglishWord)
-    // console.log('language :>> ', language)
-
-    // const LanguageDetect = new LanguageDetect()
-
-    console.log('firstEnglishWord :>> ', firstEnglishWord)
-    console.log(LanguageDetect.detect(firstEnglishWord, 2))
-
     let isOneWord = true
-    arrayEnglishWords = leftEnglishWords.split(' ')
+    arrayEnglishWords = leftWords.split(' ')
     console.log('arrayEnglishWords :>> ', arrayEnglishWords)
     if (arrayEnglishWords.length > 1) {
         isOneWord = false
@@ -91,17 +72,13 @@ const sendingMessage = async (dictionary, bot) => {
     let response_dictionaryapi
     if (isTimeForSending && isEnglishLanguage) {
         response_dictionaryapi = await axios
-            .get(
-                'https://api.dictionaryapi.dev/api/v2/entries/en/' +
-                    firstEnglishWord,
-            )
+            .get('https://api.dictionaryapi.dev/api/v2/entries/en/' + firstWord)
             .then(function (response_dictionaryapi) {
                 return response_dictionaryapi
             })
             .catch(function (error) {
                 console.log(
-                    'error_api.dictionaryapi.dev for word : ' +
-                        firstEnglishWord,
+                    'error_api.dictionaryapi.dev for word : ' + firstWord,
                 )
                 // console.log('axios_error_api.dictionaryapi ===', error)
             })
@@ -113,8 +90,10 @@ const sendingMessage = async (dictionary, bot) => {
         randomIndexForDictionary,
         wordLineDictionary,
         isOneWord,
-        firstEnglishWord,
+        firstWord,
         dictionary.length,
+        isEnglishLanguage,
+        leftWords
     ).then((res) => {
         return res
     })

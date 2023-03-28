@@ -7,7 +7,7 @@ const keyId = process.env.KEY_ID
 const now = Math.floor(new Date().getTime() / 1000)
 const axios = require('axios')
 
-async function changeTokenToIAM(body) {
+module.exports = async function changeTokenToIAM(body) {
     console.log('body :>> ', body)
     try {
         const result = await axios
@@ -21,28 +21,4 @@ async function changeTokenToIAM(body) {
     } catch (error) {
         console.log('AXIOS ERROR _ changeTokenToIAM: ', error.response)
     }
-}
-
-module.exports = async function getIamToken() {
-    const payload = {
-        aud: 'https://iam.api.cloud.yandex.net/iam/v1/tokens',
-        iss: serviceAccountId,
-        iat: now,
-        exp: now + 3600,
-    }
-
-    const key = await jose.JWK.asKey(private_key, 'pem', {
-        kid: keyId,
-        alg: 'PS256',
-    })
-    const token = await jose.JWS.createSign({ format: 'compact' }, key)
-        .update(JSON.stringify(payload))
-        .final()
-
-    const body = {
-        jwt: token,
-    }
-
-    const res = await changeTokenToIAM(body)
-    return res
 }
