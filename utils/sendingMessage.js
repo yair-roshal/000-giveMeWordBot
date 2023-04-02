@@ -114,6 +114,7 @@ const sendingMessage = async (dictionary, bot) => {
     if (textMessage && isTimeForSending) {
         bot.sendMessage(chatIdAdmin, textMessage, {
             parse_mode: 'HTML',
+            //disable because we don't want show description links
             disable_web_page_preview: isOneWord ? false : true,
         })
     }
