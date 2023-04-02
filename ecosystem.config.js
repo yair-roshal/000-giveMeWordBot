@@ -21,9 +21,13 @@ module.exports = {
                 './package.json',
                 './yarn.lock',
                 '*.log',
+                '**/*.log',
                 '*.txt',
+                '**/*.txt',
                 'newBot-out.log',
                 'newBot-error.log',
+                'data/cache_allWords.txt',
+                '**/cache_allWords.txt',
             ],
 
             // Env Specific Config
