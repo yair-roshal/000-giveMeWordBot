@@ -5,21 +5,29 @@ const logAlerts = require('./logAlerts')
 
 module.exports = function dictionaryTextFromFile() {
     let nameFile = 'allWords.txt'
-    let pathFile = getPathToFolder('data/') + `${nameFile}`
-    // console.log('pathFile4444', pathFile)
-    //  checkExistFile(pathFile)
+    let nameFile2 = 'dic2_phrase_verb.txt'
 
-    try {
-        const data = fs.readFileSync(pathFile, 'utf8')
-        // console.log('data999', data)
-        return data
-    } catch (err) {
-        logAlerts(err)
+    let files = [nameFile, nameFile2]
+    let allData = ''
 
-        console.error(
-            
-            `err_readFileSync in  :    ${pathFile}`,
-            // err,
-        )
-    }
+    files.forEach((fileName) => {
+        let pathFile = getPathToFolder('data/') + `${fileName}`
+        // console.log('pathFile4444', pathFile)
+        //  checkExistFile(pathFile)
+
+        try {
+            const data = fs.readFileSync(pathFile, 'utf8')
+            allData = allData + data
+            // return data
+        } catch (err) {
+            logAlerts(err)
+
+            console.error(
+                `err_readFileSync in  :    ${pathFile}`,
+                // err,
+            )
+        }
+    })
+    console.log('allData333 :>> ', allData)
+    return allData
 }

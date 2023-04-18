@@ -2,7 +2,13 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 const TelegramBot = require('node-telegram-bot-api')
-const token = process.env.TELEGRAM_BOT_TOKEN
+// const token = process.env.TELEGRAM_BOT_TOKEN
+
+const token =
+    process.env.NODE_ENV === 'prod'
+        ? process.env.TELEGRAM_BOT_TOKEN
+        : process.env.TELEGRAM_BOT_TOKEN_testing
+
 const bot = new TelegramBot(token, { polling: true })
 // const chatIdAdmin = process.env.CHAT_ID_ADMIN
 
