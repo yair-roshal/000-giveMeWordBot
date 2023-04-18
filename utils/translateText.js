@@ -15,7 +15,6 @@ module.exports = async function translateText(texts, IAM_TOKEN) {
     }
 
     const headers = { headers: { Authorization: `Bearer ${IAM_TOKEN}` } }
-    console.log('IAM_TOKEN555 :>> ', IAM_TOKEN)
     translate = await axios
         .post(
             'https://translate.api.cloud.yandex.net/translate/v2/translate',

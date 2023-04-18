@@ -3,7 +3,7 @@ const chatIdAdmin = process.env.CHAT_ID_ADMIN
 const prepareMessage = require('./prepareMessage')
 const { clockStart, clockEnd } = require('../constants/interval.js')
 const formatDate = require('./formatDate.js')
-const langdetect = require('langdetect')
+// const langdetect = require('langdetect')
 const logAlerts = require('./logAlerts')
 
 const sendingMessage = async (dictionary, bot) => {
@@ -29,7 +29,7 @@ const sendingMessage = async (dictionary, bot) => {
     let leftWords = ''
     let arrayEnglishWords = []
 
-    const symbolsArray = ['-', '—', '&shy;']
+    const symbolsArray = ['-', '—', '&shy;', '-']
 
     symbolsArray.forEach((symbol) => {
         if (wordLineDictionary.indexOf(symbol) !== -1) {
@@ -39,7 +39,13 @@ const sendingMessage = async (dictionary, bot) => {
         }
     })
 
-    console.log('leftWords ', leftWords)
+    if (leftWords == '') {
+        console.error('dont found "-" in this string :>> =====================')
+        sendingMessage(dictionary, bot)
+        return
+    }
+
+    console.error({ leftWords })
 
     // Language detect
     let isEnglishLanguage = false
@@ -47,7 +53,7 @@ const sendingMessage = async (dictionary, bot) => {
         isEnglishLanguage = true
     }
 
-    const language = langdetect.detect(leftWords)
+    // const language = langdetect.detect(leftWords)
     // console.log('language===', language)
 
     // const languages = langdetect.detectAll(leftWords)

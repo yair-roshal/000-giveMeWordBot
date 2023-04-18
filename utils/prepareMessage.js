@@ -5,7 +5,7 @@ const translateText = require('./translateText')
 
 const logWords = require('../utils/logWords')
 const formatDate = require('./formatDate.js')
-const checkTokenExpiration = require('./checkTokenExpiration.js')
+// const checkTokenExpiration = require('./checkTokenExpiration.js')
 const logAlerts = require('./logAlerts')
 const {
     nameFileDictionary1,
