@@ -4,7 +4,7 @@ const dictionaryTextFromFile = require('./dictionaryTextFromFile.js')
 const dictionaryText = dictionaryTextFromFile()
 const getPathToFolder = require('./getPathToFolder')
 const logAlerts = require('./logAlerts')
-let path = require('path')
+// let path = require('path')
 
 module.exports = function dictionaryTextToFile() {
     let nameFile = 'cache_allWords.txt'
@@ -17,9 +17,6 @@ module.exports = function dictionaryTextToFile() {
             logAlerts(err)
 
             return console.log('err4444_dictionaryTextToFile', err)
-            // return console.log(err)
-            logAlerts(err)
-
         }
     })
 }

@@ -8,7 +8,8 @@ module.exports = function dictionaryTextFromFile() {
     let allData = ''
 
     dictionaries.forEach((fileName) => {
-        let pathFile = getPathToFolder('data/') + `${fileName}`
+        let pathFile = getPathToFolder('data/dictionaries/') + `${fileName}`
+        // let pathFile = getPathToFolder('data/') + `${fileName}`
         // console.log('pathFile4444', pathFile)
         //  checkExistFile(pathFile)
 
