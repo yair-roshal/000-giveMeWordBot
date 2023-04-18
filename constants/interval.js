@@ -7,8 +7,8 @@ let clockEnd = 22
 
 if (process.env.NODE_ENV === 'dev') {
     // min = 0.1 //6sec
-    min = 0.5 //30 sec
-    // min = 1 //1min
+    // min = 0.5 //30 sec
+    min = 1 //1min
 
     clockStart = 0
     clockEnd = 24

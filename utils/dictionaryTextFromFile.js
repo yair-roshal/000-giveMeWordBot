@@ -2,15 +2,12 @@ let fs = require('fs')
 const getPathToFolder = require('./getPathToFolder')
 // const checkExistFile = require('./checkExistFile')
 const logAlerts = require('./logAlerts')
+const { dictionaries } = require('../constants/constants')
 
 module.exports = function dictionaryTextFromFile() {
-    let nameFile = 'allWords.txt'
-    let nameFile2 = 'dic2_phrase_verb.txt'
-
-    let files = [nameFile, nameFile2]
     let allData = ''
 
-    files.forEach((fileName) => {
+    dictionaries.forEach((fileName) => {
         let pathFile = getPathToFolder('data/') + `${fileName}`
         // console.log('pathFile4444', pathFile)
         //  checkExistFile(pathFile)
@@ -28,6 +25,6 @@ module.exports = function dictionaryTextFromFile() {
             )
         }
     })
-    console.log('allData333 :>> ', allData)
+    // console.log('allData333 :>> ', allData)
     return allData
 }

@@ -48,7 +48,7 @@ const sendingMessage = async (dictionary, bot) => {
     }
 
     const language = langdetect.detect(leftWords)
-    console.log('language===', language)
+    // console.log('language===', language)
 
     // const languages = langdetect.detectAll(leftWords)
     // console.log("languages===",languages)
@@ -108,7 +108,6 @@ const sendingMessage = async (dictionary, bot) => {
         return res
     })
 
-    console.log('isTimeForSending :>> ', isTimeForSending)
     console.log('textMessage :>> ', !!textMessage)
 
     if (textMessage && isTimeForSending) {

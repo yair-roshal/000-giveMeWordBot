@@ -7,6 +7,10 @@ const logWords = require('../utils/logWords')
 const formatDate = require('./formatDate.js')
 const checkTokenExpiration = require('./checkTokenExpiration.js')
 const logAlerts = require('./logAlerts')
+const {
+    nameFileDictionary1,
+    nameFileDictionary2,
+} = require('../constants/constants')
 
 const dotenv = require('dotenv')
 dotenv.config()
@@ -40,7 +44,6 @@ module.exports = async function prepareMessage(
         responseData = response.data
 
         const tokenJWT = await getTokenJWT()
-
         const tokenIAM = await changeTokenToIAM({
             jwt: tokenJWT,
         })
@@ -56,7 +59,7 @@ module.exports = async function prepareMessage(
                         '\r\n' +
                         `- ${responseData[0].meanings[key0].definitions[key].example}`
 
-                    // await checkTokenExpiration(token)
+                    // await checkTokenExpiration(tokenIAM)
                     //     .then(( ) => {
                     //         console.log(
                     //             '==token good========== res===',
@@ -129,6 +132,7 @@ module.exports = async function prepareMessage(
 <b>${phoneticLine}${wordLineDictionary} </b>
 ${exampleLine}
 <b>${randomIndex + 1}/(${dictionaryLength}) </b>
+<b> Dictionaries : ${nameFileDictionary1}, ${nameFileDictionary2}</b>
 <a href="${audioLine}">   </a>
 <a href="${linkToTranslate}">Translate with Context</a>
 `
@@ -141,6 +145,7 @@ ${exampleLine}
 <b>${wordLineDictionary} </b>
 
 <b>${randomIndex + 1}/(${dictionaryLength})</b>
+<b> Dictionaries : ${nameFileDictionary1}, ${nameFileDictionary2}</b>
 
 <a href="${linkToTranslate}">Translate with Google</a>
 `

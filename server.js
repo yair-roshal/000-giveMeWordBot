@@ -16,8 +16,8 @@ const bot = new TelegramBot(token, { polling: true })
 const dictionaryTextFromFile = require('./utils/dictionaryTextFromFile.js')
 const dictionaryText = dictionaryTextFromFile()
 
-const startMenu = require('./constants/constants.js')
-const mainMenu = require('./constants/constants.js')
+const startMenu = require('./constants/menues.js')
+const mainMenu = require('./constants/menues.js')
 
 const { sec, ms, interval } = require('./constants/interval.js')
 var _ = require('lodash')
