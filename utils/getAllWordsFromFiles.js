@@ -8,6 +8,8 @@ module.exports = function getAllWordsFromFiles() {
     let allData = ''
     let dictionaries = getNamesDictionaries()
 
+    console.log('dictionaries :>> ', dictionaries);
+    
     dictionaries.forEach((fileName) => {
         let pathFile = getPathToFolder('data/dictionaries/') + `${fileName}`
         // let pathFile = getPathToFolder('data/') + `${fileName}`

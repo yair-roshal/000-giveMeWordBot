@@ -2,7 +2,7 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 const jose = require('node-jose')
-console.log('process.env :>> ', process.env)
+// console.log('process.env :>> ', process.env)
 const private_key = process.env.PRIVATE_KEY.replace(/\\n/g, '\n')
 const serviceAccountId = process.env.SERVICE_ACCOUNT_ID
 const keyId = process.env.KEY_ID
