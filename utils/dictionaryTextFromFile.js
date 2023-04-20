@@ -2,10 +2,12 @@ let fs = require('fs')
 const getPathToFolder = require('./getPathToFolder')
 // const checkExistFile = require('./checkExistFile')
 const logAlerts = require('./logAlerts')
-const { dictionaries } = require('../constants/constants')
+// const { dictionaries } = require('../constants/constants')
+const getNamesDictionaries = require('../utils/getNamesDictionaries')
 
 module.exports = function dictionaryTextFromFile() {
     let allData = ''
+    let dictionaries = getNamesDictionaries()
 
     dictionaries.forEach((fileName) => {
         let pathFile = getPathToFolder('data/dictionaries/') + `${fileName}`

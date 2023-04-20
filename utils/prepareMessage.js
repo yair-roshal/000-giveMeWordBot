@@ -7,10 +7,13 @@ const logWords = require('../utils/logWords')
 const formatDate = require('./formatDate.js')
 // const checkTokenExpiration = require('./checkTokenExpiration.js')
 const logAlerts = require('./logAlerts')
-const {
-    nameFileDictionary1,
-    nameFileDictionary2,
-} = require('../constants/constants')
+// const {
+//     nameFileDictionary1,
+//     nameFileDictionary2,
+// } = require('../constants/constants')
+
+const getNamesDictionaries = require('../utils/getNamesDictionaries')
+let dictionaries = getNamesDictionaries()
 
 const dotenv = require('dotenv')
 dotenv.config()
@@ -132,7 +135,7 @@ module.exports = async function prepareMessage(
 <b>${phoneticLine}${wordLineDictionary} </b>
 ${exampleLine}
 <b>${randomIndex + 1}/(${dictionaryLength}) </b>
-<b> Dictionaries : ${nameFileDictionary1}, ${nameFileDictionary2}</b>
+<b> Dictionaries : ${dictionaries}</b>
 <a href="${audioLine}">   </a>
 <a href="${linkToTranslate}">Translate with Context</a>
 `
@@ -145,7 +148,8 @@ ${exampleLine}
 <b>${wordLineDictionary} </b>
 
 <b>${randomIndex + 1}/(${dictionaryLength})</b>
-<b> Dictionaries : ${nameFileDictionary1}, ${nameFileDictionary2}</b>
+
+<b> Dictionaries : ${dictionaries}</b>
 
 <a href="${linkToTranslate}">Translate with Google</a>
 `

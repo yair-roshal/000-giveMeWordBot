@@ -26,7 +26,7 @@ const logSessions = require('./utils/logSessions.js')
 
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
 
-//caching allWords.txt
+//caching dictionaries
 dictionaryTextToFile()
 logSessions()
 
