@@ -13,7 +13,7 @@ const bot = new TelegramBot(token, { polling: true })
 // const chatIdAdmin = process.env.CHAT_ID_ADMIN
 
 // const dictionaryText = require('./data/dictionaryText.js')
-const dictionaryTextFromFile = require('./utils/dictionaryTextFromFile.js')
+const dictionaryTextFromFile = require('./utils/getAllWordsFromFiles.js')
 const dictionaryText = dictionaryTextFromFile()
 
 const startMenu = require('./constants/menues.js')

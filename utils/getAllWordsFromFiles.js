@@ -3,9 +3,8 @@ const getPathToFolder = require('./getPathToFolder')
 // const checkExistFile = require('./checkExistFile')
 const logAlerts = require('./logAlerts')
 // const { dictionaries } = require('../constants/constants')
-const getNamesDictionaries = require('../utils/getNamesDictionaries')
-
-module.exports = function dictionaryTextFromFile() {
+const getNamesDictionaries = require('./getNamesDictionaries')
+module.exports = function getAllWordsFromFiles() {
     let allData = ''
     let dictionaries = getNamesDictionaries()
 

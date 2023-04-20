@@ -1,6 +1,6 @@
 let fs = require('fs')
 // let dictionaryText = require('../data/dictionaryText')
-const dictionaryTextFromFile = require('./dictionaryTextFromFile.js')
+const dictionaryTextFromFile = require('./getAllWordsFromFiles.js')
 const dictionaryText = dictionaryTextFromFile()
 const getPathToFolder = require('./getPathToFolder')
 const logAlerts = require('./logAlerts')
