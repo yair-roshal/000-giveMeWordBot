@@ -1,7 +1,7 @@
 const axios = require('axios')
-const chatIdAdmin = process.env.CHAT_ID_ADMIN
+// const chatIdAdmin = process.env.CHAT_ID_ADMIN
 const prepareMessage = require('./prepareMessage')
-const { clockStart, clockEnd } = require('../constants/interval.js')
+const { clockStart, clockEnd } = require('../constants/intervals.js')
 const formatDate = require('./formatDate.js')
 // const langdetect = require('langdetect')
 const logAlerts = require('./logAlerts')
@@ -45,7 +45,7 @@ const sendingMessage = async (dictionary, bot, chatId) => {
         return
     }
 
-    console.error({ leftWords })
+    console.log({ leftWords })
 
     // Language detect
     let isEnglishLanguage = false

@@ -142,8 +142,8 @@ ${exampleLine}
     } else {
         const linkToTranslate = `https://translate.google.com/?hl=${
             isEnglishLanguage ? 'en' : 'ru'
-        }&sl=auto&tl=ru&text=${leftWords}&op=translate
-        `
+        }&sl=auto&tl=ru&text=${leftWords}&op=translate`
+        console.log('linkToTranslate :>> ', linkToTranslate)
         return `<b>_______________________________</b>
 <b>${wordLineDictionary} </b>
 

@@ -6,7 +6,7 @@ module.exports = getNamesDictionaries = () => {
     // let dic
 
     const pathToFolder = getPathToFolder('data/dictionaries/')
-    console.log('pathToFolder :>> ', pathToFolder)
+    // console.log('getNamesDictionaries_pathToFolder :>> ', pathToFolder)
     return fs.readdirSync(pathToFolder, (err, files) => {
         console.log('files :>> ', files)
         if (err) console.log(err)
