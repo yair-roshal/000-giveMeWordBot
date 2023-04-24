@@ -6,7 +6,13 @@ const formatDate = require('./formatDate.js')
 // const langdetect = require('langdetect')
 const logAlerts = require('./logAlerts')
 
-const sendingMessage = async (dictionary, bot, chatId) => {
+const {
+    // startMenu,
+    // mainMenu,
+    start_inline_keyboard,
+} = require('../constants/menus.js')
+
+const sendingWordMessage = async (dictionary, bot, chatId) => {
     const timestamp = Date.now()
     const formattedDate = formatDate(timestamp)
 
@@ -41,7 +47,7 @@ const sendingMessage = async (dictionary, bot, chatId) => {
 
     if (leftWords == '') {
         console.error('dont found "-" in this string :>> =====================')
-        sendingMessage(dictionary, bot)
+        sendingWordMessage(dictionary, bot)
         return
     }
 
@@ -83,12 +89,12 @@ const sendingMessage = async (dictionary, bot, chatId) => {
         isOneWord,
     )
 
-    let response_dictionaryapi
+    let response_dictionary_api
     if (isTimeForSending && isEnglishLanguage && isOneWord) {
-        response_dictionaryapi = await axios
+        response_dictionary_api = await axios
             .get('https://api.dictionaryapi.dev/api/v2/entries/en/' + firstWord)
-            .then(function (response_dictionaryapi) {
-                return response_dictionaryapi
+            .then(function (response_dictionary_api) {
+                return response_dictionary_api
             })
             .catch(function (err) {
                 logAlerts(err)
@@ -99,10 +105,10 @@ const sendingMessage = async (dictionary, bot, chatId) => {
                 // console.log('axios_error_api.dictionaryapi ===', err)
             })
     }
-    console.log('response_dictionaryapi :>> ', !!response_dictionaryapi)
+    // console.log('response_dictionary_api :>> ', !!response_dictionary_api)
 
     textMessage = await prepareMessage(
-        response_dictionaryapi,
+        response_dictionary_api,
         randomIndexForDictionary,
         wordLineDictionary,
         isOneWord,
@@ -117,13 +123,20 @@ const sendingMessage = async (dictionary, bot, chatId) => {
     console.log('textMessage :>> ', !!textMessage)
 
     if (textMessage && isTimeForSending) {
-        bot.sendMessage(chatId, textMessage, {
-            // bot.sendMessage(chatIdAdmin, textMessage, {
-            parse_mode: 'HTML',
-            //disable because we don't want show description links
-            disable_web_page_preview: isOneWord ? false : true,
-        })
+        bot.sendMessage(
+            chatId,
+            textMessage,
+            //all options=======
+            {
+                // bot.sendMessage(chatIdAdmin, textMessage, {
+                parse_mode: 'HTML',
+                //disable because we don't want show description links
+                disable_web_page_preview: isOneWord ? false : true,
+                // keyboard=====
+                start_inline_keyboard,
+            },
+        )
     }
 }
 
-module.exports = sendingMessage
+module.exports = sendingWordMessage

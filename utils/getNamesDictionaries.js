@@ -1,6 +1,6 @@
 const fs = require('fs')
 const getPathToFolder = require('./getPathToFolder')
-const { dictionaries } = require('../constants/constants')
+// const { dictionaries } = require('../constants/constants')
 
 module.exports = getNamesDictionaries = () => {
     // let dic

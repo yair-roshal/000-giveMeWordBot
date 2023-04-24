@@ -23,7 +23,8 @@
         "node-telegram-bot-api": "^0.61.0",
         "nodemon": "^2.0.3",
         "path": "^0.12.7",
-        "pm2": "^5.2.2"
+        "pm2": "^5.2.2",
+        "urlencode": "^1.1.0"
     },
     "description": ""
 }

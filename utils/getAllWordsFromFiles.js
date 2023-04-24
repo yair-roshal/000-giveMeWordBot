@@ -4,22 +4,19 @@ const getPathToFolder = require('./getPathToFolder')
 const logAlerts = require('./logAlerts')
 // const { dictionaries } = require('../constants/constants')
 const getNamesDictionaries = require('./getNamesDictionaries')
+
 module.exports = function getAllWordsFromFiles() {
     let allData = ''
     let dictionaries = getNamesDictionaries()
 
-    console.log('dictionaries :>> ', dictionaries);
-    
+    console.log('dictionaries :>> ', dictionaries)
+
     dictionaries.forEach((fileName) => {
         let pathFile = getPathToFolder('data/dictionaries/') + `${fileName}`
-        // let pathFile = getPathToFolder('data/') + `${fileName}`
-        // console.log('pathFile4444', pathFile)
-        //  checkExistFile(pathFile)
 
         try {
             const data = fs.readFileSync(pathFile, 'utf8')
             allData = allData + data
-            // return data
         } catch (err) {
             logAlerts(err)
 

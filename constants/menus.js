@@ -55,17 +55,17 @@ const mainMenu = {
 }
 
 
-const start_inline_keyboard = {
+const give_me_keyboard = {
     reply_markup: {
         inline_keyboard: [
             [
                 {
-                    text: 'start',
-                    callback_data: 'start',
+                    text: 'give me new words',
+                    callback_data: 'give_me',
                 },
             ],
         ],
     },
 }
 
-module.exports = [startMenu, mainMenu,start_inline_keyboard]
+module.exports = [startMenu, mainMenu,give_me_keyboard]

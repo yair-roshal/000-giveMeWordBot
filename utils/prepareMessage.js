@@ -2,6 +2,7 @@ const getTokenJWT = require('./getTokenJWT')
 const changeTokenToIAM = require('./changeTokenToIAM')
 
 const translateText = require('./translateText')
+const refreshTokenIAM = require('./refreshTokenIAM')
 
 const logSendedWords = require('../utils/logSendedWords')
 const formatDate = require('./formatDate.js')
@@ -18,6 +19,8 @@ let dictionaries = getNamesDictionaries()
 const dotenv = require('dotenv')
 dotenv.config()
 
+var urlencode = require('urlencode')
+
 module.exports = async function prepareMessage(
     response,
     randomIndex,
@@ -31,13 +34,6 @@ module.exports = async function prepareMessage(
     const timestamp = Date.now()
     const formattedDate = formatDate(timestamp)
 
-    console.log(
-        'timestamp, formattedDate :>> ',
-        timestamp,
-        ' - ',
-        formattedDate,
-    )
-
     let logMessage =
         `${randomIndex + 1}.${wordLineDictionary}  -  ` + formattedDate
     logSendedWords(logMessage)
@@ -46,10 +42,12 @@ module.exports = async function prepareMessage(
     if (response != undefined && isOneWord) {
         responseData = response.data
 
-        const tokenJWT = await getTokenJWT()
-        const tokenIAM = await changeTokenToIAM({
-            jwt: tokenJWT,
-        })
+        // const tokenJWT = await getTokenJWT()
+        // const IAM_TOKEN = await changeTokenToIAM({
+        //     jwt: tokenJWT,
+        // })
+
+        const IAM_TOKEN = refreshTokenIAM()
 
         let examples = ''
         for (const key0 in responseData[0].meanings) {
@@ -62,7 +60,7 @@ module.exports = async function prepareMessage(
                         '\r\n' +
                         `- ${responseData[0].meanings[key0].definitions[key].example}`
 
-                    // await checkTokenExpiration(tokenIAM)
+                    // await checkTokenExpiration(IAM_TOKEN)
                     //     .then(( ) => {
                     //         console.log(
                     //             '==token good========== res===',
@@ -75,7 +73,7 @@ module.exports = async function prepareMessage(
 
                     await translateText(
                         responseData[0].meanings[key0].definitions[key].example,
-                        tokenIAM,
+                        IAM_TOKEN,
                     )
                         .then((translateTextVar) => {
                             // console.log('translateTextVar222', translateTextVar)
@@ -105,8 +103,13 @@ module.exports = async function prepareMessage(
             }
         }
 
+        console.log(urlencode('苏千')) // default is utf8
+        console.log(urlencode('苏千', 'gbk')) // '%CB%D5%C7%A7'
+
         if (!audio) {
-            audio = `https://translate.google.com.vn/translate_tts?ie=UTF-8&q=${firstWord}&tl=en&client=tw-ob`
+            audio = `https://translate.google.com.vn/translate_tts?ie=UTF-8&q=${urlencode(
+                firstWord,
+            )}&tl=en&client=tw-ob`
         }
 
         let phoneticLine = phonetic //pronunciation
@@ -142,8 +145,8 @@ ${exampleLine}
     } else {
         const linkToTranslate = `https://translate.google.com/?hl=${
             isEnglishLanguage ? 'en' : 'ru'
-        }&sl=auto&tl=ru&text=${leftWords}&op=translate`
-        console.log('linkToTranslate :>> ', linkToTranslate)
+        }&sl=auto&tl=ru&text=${urlencode(leftWords)}&op=translate`
+        // console.log('linkToTranslate :>> ', linkToTranslate)
         return `<b>_______________________________</b>
 <b>${wordLineDictionary} </b>
 
