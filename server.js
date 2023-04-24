@@ -2,7 +2,6 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 const TelegramBot = require('node-telegram-bot-api')
-// const token = process.env.TELEGRAM_BOT_TOKEN
 
 const token =
     process.env.NODE_ENV === 'prod'
@@ -10,9 +9,7 @@ const token =
         : process.env.TELEGRAM_BOT_TOKEN_testing
 
 const bot = new TelegramBot(token, { polling: true })
-// const chatIdAdmin = process.env.CHAT_ID_ADMIN
 
-// const dictionaryText = require('./data/dictionaryText.js')
 const dictionaryTextFromFile = require('./utils/getAllWordsFromFiles.js')
 const dictionaryText = dictionaryTextFromFile()
 
@@ -63,22 +60,23 @@ bot.on('callback_query', (query) => {
 
 // sending a list of words and adding them to the dictionary
 bot.on('message', (msg) => {
+    console.log('msg.text===', msg.text)
     const chatId = msg.chat.id
 
-    console.log('msg.text===', msg.text)
     if (msg.text == '/start') {
         bot.sendMessage(chatId, `Server-Bot successfully started  `)
-    } else if (!dictionary.includes(msg.text) && msg.text !== '/start') {
-        dictionary = dictionary.concat(msg.text.split(/\r?\n/))
-        bot.sendMessage(
-            chatId,
-            `Successfully added "${msg.text}" to the dictionary.`,
-        )
+
+        sendingMessage(dictionary, bot, chatId) //first run at the start of the server
+
+        setInterval(() => sendingMessage(dictionary, bot, chatId), interval) //  start function by interval
     }
+    // else if (!dictionary.includes(msg.text) && msg.text !== '/start') {
+    //     dictionary = dictionary.concat(msg.text.split(/\r?\n/))
+    //     bot.sendMessage(
+    //         chatId,
+    //         `Successfully added "${msg.text}" to the dictionary.`,
+    //     )
+    // }
 })
 
 console.log('server started with interval:', interval / ms / sec, 'min')
-
-sendingMessage(dictionary, bot) //first run at the start of the server
-
-setInterval(() => sendingMessage(dictionary, bot), interval) //  start function by interval

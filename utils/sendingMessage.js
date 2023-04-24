@@ -6,7 +6,7 @@ const formatDate = require('./formatDate.js')
 // const langdetect = require('langdetect')
 const logAlerts = require('./logAlerts')
 
-const sendingMessage = async (dictionary, bot) => {
+const sendingMessage = async (dictionary, bot, chatId) => {
     const timestamp = Date.now()
     const formattedDate = formatDate(timestamp)
 
@@ -117,7 +117,8 @@ const sendingMessage = async (dictionary, bot) => {
     console.log('textMessage :>> ', !!textMessage)
 
     if (textMessage && isTimeForSending) {
-        bot.sendMessage(chatIdAdmin, textMessage, {
+        bot.sendMessage(chatId, textMessage, {
+            // bot.sendMessage(chatIdAdmin, textMessage, {
             parse_mode: 'HTML',
             //disable because we don't want show description links
             disable_web_page_preview: isOneWord ? false : true,
