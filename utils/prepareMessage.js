@@ -3,7 +3,7 @@ const changeTokenToIAM = require('./changeTokenToIAM')
 
 const translateText = require('./translateText')
 
-const logWords = require('../utils/logWords')
+const logSendedWords = require('../utils/logSendedWords')
 const formatDate = require('./formatDate.js')
 // const checkTokenExpiration = require('./checkTokenExpiration.js')
 const logAlerts = require('./logAlerts')
@@ -40,7 +40,7 @@ module.exports = async function prepareMessage(
 
     let logMessage =
         `${randomIndex + 1}.${wordLineDictionary}  -  ` + formattedDate
-    logWords(logMessage)
+    logSendedWords(logMessage)
 
     let responseData
     if (response != undefined && isOneWord) {

@@ -28,7 +28,7 @@ const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
 
 //caching dictionaries
 dictionaryTextToFile()
-logSessions()
+// logSessions()
 
 let dictionary
 if (dictionaryText) {

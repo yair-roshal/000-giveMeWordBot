@@ -18,7 +18,7 @@ const sendingMessage = async (dictionary, bot) => {
     )
     let wordLineDictionary = dictionary[randomIndexForDictionary]
     console.log('______________________________ :>> ')
-    console.warn(
+    console.log(
         'wordLineDictionary :>> ',
         wordLineDictionary,
         '  ',
