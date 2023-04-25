@@ -88,11 +88,11 @@ bot.onText(/\/start/, async (msg) => {
 
 console.log('server started with interval:', interval / ms / sec, 'min')
 
-{
-    process.env.NODE_ENV === 'dev' &&
-        sendingWordMessage(dictionary, bot, CHAT_ID_ADMIN) &&
-        setInterval(
-            () => sendingWordMessage(dictionary, bot, CHAT_ID_ADMIN),
-            interval,
-        )
-}
+// {
+//     process.env.NODE_ENV === 'dev' &&
+//         sendingWordMessage(dictionary, bot, CHAT_ID_ADMIN) &&
+//         setInterval(
+//             () => sendingWordMessage(dictionary, bot, CHAT_ID_ADMIN),
+//             interval,
+//         )
+// }

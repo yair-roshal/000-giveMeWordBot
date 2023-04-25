@@ -19,6 +19,10 @@ const request_retry = async (url, body, headers, n) => {
         if (n <= 1) throw err
         await sleep(1000)
         const newToken = refreshTokenIAM()
+        console.log('newToken :>> ', newToken)
+        newToken.then((res) => {
+            console.log('res :>> ', res)
+        })
         headers = { headers: { Authorization: `Bearer ${newToken}` } }
         return request_retry(url, body, headers, n - 1)
     }
