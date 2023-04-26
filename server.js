@@ -32,41 +32,27 @@ if (dictionaryText) {
     dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
 }
 
-// start ===============================================
-
 // callback_query ===============================================
 bot.on('callback_query', (query) => {
-    // const chatId = msg.chat.id
     const chatId = query.from.id
     console.log('query ---------------:>> ', query)
 
-    if (query.data === 'start') {
-        // bot.sendMessage(chatIdAdmin, 'development menu', mainMenu)
-        // sendingWordMessage(dictionary, bot, chatId)
-        // sendingWordMessage(dictionary, bot, chatId)
-    }
-
     if (query.data === 'give_me') {
-        // bot.sendMessage(chatIdAdmin, 'development menu', mainMenu)
         sendingWordMessage(dictionary, bot, chatId)
     }
 })
 
+// start ===============================================
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id
-
     var photoPath = __dirname + '/media/logo.jpg'
-    console.log('photoPath :>> ', photoPath)
+    // console.log('photoPath :>> ', photoPath)
 
     await bot.sendPhoto(chatId, photoPath, {
-        // reply_markup: JSON.stringify(start_inline_keyboard),
-        caption: `
-    Catch the first word, the rest will be in ${min} minutes
-    `,
+        caption: `Catch the first word, the rest will be in ${min} minutes`,
     })
 
     sendingWordMessage(dictionary, bot, chatId)
-
     setInterval(() => sendingWordMessage(dictionary, bot, chatId), interval) //  start function by interval
 })
 
