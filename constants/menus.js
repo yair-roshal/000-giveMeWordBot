@@ -1,3 +1,6 @@
+var start_keyboard = {
+    inline_keyboard: [[{ text: '/start', callback_data: '/start' }]],
+}
 var keyboard = {
     inline_keyboard: [
         [
@@ -89,4 +92,5 @@ module.exports = {
     give_me_keyboard,
     start_inline_keyboard,
     keyboard,
+    start_keyboard,
 }

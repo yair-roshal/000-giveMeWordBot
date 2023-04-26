@@ -14,12 +14,13 @@ const { sec, ms, min, interval } = require('./constants/intervals.js')
 const { textMessageHtml } = require('./constants/texts.js')
 const sendingWordMessage = require('./utils/sendingWordMessage.js')
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
-// const {
-//     // startMenu,
-//     // mainMenu,
-//     start_inline_keyboard,
-//     keyboard,
-// } = require('./constants/menus.js')
+const {
+    // startMenu,
+    // mainMenu,
+    start_keyboard,
+    start_inline_keyboard,
+    keyboard,
+} = require('./constants/menus.js')
 
 //caching dictionaries======
 dictionaryTextToFile()
@@ -27,12 +28,12 @@ dictionaryTextToFile()
 
 var optionsMessage = {
     // keyboard=====
-    // reply_markup: JSON.stringify(give_me_keyboard),
+    // reply_markup: JSON.stringify(start_keyboard),
     parse_mode: 'HTML',
     //disable because we don't want show description links
     disable_web_page_preview: true,
 }
-
+// 1 message!!!!!!
 bot.sendMessage(CHAT_ID_ADMIN, textMessageHtml, optionsMessage)
 
 let dictionary

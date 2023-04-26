@@ -11,13 +11,14 @@ At the moment giveMeWord bot can :
 -   send messages with the required timer,
 -   the words from the dictionary are output absolutely randomly.
  
-💬 If you have any questions or suggestions, email admin @yair770.
+Link to this Bot : <a href="${link_to_bot}">Give Me Word Bot</a> 
 
-Our Group in Telegram : https://t.me/givemewords
+Our Group in Telegram : <a href="${link_to_public}">Very Simple English</a>
+
+💬 If you have any questions or suggestions, email admin @yair770.
 
 🔥 To start getting words, click on start below 👇🏻 or here /start
 
-<a href="${link_to_bot}">Give Me Word Bot</a> | <a href="${link_to_public}">Very Simple English</a>
  `
 
 module.exports = { textMessageHtml }
