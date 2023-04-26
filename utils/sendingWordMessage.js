@@ -47,13 +47,13 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
 
     if (leftWords == '') {
         console.error('dont found "-" in this string :>> =====================')
-        sendingWordMessage(dictionary, bot)
+        sendingWordMessage(dictionary, bot, chatId)
         return
     }
 
     console.log({ leftWords })
 
-    // Language detect
+    // Language detect=========
     let isEnglishLanguage = false
     if (/[a-zA-Z]/.test(leftWords)) {
         isEnglishLanguage = true
@@ -122,19 +122,36 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
 
     console.log('textMessage :>> ', !!textMessage)
 
+    var keyboard = {
+        inline_keyboard: [
+            [
+                { text: 'Yes', url: 'http://www.google.com/' },
+                { text: 'No', url: 'http://www.google.com/' },
+            ],
+        ],
+    }
+
+    var msgSettings = {
+        // "reply_to_message_id": message_id,
+        reply_markup: JSON.stringify(keyboard),
+        parse_mode: 'HTML',
+        disable_web_page_preview: isOneWord ? false : true,
+    }
+
     if (textMessage && isTimeForSending) {
         bot.sendMessage(
             chatId,
             textMessage,
             //all options=======
-            {
-                // bot.sendMessage(chatIdAdmin, textMessage, {
-                parse_mode: 'HTML',
-                //disable because we don't want show description links
-                disable_web_page_preview: isOneWord ? false : true,
-                // keyboard=====
-                start_inline_keyboard,
-            },
+            msgSettings,
+            // {
+            //     parse_mode: 'HTML',
+            //     //disable because we don't want show description links
+            //     disable_web_page_preview: isOneWord ? false : true,
+            //     // keyboard=====
+            //     start_inline_keyboard,
+            //     // reply_markup: JSON.stringify(start_inline_keyboard),
+            // },
         )
     }
 }

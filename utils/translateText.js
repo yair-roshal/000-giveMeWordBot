@@ -9,22 +9,22 @@ const sleep = (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-const request_retry = async (url, body, headers, n) => {
+const repeatedly_request_to_translate = async (url, body, headers, n) => {
     try {
         const response = await axios.post(url, body, headers)
         const translate = response.data.translations[0].text
         return translate
     } catch (err) {
-        console.log('catch_error request_retry :>> ')
+        console.log('catch_error repeatedly_request_to_translate :>> ')
         if (n <= 1) throw err
         await sleep(1000)
         const newToken = refreshTokenIAM()
-        console.log('newToken :>> ', newToken)
-        newToken.then((res) => {
-            console.log('res :>> ', res)
+        // console.log('newToken :>> ', newToken)
+        newToken.then((res_newToken) => {
+            console.log('res_newToken :>> ', { res_newToken })
+            headers = { headers: { Authorization: `Bearer ${res_newToken}` } }
         })
-        headers = { headers: { Authorization: `Bearer ${newToken}` } }
-        return request_retry(url, body, headers, n - 1)
+        return repeatedly_request_to_translate(url, body, headers, n - 1)
     }
 }
 
@@ -41,7 +41,13 @@ module.exports = async function translateText(texts, IAM_TOKEN) {
 
     let translate
     try {
-        translate = await request_retry(url, body, headers, 60)
+        translate = await repeatedly_request_to_translate(
+            url,
+            body,
+            headers,
+            60,
+        )
+        console.log('translate :>> ', translate)
     } catch (err) {
         console.log('yandex_api_ERROR_translate: ')
         console.error(err)

@@ -54,6 +54,20 @@ const mainMenu = {
     },
 }
 
+//===============================
+
+const start_inline_keyboard = {
+    reply_markup: {
+        inline_keyboard: [
+            [
+                {
+                    text: 'give me new words',
+                    callback_data: 'give_me',
+                },
+            ],
+        ],
+    },
+}
 
 const give_me_keyboard = {
     reply_markup: {
@@ -68,4 +82,4 @@ const give_me_keyboard = {
     },
 }
 
-module.exports = [startMenu, mainMenu,give_me_keyboard]
+module.exports = [startMenu, mainMenu, give_me_keyboard, start_inline_keyboard]
