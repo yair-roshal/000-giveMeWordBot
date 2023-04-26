@@ -45,7 +45,7 @@ module.exports = async function translateText(texts, IAM_TOKEN) {
             url,
             body,
             headers,
-            60,
+            2, // number of attempts
         )
         console.log('translate :>> ', translate)
     } catch (err) {

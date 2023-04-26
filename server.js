@@ -17,19 +17,27 @@ const {
     // startMenu,
     // mainMenu,
     start_inline_keyboard,
+    keyboard,
 } = require('./constants/menus.js')
 
 //caching dictionaries======
 dictionaryTextToFile()
 // logSessions()
 
+var keyboard2 = {
+    inline_keyboard: [
+        [
+            { text: 'Yes', url: 'http://www.google.com/' },
+            { text: 'No', url: 'http://www.google.com/' },
+        ],
+    ],
+}
+console.log('keyboard :>> ', keyboard)
+
 let textMessage = 'Server Restarted!!!========'
 bot.sendMessage(CHAT_ID_ADMIN, textMessage, {
-    parse_mode: 'HTML',
-    //disable because we don't want show description links
-    disable_web_page_preview: false,
     // keyboard=====
-    start_inline_keyboard,
+    reply_markup: JSON.stringify(keyboard2),
 })
 
 let dictionary

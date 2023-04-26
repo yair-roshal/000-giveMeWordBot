@@ -10,6 +10,7 @@ const {
     // startMenu,
     // mainMenu,
     start_inline_keyboard,
+    keyboard,
 } = require('../constants/menus.js')
 
 const sendingWordMessage = async (dictionary, bot, chatId) => {
@@ -131,28 +132,17 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
         ],
     }
 
-    var msgSettings = {
-        // "reply_to_message_id": message_id,
+    var optionsMessage = {
+        // keyboard=====
         reply_markup: JSON.stringify(keyboard),
         parse_mode: 'HTML',
+        //disable because we don't want show description links
+
         disable_web_page_preview: isOneWord ? false : true,
     }
 
     if (textMessage && isTimeForSending) {
-        bot.sendMessage(
-            chatId,
-            textMessage,
-            //all options=======
-            msgSettings,
-            // {
-            //     parse_mode: 'HTML',
-            //     //disable because we don't want show description links
-            //     disable_web_page_preview: isOneWord ? false : true,
-            //     // keyboard=====
-            //     start_inline_keyboard,
-            //     // reply_markup: JSON.stringify(start_inline_keyboard),
-            // },
-        )
+        bot.sendMessage(chatId, textMessage, optionsMessage)
     }
 }
 
