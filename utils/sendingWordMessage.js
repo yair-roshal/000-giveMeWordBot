@@ -89,9 +89,13 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
     }
 
     console.log(
-        `isTimeForSending --   ${isTimeForSending},
-        isEnglishLanguage --  ${isEnglishLanguage},
-        isOneWord --  ${isOneWord}`,
+        `
+
+isTimeForSending -- ${isTimeForSending},
+isEnglishLanguage -- ${isEnglishLanguage},
+isOneWord -- ${isOneWord}
+
+`,
     )
 
     let response_dictionary_api
