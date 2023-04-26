@@ -8,24 +8,31 @@ const token =
 
 const bot = new TelegramBot(token, { polling: true })
 const getAllWordsFromFiles = require('./utils/getAllWordsFromFiles.js')
-const dictionaryText = getAllWordsFromFiles()
+const { dictionaryText } = getAllWordsFromFiles()
 const CHAT_ID_ADMIN = process.env.CHAT_ID_ADMIN
 const { sec, ms, min, interval } = require('./constants/intervals.js')
+const { textMessageHtml } = require('./constants/texts.js')
 const sendingWordMessage = require('./utils/sendingWordMessage.js')
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
-const {
-    // startMenu,
-    // mainMenu,
-    start_inline_keyboard,
-    keyboard,
-} = require('./constants/menus.js')
+// const {
+//     // startMenu,
+//     // mainMenu,
+//     start_inline_keyboard,
+//     keyboard,
+// } = require('./constants/menus.js')
 
 //caching dictionaries======
 dictionaryTextToFile()
 // logSessions()
 
-let textMessage = 'Server Restarted!!!======== lets click       /start'
-bot.sendMessage(CHAT_ID_ADMIN, textMessage)
+var optionsMessage = {
+    // keyboard=====
+    // reply_markup: JSON.stringify(give_me_keyboard),
+    parse_mode: 'HTML',
+    //disable because we don't want show description links
+}
+
+bot.sendMessage(CHAT_ID_ADMIN, textMessageHtml, optionsMessage)
 
 let dictionary
 if (dictionaryText) {

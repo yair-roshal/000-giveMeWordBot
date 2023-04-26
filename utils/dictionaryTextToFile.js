@@ -1,10 +1,9 @@
 let fs = require('fs')
-// let dictionaryText = require('../data/dictionaryText')
-const dictionaryTextFromFile = require('./getAllWordsFromFiles.js')
-const dictionaryText = dictionaryTextFromFile()
+const getAllWordsFromFiles = require('./getAllWordsFromFiles.js')
+const { dictionaryText } = getAllWordsFromFiles()
+
 const getPathToFolder = require('./getPathToFolder')
 const logAlerts = require('./logAlerts')
-// let path = require('path')
 
 module.exports = function dictionaryTextToFile() {
     let nameFile = 'cache_allWords.txt'

@@ -6,10 +6,10 @@ const logAlerts = require('./logAlerts')
 const getNamesDictionaries = require('./getNamesDictionaries')
 
 module.exports = function getAllWordsFromFiles() {
-    let allData = ''
+    let dictionaryText = ''
     let dictionaries = getNamesDictionaries()
     let objAllDictRows = {}
-    console.log('dictionaries :>> ', dictionaries)
+    // console.log('dictionaries :>> ', dictionaries)
 
     dictionaries.forEach((fileName) => {
         let pathFile = getPathToFolder('data/dictionaries/') + `${fileName}`
@@ -22,7 +22,7 @@ module.exports = function getAllWordsFromFiles() {
             objAllDictRows[fileName] = rowAmount
 
             // allDataArray = allDataArray.push({ data, rowAmount })
-            allData = allData + data
+            dictionaryText = dictionaryText + data
         } catch (err) {
             logAlerts(err)
 
@@ -32,6 +32,5 @@ module.exports = function getAllWordsFromFiles() {
             )
         }
     })
-    console.log('objAllDictRows :>> ', objAllDictRows)
-    return allData
+     return { dictionaryText, objAllDictRows }
 }

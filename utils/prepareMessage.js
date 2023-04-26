@@ -2,7 +2,10 @@ const getTokenJWT = require('./getTokenJWT')
 const changeTokenToIAM = require('./changeTokenToIAM')
 
 const translateText = require('./translateText')
-const refreshTokenIAM = require('./refreshTokenIAM')
+// const refreshTokenIAM = require('./refreshTokenIAM')
+
+const getAllWordsFromFiles = require('./getAllWordsFromFiles.js')
+const { objAllDictRows } = getAllWordsFromFiles()
 
 const logSendedWords = require('../utils/logSendedWords')
 const formatDate = require('./formatDate.js')
@@ -125,7 +128,7 @@ module.exports = async function prepareMessage(
 ${exampleLine}
 <b>${randomIndex + 1}/(${dictionaryLength}) </b>
 
-<b> Dictionaries : ${dictionaries}</b>
+<b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b>
 <a href="${audioLine}">   </a>
 <a href="${linkToTranslate}">Translate with Context</a>
 `
@@ -139,9 +142,8 @@ ${exampleLine}
 
 <b>${randomIndex + 1}/(${dictionaryLength})</b>
 
-<b> Dictionaries : ${dictionaries}</b>
-
-<a href="${linkToTranslate}">Translate with Google</a>
+ <b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b>
+ <a href="${linkToTranslate}">Translate with Google</a>
 `
     }
 }
