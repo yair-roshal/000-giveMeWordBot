@@ -131,9 +131,9 @@ ${exampleLine}
 <b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b>
          
 `
-        let textPart2_google = ` <a href="${linkToTranslate}">Translate with Google</a>
+ let textPart2_google = ` <a href="${linkToTranslate}">Translate with Google</a>
         
-        `
+`
 
         // let result = !audio ? textPart1 + textPart2_google : textPart1;
         let result = textPart1 + textPart2_google

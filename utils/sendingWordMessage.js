@@ -131,10 +131,18 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
         // disable_web_page_preview: false,
         disable_web_page_preview: isOneWord ? false : true,
     }
+    var optionsMessageWithoutPreview = {
+        reply_markup: JSON.stringify(give_me_keyboard),
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+    }
 
     console.log('textMessage :>> ', !!textMessage)
     console.log('isTimeForSending :>> ', !!isTimeForSending)
-    if (textMessage && isTimeForSending) {
+
+    if (!response_dictionary_api) {
+        bot.sendMessage(chatId, textMessage, optionsMessageWithoutPreview)
+    } else if (textMessage && isTimeForSending) {
         bot.sendMessage(chatId, textMessage, optionsMessage)
     }
 }
