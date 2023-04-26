@@ -76,19 +76,22 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
 
     let currentDate = new Date()
     let nowHours = currentDate.getHours()
+    let nowMinutes = currentDate.getMinutes()
 
-    if (nowHours < clockEnd && nowHours > clockStart) {
+    if (process.env.NODE_ENV === 'dev') {
+        isTimeForSending = true
+    } else if (nowHours < clockEnd && nowHours > clockStart) {
         isTimeForSending = true
     } else {
         console.log(
-            `'it isn't time for sending messages' - ${new Date().toDateString}`,
+            `it isn't time for sending messages  -   ${nowHours}:${nowMinutes}`,
         )
     }
+
     console.log(
-        'isTimeForSending -  isEnglishLanguage - isOneWord :',
-        isTimeForSending,
-        isEnglishLanguage,
-        isOneWord,
+        `isTimeForSending --   ${isTimeForSending},
+        isEnglishLanguage --  ${isEnglishLanguage},
+        isOneWord --  ${isOneWord}`,
     )
 
     let response_dictionary_api
@@ -122,17 +125,15 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
         return res
     })
 
-    console.log('textMessage :>> ', !!textMessage)
-
     var optionsMessage = {
-        // keyboard=====
         reply_markup: JSON.stringify(give_me_keyboard),
         parse_mode: 'HTML',
-        //disable because we don't want show description links
-
+        // disable_web_page_preview: false,
         disable_web_page_preview: isOneWord ? false : true,
     }
 
+    console.log('textMessage :>> ', !!textMessage)
+    console.log('isTimeForSending :>> ', !!isTimeForSending)
     if (textMessage && isTimeForSending) {
         bot.sendMessage(chatId, textMessage, optionsMessage)
     }

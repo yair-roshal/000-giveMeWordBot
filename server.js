@@ -14,13 +14,7 @@ const { sec, ms, min, interval } = require('./constants/intervals.js')
 const { textMessageHtml } = require('./constants/texts.js')
 const sendingWordMessage = require('./utils/sendingWordMessage.js')
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
-const {
-    // startMenu,
-    // mainMenu,
-    start_keyboard,
-    start_inline_keyboard,
-    keyboard,
-} = require('./constants/menus.js')
+const { give_me_keyboard } = require('./constants/menus.js')
 
 //caching dictionaries======
 dictionaryTextToFile()
@@ -57,9 +51,12 @@ bot.onText(/\/start/, async (msg) => {
     var photoPath = __dirname + '/media/logo.jpg'
     // console.log('photoPath :>> ', photoPath)
 
-    await bot.sendPhoto(chatId, photoPath, {
+    var optionsMessage = {
         caption: `Catch the first word, the rest will be in ${min} minutes`,
-    })
+        reply_markup: JSON.stringify(give_me_keyboard),
+    }
+
+    await bot.sendPhoto(chatId, photoPath, optionsMessage)
 
     sendingWordMessage(dictionary, bot, chatId)
     setInterval(() => sendingWordMessage(dictionary, bot, chatId), interval) //  start function by interval

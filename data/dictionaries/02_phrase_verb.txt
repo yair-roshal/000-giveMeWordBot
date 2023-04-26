@@ -30,6 +30,7 @@ He's going to take on the new project. - Он собирается взять н
 Теория перевода окончаний :
 
 Along - вдоль 
+Along with - вместе с  
 
 Out = вы 
 Get out - выходить , выбираться
@@ -551,4 +552,3 @@ Work
 * work out — 1) тренироваться, заниматься спортом, 2) срабатывать, получаться
 Alicia Vikander worked out six days a week for her Lara Croft role. — Алисия Викандер тренировалась шесть дней в неделю для роли Лары Крофт.
 It that your genious plan? I don’t believe it’s gonna work out. — Это и есть твой гениальный план? Я не верю, что это сработает.
- 

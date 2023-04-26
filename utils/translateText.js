@@ -11,7 +11,7 @@ const sleep = (ms) => {
 
 const repeatedly_request_to_translate = async (url, body, headers, n) => {
     try {
-        console.log('url, body, headers, n :>> ', url, body, headers, n)
+        // console.log('url, body, headers, n :>> ', url, body, headers, n)
 
         const response = await axios.post(url, body, headers)
         const translate = response.data.translations[0].text

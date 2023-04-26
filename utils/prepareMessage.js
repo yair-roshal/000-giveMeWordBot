@@ -1,27 +1,13 @@
 const getTokenJWT = require('./getTokenJWT')
 const changeTokenToIAM = require('./changeTokenToIAM')
-
 const translateText = require('./translateText')
-// const refreshTokenIAM = require('./refreshTokenIAM')
-
 const getAllWordsFromFiles = require('./getAllWordsFromFiles.js')
 const { objAllDictRows } = getAllWordsFromFiles()
-
 const logSendedWords = require('../utils/logSendedWords')
 const formatDate = require('./formatDate.js')
-// const checkTokenExpiration = require('./checkTokenExpiration.js')
 const logAlerts = require('./logAlerts')
-// const {
-//     nameFileDictionary1,
-//     nameFileDictionary2,
-// } = require('../constants/constants')
-
-const getNamesDictionaries = require('../utils/getNamesDictionaries')
-let dictionaries = getNamesDictionaries()
-
 const dotenv = require('dotenv')
 dotenv.config()
-
 var urlencode = require('urlencode')
 
 module.exports = async function prepareMessage(
@@ -49,8 +35,6 @@ module.exports = async function prepareMessage(
         const IAM_TOKEN = await changeTokenToIAM({
             jwt: tokenJWT,
         })
-
-        // const IAM_TOKEN = refreshTokenIAM()
 
         let examples = ''
         for (const key0 in responseData[0].meanings) {
@@ -138,16 +122,23 @@ ${exampleLine}
         const linkToTranslate = `https://translate.google.com/?hl=${
             isEnglishLanguage ? 'en' : 'ru'
         }&sl=auto&tl=ru&text=${urlencode(leftWords)}&op=translate`
-        return (
-            `<b>_______________________________</b>
+
+        let textPart1 = `<b>_______________________________</b>
 <b>${wordLineDictionary} </b>
-
+        
 <b>${randomIndex + 1}/(${dictionaryLength})</b>
+        
+<b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b>
+         
+`
+        let textPart2_google = ` <a href="${linkToTranslate}">Translate with Google</a>
+        
+        `
 
- <b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b>
- 
- ` + response_dictionary_api &&
-            ` <a href="${linkToTranslate}">Translate with Google</a>`
-        )
+        // let result = !audio ? textPart1 + textPart2_google : textPart1;
+        let result = textPart1 + textPart2_google
+        console.log('result :>> ', result)
+
+        return result
     }
 }
