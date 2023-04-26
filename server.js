@@ -38,7 +38,7 @@ if (dictionaryText) {
 // callback_query ===============================================
 bot.on('callback_query', (query) => {
     const chatId = query.from.id
-    console.log('query ---------------:>> ', query)
+    // console.log('query ---------------:>> ', query)
 
     if (query.data === 'give_me') {
         sendingWordMessage(dictionary, bot, chatId)
