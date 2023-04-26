@@ -25,7 +25,7 @@ dotenv.config()
 var urlencode = require('urlencode')
 
 module.exports = async function prepareMessage(
-    response,
+    response_dictionary_api,
     randomIndex,
     wordLineDictionary,
     isOneWord,
@@ -42,8 +42,8 @@ module.exports = async function prepareMessage(
     logSendedWords(logMessage)
 
     let responseData
-    if (response != undefined && isOneWord) {
-        responseData = response.data
+    if (response_dictionary_api != undefined && isOneWord) {
+        responseData = response_dictionary_api.data
 
         const tokenJWT = await getTokenJWT()
         const IAM_TOKEN = await changeTokenToIAM({
@@ -132,18 +132,22 @@ ${exampleLine}
 <a href="${audioLine}">   </a>
 <a href="${linkToTranslate}">Translate with Context</a>
 `
-    } else {
+    }
+
+    if (response_dictionary_api == undefined || !isOneWord) {
         const linkToTranslate = `https://translate.google.com/?hl=${
             isEnglishLanguage ? 'en' : 'ru'
         }&sl=auto&tl=ru&text=${urlencode(leftWords)}&op=translate`
-        // console.log('linkToTranslate :>> ', linkToTranslate)
-        return `<b>_______________________________</b>
+        return (
+            `<b>_______________________________</b>
 <b>${wordLineDictionary} </b>
 
 <b>${randomIndex + 1}/(${dictionaryLength})</b>
 
  <b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b>
- <a href="${linkToTranslate}">Translate with Google</a>
-`
+ 
+ ` + response_dictionary_api &&
+            ` <a href="${linkToTranslate}">Translate with Google</a>`
+        )
     }
 }

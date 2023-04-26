@@ -4,8 +4,8 @@ var start_keyboard = {
 var keyboard = {
     inline_keyboard: [
         [
-            { text: 'Yes', url: 'http://www.google.com/' },
-            { text: 'No', url: 'http://www.google.com/' },
+            { text: 'Yes', url: 'http://www.qqq.com/' },
+            { text: 'No', url: 'http://www.qqq.com/' },
         ],
     ],
 }
