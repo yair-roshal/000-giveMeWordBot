@@ -9,9 +9,6 @@ const axios = require('axios')
 const logAlerts = require('./logAlerts')
 
 module.exports = async function changeTokenToIAM(jwtObj) {
-    console.log('jwtObj :>> ', jwtObj)
-
-    console.log('changeTokenToIAM________ :>> ', changeTokenToIAM)
     try {
         const result = await axios
             .post('https://iam.api.cloud.yandex.net/iam/v1/tokens', jwtObj)
