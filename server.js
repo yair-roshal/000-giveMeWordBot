@@ -24,7 +24,7 @@ const {
 dictionaryTextToFile()
 // logSessions()
 
-let textMessage = 'Server Restarted!!!======== lets send /start'
+let textMessage = 'Server Restarted!!!======== lets click       /start'
 bot.sendMessage(CHAT_ID_ADMIN, textMessage)
 
 let dictionary
