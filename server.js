@@ -30,6 +30,7 @@ var optionsMessage = {
     // reply_markup: JSON.stringify(give_me_keyboard),
     parse_mode: 'HTML',
     //disable because we don't want show description links
+    disable_web_page_preview: true,
 }
 
 bot.sendMessage(CHAT_ID_ADMIN, textMessageHtml, optionsMessage)
