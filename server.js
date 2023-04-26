@@ -49,7 +49,6 @@ bot.on('callback_query', (query) => {
     if (query.data === 'give_me') {
         // bot.sendMessage(chatIdAdmin, 'development menu', mainMenu)
         sendingWordMessage(dictionary, bot, chatId)
-        sendingWordMessage(dictionary, bot, chatId)
     }
 })
 

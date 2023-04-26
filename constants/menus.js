@@ -76,7 +76,7 @@ const give_me_keyboard = {
     inline_keyboard: [
         [
             {
-                text: 'give me new words',
+                text: 'give me new word',
                 callback_data: 'give_me',
             },
         ],

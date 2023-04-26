@@ -92,9 +92,6 @@ module.exports = async function prepareMessage(
             }
         }
 
-        console.log(urlencode('苏千')) // default is utf8
-        console.log(urlencode('苏千', 'gbk')) // '%CB%D5%C7%A7'
-
         if (!audio) {
             audio = `https://translate.google.com.vn/translate_tts?ie=UTF-8&q=${urlencode(
                 firstWord,
@@ -127,6 +124,7 @@ module.exports = async function prepareMessage(
 <b>${phoneticLine}${wordLineDictionary} </b>
 ${exampleLine}
 <b>${randomIndex + 1}/(${dictionaryLength}) </b>
+
 <b> Dictionaries : ${dictionaries}</b>
 <a href="${audioLine}">   </a>
 <a href="${linkToTranslate}">Translate with Context</a>
