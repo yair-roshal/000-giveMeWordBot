@@ -24,21 +24,8 @@ const {
 dictionaryTextToFile()
 // logSessions()
 
-var keyboard2 = {
-    inline_keyboard: [
-        [
-            { text: 'Yes', url: 'http://www.google.com/' },
-            { text: 'No', url: 'http://www.google.com/' },
-        ],
-    ],
-}
-console.log('keyboard :>> ', keyboard)
-
-let textMessage = 'Server Restarted!!!========'
-bot.sendMessage(CHAT_ID_ADMIN, textMessage, {
-    // keyboard=====
-    reply_markup: JSON.stringify(keyboard2),
-})
+let textMessage = 'Server Restarted!!!======== lets send /start'
+bot.sendMessage(CHAT_ID_ADMIN, textMessage)
 
 let dictionary
 if (dictionaryText) {
@@ -50,8 +37,14 @@ if (dictionaryText) {
 // callback_query ===============================================
 bot.on('callback_query', (query) => {
     // const chatId = msg.chat.id
-    const chatId = query.chat.id
+    const chatId = query.from.id
     console.log('query ---------------:>> ', query)
+
+    if (query.data === 'start') {
+        // bot.sendMessage(chatIdAdmin, 'development menu', mainMenu)
+        // sendingWordMessage(dictionary, bot, chatId)
+        // sendingWordMessage(dictionary, bot, chatId)
+    }
 
     if (query.data === 'give_me') {
         // bot.sendMessage(chatIdAdmin, 'development menu', mainMenu)
@@ -67,7 +60,7 @@ bot.onText(/\/start/, async (msg) => {
     console.log('photoPath :>> ', photoPath)
 
     await bot.sendPhoto(chatId, photoPath, {
-        reply_markup: JSON.stringify(start_inline_keyboard),
+        // reply_markup: JSON.stringify(start_inline_keyboard),
         caption: `
     Catch the first word, the rest will be in ${min} minutes
     `,

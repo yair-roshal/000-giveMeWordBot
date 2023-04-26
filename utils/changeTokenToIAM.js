@@ -8,11 +8,13 @@ const now = Math.floor(new Date().getTime() / 1000)
 const axios = require('axios')
 const logAlerts = require('./logAlerts')
 
-module.exports = async function changeTokenToIAM(body) {
+module.exports = async function changeTokenToIAM(jwtObj) {
+    console.log('jwtObj :>> ', jwtObj)
+
     console.log('changeTokenToIAM________ :>> ', changeTokenToIAM)
     try {
         const result = await axios
-            .post('https://iam.api.cloud.yandex.net/iam/v1/tokens', body)
+            .post('https://iam.api.cloud.yandex.net/iam/v1/tokens', jwtObj)
             .then((response) => {
                 let IAM_TOKEN = response.data.iamToken
                 // console.log('IAM_TOKEN==', { IAM_TOKEN })

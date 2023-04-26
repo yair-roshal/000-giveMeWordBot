@@ -11,6 +11,7 @@ const {
     // mainMenu,
     start_inline_keyboard,
     keyboard,
+    give_me_keyboard,
 } = require('../constants/menus.js')
 
 const sendingWordMessage = async (dictionary, bot, chatId) => {
@@ -123,18 +124,9 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
 
     console.log('textMessage :>> ', !!textMessage)
 
-    var keyboard = {
-        inline_keyboard: [
-            [
-                { text: 'Yes', url: 'http://www.google.com/' },
-                { text: 'No', url: 'http://www.google.com/' },
-            ],
-        ],
-    }
-
     var optionsMessage = {
         // keyboard=====
-        reply_markup: JSON.stringify(keyboard),
+        reply_markup: JSON.stringify(give_me_keyboard),
         parse_mode: 'HTML',
         //disable because we don't want show description links
 

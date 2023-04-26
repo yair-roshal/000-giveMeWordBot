@@ -42,12 +42,12 @@ module.exports = async function prepareMessage(
     if (response != undefined && isOneWord) {
         responseData = response.data
 
-        // const tokenJWT = await getTokenJWT()
-        // const IAM_TOKEN = await changeTokenToIAM({
-        //     jwt: tokenJWT,
-        // })
+        const tokenJWT = await getTokenJWT()
+        const IAM_TOKEN = await changeTokenToIAM({
+            jwt: tokenJWT,
+        })
 
-        const IAM_TOKEN = refreshTokenIAM()
+        // const IAM_TOKEN = refreshTokenIAM()
 
         let examples = ''
         for (const key0 in responseData[0].meanings) {
@@ -59,17 +59,6 @@ module.exports = async function prepareMessage(
                     examples +=
                         '\r\n' +
                         `- ${responseData[0].meanings[key0].definitions[key].example}`
-
-                    // await checkTokenExpiration(IAM_TOKEN)
-                    //     .then(( ) => {
-                    //         console.log(
-                    //             '==token good========== res===',
-                    //             res,
-                    //         )
-                    //     })
-                    //     .catch((err) =>
-                    //         console.log('==checkTokenExpiration() : ', err),
-                    //     )
 
                     await translateText(
                         responseData[0].meanings[key0].definitions[key].example,

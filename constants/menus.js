@@ -65,8 +65,8 @@ const start_inline_keyboard = {
     inline_keyboard: [
         [
             {
-                text: 'give me new words',
-                callback_data: 'give_me',
+                text: 'Start',
+                callback_data: 'start',
             },
         ],
     ],
