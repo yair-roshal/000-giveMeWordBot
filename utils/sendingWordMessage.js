@@ -144,7 +144,7 @@ isOneWord -- ${isOneWord}
     console.log('textMessage :>> ', !!textMessage)
     console.log('isTimeForSending :>> ', !!isTimeForSending)
 
-    if (!response_dictionary_api) {
+    if (!response_dictionary_api && isTimeForSending) {
         bot.sendMessage(chatId, textMessage, optionsMessageWithoutPreview)
     } else if (textMessage && isTimeForSending) {
         bot.sendMessage(chatId, textMessage, optionsMessage)
