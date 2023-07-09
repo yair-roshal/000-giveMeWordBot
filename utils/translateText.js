@@ -21,7 +21,7 @@ const repeatedly_request_to_translate = async (url, body, headers, n) => {
         if (n <= 1) throw err
         await sleep(1000)
         const newToken = refreshTokenIAM()
-        // console.log('newToken :>> ', newToken)
+        console.log('newToken :>> ', newToken)
         newToken.then((res_newToken) => {
             console.log('res_newToken :>> ', { res_newToken })
             headers = { headers: { Authorization: `Bearer ${res_newToken}` } }
@@ -52,7 +52,8 @@ module.exports = async function translateText(texts, IAM_TOKEN) {
         console.log('translate :>> ', translate)
     } catch (err) {
         console.log('yandex_api_ERROR_translate: ')
-        console.error(err)
+        console.error("err.message", err?.message)
+        console.error("err.data", err?.data)
     }
     return translate
 }
