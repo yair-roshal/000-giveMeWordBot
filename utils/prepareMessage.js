@@ -108,8 +108,10 @@ module.exports = async function prepareMessage(
 
     return `<b>_______________________________</b>
         
-        IAM_TOKEN : ${IAM_TOKEN}
-        <b> errTempMessage : ${JSON.stringify(errTempMessage, null, 2)}</b>
+tokenJWT : ${tokenJWT}
+IAM_TOKEN : ${IAM_TOKEN}
+<b> errTempMessage : ${errTempMessage}</b>
+<b> errTempMessage_obj : ${JSON.stringify(errTempMessage, null, 2)}</b>
 
         
 <b>${phoneticLine}${wordLineDictionary} </b>
