@@ -109,8 +109,11 @@ module.exports = async function prepareMessage(
     return `<b>_______________________________</b>
         
 tokenJWT : ${tokenJWT}
+
 IAM_TOKEN : ${IAM_TOKEN}
+
 <b> errTempMessage : ${errTempMessage}</b>
+
 <b> errTempMessage_obj : ${JSON.stringify(errTempMessage, null, 2)}</b>
 
         
