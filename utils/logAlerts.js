@@ -25,17 +25,20 @@ const getPathToFolder = require('./getPathToFolder');
 module.exports = function logAlerts(alert) {
     console.log('logAlerts :>>>>>>>>>>>>>>>>> !!!!!!!!!!!!!!!!!!');
     console.log('alert :>> ', alert);
-    const nameFile = 'log-alerts.txt';
-    const folderPath = getPathToFolder('data/logs/');
-    const pathFile = path.join(folderPath, nameFile);
+    
+    // disabled for now================================================================
+    
+    // const nameFile = 'log-alerts.txt';
+    // const folderPath = getPathToFolder('data/logs/');
+    // const pathFile = path.join(folderPath, nameFile);
 
-    if (!fs.existsSync(folderPath)) {
-        fs.mkdirSync(folderPath, { recursive: true });
-    }
+    // if (!fs.existsSync(folderPath)) {
+    //     fs.mkdirSync(folderPath, { recursive: true });
+    // }
 
-    fs.appendFile(pathFile, alert + '\r\n', (err) => {
-        if (err) {
-            console.log(err);
-        }
-    });
+    // fs.appendFile(pathFile, alert + '\r\n', (err) => {
+    //     if (err) {
+    //         console.log(err);
+    //     }
+    // });
 };
