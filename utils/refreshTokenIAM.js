@@ -11,7 +11,7 @@ module.exports = async function refreshTokenIAM() {
     jwt: tokenJWT,
   }
 
-  // console.log('jwtObj :>> ', jwtObj)
+  console.log('jwtObj :>> ', jwtObj)
   try {
     const result = await axios
       .post("https://iam.api.cloud.yandex.net/iam/v1/tokens", jwtObj)
@@ -23,7 +23,7 @@ module.exports = async function refreshTokenIAM() {
       })
     return result
   } catch (err) {
-    logAlerts(err)
+    // logAlerts(err)
     console.log("AXIOS ERROR _ refreshTokenIAM: ", err.response)
   }
 }

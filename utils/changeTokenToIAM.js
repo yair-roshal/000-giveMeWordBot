@@ -19,7 +19,7 @@ module.exports = async function changeTokenToIAM(jwtObj) {
       })
     return result
   } catch (err) {
-    logAlerts(err)
+    // logAlerts(err)
     console.log("AXIOS ERROR _ changeTokenToIAM: ", err.response)
   }
 }
