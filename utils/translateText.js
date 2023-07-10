@@ -19,7 +19,7 @@ const repeatedly_request_to_translate = async (url, body, headers, n) => {
     } catch (err) {
         console.log('catch_error repeatedly_request_to_translate :>> ')
         if (n <= 1) throw err
-        await sleep(1000)
+        await sleep(3000)
         const newToken = refreshTokenIAM()
         console.log('newToken :>> ', newToken)
         newToken.then((res_newToken) => {
@@ -47,7 +47,7 @@ module.exports = async function translateText(texts, IAM_TOKEN) {
             url,
             body,
             headers,
-            2, // number of attempts
+            3, // number of attempts
         )
         console.log('translate :>> ', translate)
     } catch (err) {
