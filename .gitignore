@@ -9,8 +9,8 @@
 0-save
 
 **/log-words.txt
-/logs
-data/logs/
+# /logs
+# data/logs/
 
 # classic ignoring files===============
 
