@@ -141,7 +141,7 @@ isOneWord -- ${isOneWord}
     disable_web_page_preview: true,
   }
 
-  console.log("textMessage :>> ", !!textMessage)
+  console.log("textMessage(prepare_was_good) :>> ", !!textMessage)
   console.log("isTimeForSending :>> ", !!isTimeForSending)
 
   if (!response_dictionary_api && isTimeForSending) {
