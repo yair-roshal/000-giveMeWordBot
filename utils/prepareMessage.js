@@ -116,7 +116,7 @@ tokenJWT : ${
 
 IAM_TOKEN : ${
       IAM_TOKEN
-        ? IAM_TOKEN.slice(tokenJWT.length - 10, tokenJWT.length - 1)
+        ? IAM_TOKEN.slice(IAM_TOKEN.length - 10, IAM_TOKEN.length - 1)
         : "undefined--"
     }
 
