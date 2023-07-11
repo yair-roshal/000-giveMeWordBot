@@ -23,8 +23,6 @@ module.exports = async function prepareMessage(
   const timestamp = Date.now()
   const formattedDate = formatDate(timestamp)
 
-  let errTempMessage
-
   let logMessage =
     `${randomIndex + 1}.${wordLineDictionary}  -  ` + formattedDate
   logSendedWords(logMessage)
@@ -59,7 +57,6 @@ module.exports = async function prepareMessage(
             })
             .catch((err) => {
               logAlerts(err)
-              errTempMessage = err
               console.log("err_translateText() : ", err)
             })
         }
@@ -120,10 +117,7 @@ IAM_TOKEN : ${
         : "undefined--"
     }
 
-<b> errTempMessage : ${errTempMessage}</b>
-
-<b> errTempMessage_obj : ${JSON.stringify(errTempMessage, null, 2)}</b>
-
+<b>_______________________________</b>
         
 <b>${phoneticLine}${wordLineDictionary} </b>
 ${exampleLine}
