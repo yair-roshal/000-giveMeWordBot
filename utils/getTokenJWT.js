@@ -16,6 +16,9 @@ const getTokenJWT = async () => {
     iat: now,
     exp: now + jwtExpirationTimeout,
   }
+  
+  console.log('getTokenJWT_now', payload.iat.toLocaleString();)
+  console.log('getTokenJWT_exp', payload.exp.toLocaleString();)
 
   const key = await jose.JWK.asKey(privateKey, "pem", {
     kid: keyId,
