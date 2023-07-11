@@ -108,9 +108,17 @@ module.exports = async function prepareMessage(
 
     return `<b>_______________________________</b>
         
-tokenJWT : ${tokenJWT ? tokenJWT.slice(0, 5) : "undefined--"}
+tokenJWT : ${
+      tokenJWT
+        ? tokenJWT.slice(tokenJWT.length - 10, tokenJWT.length - 1)
+        : "undefined--"
+    }
 
-IAM_TOKEN : ${IAM_TOKEN ? IAM_TOKEN.slice(0, 5) : "undefined--"}
+IAM_TOKEN : ${
+      IAM_TOKEN
+        ? IAM_TOKEN.slice(tokenJWT.length - 10, tokenJWT.length - 1)
+        : "undefined--"
+    }
 
 <b> errTempMessage : ${errTempMessage}</b>
 
