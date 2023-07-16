@@ -30,7 +30,7 @@ var optionsMessage = {
   disable_web_page_preview: true,
 }
 // 1 message!!!!!!
-console.log('send_start_message', send_start_message)
+console.log('send_start_message')
 bot.sendMessage(CHAT_ID_ADMIN, textMessageHtml, optionsMessage)
 
 let dictionary
