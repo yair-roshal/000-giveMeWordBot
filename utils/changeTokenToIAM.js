@@ -14,6 +14,8 @@ module.exports = async function changeTokenToIAM(jwtObj) {
   } catch (err) {
     // logAlerts(err)
     // console.log("AXIOS ERROR _ changeTokenToIAM: ", err.response)
+    console.log('jwtObj', jwtObj)
     console.log("AXIOS ERROR _ changeTokenToIAM_err.response.data: ", err.response.data)
+    console.log("AXIOS ERROR _ changeTokenToIAM_err.response.data.details: ", err.response.data.details)
   }
 }
