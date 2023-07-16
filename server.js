@@ -2,6 +2,7 @@ const dotenv = require("dotenv")
 dotenv.config()
 const TelegramBot = require("node-telegram-bot-api")
 const token = process.env.TELEGRAM_BOT_TOKEN
+const { clockStart, clockEnd } = require("../constants/intervals.js")
 
 // const token =
 //     process.env.NODE_ENV === 'prod'
@@ -30,7 +31,7 @@ var optionsMessage = {
   disable_web_page_preview: true,
 }
 // 1 message!!!!!!
-console.log('send_start_message')
+console.log("send_start_message")
 bot.sendMessage(CHAT_ID_ADMIN, textMessageHtml, optionsMessage)
 
 let dictionary
@@ -62,7 +63,29 @@ bot.onText(/\/start/, async (msg) => {
   await bot.sendPhoto(chatId, photoPath, optionsMessage)
 
   sendingWordMessage(dictionary, bot, chatId)
-  setInterval(() => sendingWordMessage(dictionary, bot, chatId), interval) //  start function by interval
+  setInterval(
+    () => {
+      let isTimeForSending = false
+
+      let currentDate = new Date()
+      let nowHours = currentDate.getHours()
+      let nowMinutes = currentDate.getMinutes()
+
+      if (process.env.NODE_ENV === "dev") {
+        isTimeForSending = true
+      } else if (nowHours < clockEnd && nowHours > clockStart) {
+        isTimeForSending = true
+      } else {
+        console.log(
+          `it isn't time for sending messages  -   ${nowHours}:${nowMinutes}`
+        )
+      }
+
+      isTimeForSending && sendingWordMessage(dictionary, bot, chatId)
+    },
+
+    interval
+  ) //  start function by interval
 })
 
 // sending a list of words and adding them to the dictionary ===============

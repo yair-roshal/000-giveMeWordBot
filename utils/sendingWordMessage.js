@@ -1,7 +1,6 @@
 const axios = require("axios")
 // const chatIdAdmin = process.env.CHAT_ID_ADMIN
 const prepareMessage = require("./prepareMessage")
-const { clockStart, clockEnd } = require("../constants/intervals.js")
 const formatDate = require("./formatDate.js")
 // const langdetect = require('langdetect')
 const logAlerts = require("./logAlerts")
@@ -19,7 +18,6 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
   const formattedDate = formatDate(timestamp)
 
   let textMessage
-  let isTimeForSending = false
 
   const randomIndexForDictionary = Math.floor(Math.random() * dictionary.length)
   let wordLineDictionary = dictionary[randomIndexForDictionary]
@@ -72,32 +70,19 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
     isOneWord = false
   }
 
-  let currentDate = new Date()
-  let nowHours = currentDate.getHours()
-  let nowMinutes = currentDate.getMinutes()
 
-  if (process.env.NODE_ENV === "dev") {
-    isTimeForSending = true
-  } else if (nowHours < clockEnd && nowHours > clockStart) {
-    isTimeForSending = true
-  } else {
-    console.log(
-      `it isn't time for sending messages  -   ${nowHours}:${nowMinutes}`
-    )
-  }
 
   console.log(
     `
 
-isTimeForSending -- ${isTimeForSending},
-isEnglishLanguage -- ${isEnglishLanguage},
+ isEnglishLanguage -- ${isEnglishLanguage},
 isOneWord -- ${isOneWord}
 
 `
   )
 
   let response_dictionary_api
-  if (isTimeForSending && isEnglishLanguage && isOneWord) {
+  if (  isEnglishLanguage && isOneWord) {
     response_dictionary_api = await axios
       .get("https://api.dictionaryapi.dev/api/v2/entries/en/" + firstWord)
       .then(function (response_dictionary_api) {
@@ -142,11 +127,10 @@ isOneWord -- ${isOneWord}
   }
 
   console.log("textMessage(prepare_was_good) :>> ", !!textMessage)
-  console.log("isTimeForSending :>> ", !!isTimeForSending)
-
-  if (!response_dictionary_api && isTimeForSending) {
+ 
+  if (!response_dictionary_api  ) {
     bot.sendMessage(chatId, textMessage, optionsMessageWithoutPreview)
-  } else if (textMessage && isTimeForSending) {
+  } else if (textMessage  ) {
     bot.sendMessage(chatId, textMessage, optionsMessage)
   }
 }
