@@ -89,7 +89,7 @@ isOneWord -- ${isOneWord}
         return response_dictionary_api
       })
       .catch(function (err) {
-        logAlerts(err)
+        // logAlerts(err)
 
         console.log("error_api.dictionaryapi.dev for word : " + firstWord)
         // console.log('axios_error_api.dictionaryapi ===', err)

@@ -20,8 +20,8 @@ module.exports = function checkTokenExpiration(token, req, res, next) {
         // Call the next middleware function
         next()
     } catch (err) {
-        console.log('err :>> ', err);
-        logAlerts(err)
+        console.log('err_checkTokenExpiration :>> ', err);
+        // logAlerts(err)
 
          
     }

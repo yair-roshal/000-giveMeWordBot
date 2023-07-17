@@ -24,7 +24,7 @@ module.exports = function getAllWordsFromFiles() {
             // allDataArray = allDataArray.push({ data, rowAmount })
             dictionaryText = dictionaryText + data
         } catch (err) {
-            logAlerts(err)
+            // logAlerts(err)
 
             console.error(
                 `err_readFileSync in  :    ${pathFile}`,

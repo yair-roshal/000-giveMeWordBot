@@ -7,9 +7,10 @@ const jose = require("node-jose")
 const serviceAccountId = process.env.SERVICE_ACCOUNT_ID
 const keyId = process.env.KEY_ID
 const privateKey = process.env.PRIVATE_KEY.replace(/\\n/g, "\n")
-const now = Math.floor(new Date().getTime() / 1000)
 
 const getTokenJWT = async () => {
+  const now = Math.floor(new Date().getTime() / 1000)
+
   const payload = {
     aud: "https://iam.api.cloud.yandex.net/iam/v1/tokens",
     iss: serviceAccountId,
@@ -29,7 +30,7 @@ const getTokenJWT = async () => {
 
   console.log("getTokenJWT_now", formatDate(payload?.iat))
   console.log("getTokenJWT_exp", formatDate(payload?.exp))
-  console.log("token", token)
+  console.log("TokenJWT", token)
 
   return token
 }

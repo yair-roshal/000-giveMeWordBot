@@ -56,7 +56,7 @@ module.exports = async function prepareMessage(
                 examples += "\r\n" + "-" + translateTextVar + "\r\n"
             })
             .catch((err) => {
-              logAlerts(err)
+              // logAlerts(err)
               console.log("err_translateText() : ", err)
             })
         }

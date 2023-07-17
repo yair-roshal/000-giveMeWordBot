@@ -13,7 +13,7 @@ module.exports = function dictionaryTextToFile() {
         if (!err) {
             console.log(`The file was saved! With name : ${nameFile}`)
         } else {
-            logAlerts(err)
+            // logAlerts(err)
 
             return console.log('err4444_dictionaryTextToFile', err)
         }
