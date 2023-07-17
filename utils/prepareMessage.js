@@ -35,7 +35,6 @@ module.exports = async function prepareMessage(
     const IAM_TOKEN = await changeTokenToIAM({
       jwt: tokenJWT,
     })
-    console.log('IAM_TOKEN-0', IAM_TOKEN)
 
     let examples = ""
     for (const key0 in responseData[0].meanings) {

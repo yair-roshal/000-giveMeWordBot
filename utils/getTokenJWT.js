@@ -8,14 +8,14 @@ const serviceAccountId = process.env.SERVICE_ACCOUNT_ID
 const keyId = process.env.KEY_ID
 const privateKey = process.env.PRIVATE_KEY.replace(/\\n/g, "\n")
 const now = Math.floor(new Date().getTime() / 1000)
-// const now = new Date().getTime()
 
 const getTokenJWT = async () => {
   const payload = {
     aud: "https://iam.api.cloud.yandex.net/iam/v1/tokens",
     iss: serviceAccountId,
     iat: now,
-    exp: now + 3600 * 100,
+    exp: now + 3600,
+    // exp: now + 3600 * 1000,
   }
 
   const key = await jose.JWK.asKey(privateKey, "pem", {
