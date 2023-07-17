@@ -15,7 +15,7 @@ const getTokenJWT = async () => {
     aud: "https://iam.api.cloud.yandex.net/iam/v1/tokens",
     iss: serviceAccountId,
     iat: now,
-    exp: now + 3500 * 1000,
+    exp: now + 3600 * 100,
   }
 
   const key = await jose.JWK.asKey(privateKey, "pem", {
