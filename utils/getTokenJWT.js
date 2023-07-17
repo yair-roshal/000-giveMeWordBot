@@ -1,5 +1,6 @@
 const dotenv = require("dotenv")
 dotenv.config()
+const formatDate = require('./formatDate.js')
 
 const jose = require("node-jose")
 
@@ -17,8 +18,6 @@ const getTokenJWT = async () => {
     exp: now + jwtExpirationTimeout,
   }
 
-  console.log("getTokenJWT_now", payload?.iat?.toLocaleString())
-  console.log("getTokenJWT_exp", payload?.exp?.toLocaleString())
 
   const key = await jose.JWK.asKey(privateKey, "pem", {
     kid: keyId,
@@ -29,6 +28,11 @@ const getTokenJWT = async () => {
     .update(JSON.stringify(payload))
     .final()
 
+    console.log("getTokenJWT_now", formatDate(payload?.iat))
+    console.log("getTokenJWT_exp", formatDate(payload?.exp))
+    console.log("token", token)
+
+    
   return token
 }
 

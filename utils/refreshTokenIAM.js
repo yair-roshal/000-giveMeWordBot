@@ -1,11 +1,10 @@
 const axios = require("axios")
 const logAlerts = require("./logAlerts")
 const getTokenJWT = require("./getTokenJWT")
-const changeTokenToIAM = require('./changeTokenToIAM')
+const changeTokenToIAM = require("./changeTokenToIAM")
 
 module.exports = async function refreshTokenIAM() {
   const tokenJWT = await getTokenJWT()
-  console.log("refreshTokenIAM_tokenJWT", tokenJWT)
 
   let jwtObj = {
     jwt: tokenJWT,
