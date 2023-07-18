@@ -44,8 +44,8 @@ module.exports = async function prepareMessage(
         ) {
           examples +=
             "\r\n" +
-            `- ${responseData[0].meanings[key0].definitions[key].example}`
-
+            `<b>- ${responseData[0].meanings[key0].definitions[key].example}</b>`
+ 
           await translateText(
             responseData[0].meanings[key0].definitions[key].example,
             IAM_TOKEN
@@ -53,7 +53,7 @@ module.exports = async function prepareMessage(
             .then((translateTextVar) => {
               // console.log('translateTextVar222', translateTextVar)
               if (translateTextVar)
-                examples += "\r\n" + "-" + translateTextVar + "\r\n"
+                examples += "\r\n" + "- " + translateTextVar + "\r\n"
             })
             .catch((err) => {
               // logAlerts(err)
@@ -90,7 +90,7 @@ module.exports = async function prepareMessage(
       : ""
     phoneticLine = isOneWord ? phoneticLine : ""
 
-    let exampleLine = examples && isOneWord ? `${examples}` : ""
+    let examplesLine = examples && isOneWord ? `${examples}` : ""
 
     let audioLine =
       audio && isOneWord && responseData[0]
@@ -105,22 +105,8 @@ module.exports = async function prepareMessage(
 
     return `<b>_______________________________</b>
         
-tokenJWT : ${
-      tokenJWT
-        ? tokenJWT.slice(tokenJWT.length - 10, tokenJWT.length - 1)
-        : "undefined--"
-    }
-
-IAM_TOKEN : ${
-      IAM_TOKEN
-        ? IAM_TOKEN.slice(IAM_TOKEN.length - 10, IAM_TOKEN.length - 1)
-        : "undefined--"
-    }
-
-<b>_______________________________</b>
-        
 <b>${phoneticLine}${wordLineDictionary} </b>
-${exampleLine}
+${examplesLine}
 <b>${randomIndex + 1}/(${dictionaryLength}) </b>
 
 <b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b>
