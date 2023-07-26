@@ -1,12 +1,12 @@
 module.exports = {
     apps: [
         {
-            name: 'newBot',
+            name: 'give_me_word_bot',
             script: './server.js',
             max_memory_restart: '300M',
             // Logging
-            out_file: './newBot-out.log',
-            error_file: './newBot-error.log',
+            out_file: './give_me_word_bot_out.log',
+            error_file: './give_me_word_bot_error.log',
             // merge_logs: true,
             time: true,
 
