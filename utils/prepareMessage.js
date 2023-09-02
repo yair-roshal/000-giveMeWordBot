@@ -120,8 +120,7 @@ ${examplesLine}
       isEnglishLanguage ? "en" : "ru"
     }&sl=auto&tl=ru&text=${urlencode(leftWords)}&op=translate`
 
-    let textPart1 = `<b>_______________________________</b>
-<b>${wordLineDictionary} </b>
+    let textPart1 = `<b>${wordLineDictionary} </b>
         
 <b>${randomIndex + 1}/(${dictionaryLength})</b>
         

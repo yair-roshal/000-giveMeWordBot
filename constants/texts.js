@@ -1,8 +1,7 @@
 let link_to_bot = 'https://t.me/EnglishWordsPusherBot'
 let link_to_public = 'https://t.me/givemewords'
 
-let textMessageHtml = `<b>_______________________________</b>
-<b>Hello my Friend</b> 
+let textMessageHtml = `<b>Hello my Friend</b> 
 
 This is a telegram bot for sending your card with translation, pronunciation, examples and link to all meanings
 
