@@ -33,7 +33,7 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
   let leftWords = ""
   let arrayEnglishWords = []
 
-  const symbolsArray = ["-", "—", "&shy;", "-"]
+  const symbolsArray = ["-", "—", "&shy;", "–", "—", "–", "–", "–", "–", "–"]
 
   symbolsArray.forEach((symbol) => {
     if (wordLineDictionary.indexOf(symbol) !== -1) {
@@ -70,8 +70,6 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
     isOneWord = false
   }
 
-
-
   console.log(
     `
 
@@ -82,7 +80,7 @@ isOneWord -- ${isOneWord}
   )
 
   let response_dictionary_api
-  if (  isEnglishLanguage && isOneWord) {
+  if (isEnglishLanguage && isOneWord) {
     response_dictionary_api = await axios
       .get("https://api.dictionaryapi.dev/api/v2/entries/en/" + firstWord)
       .then(function (response_dictionary_api) {
@@ -127,10 +125,10 @@ isOneWord -- ${isOneWord}
   }
 
   console.log("textMessage(prepare_was_good) :>> ", !!textMessage)
- 
-  if (!response_dictionary_api  ) {
+
+  if (!response_dictionary_api) {
     bot.sendMessage(chatId, textMessage, optionsMessageWithoutPreview)
-  } else if (textMessage  ) {
+  } else if (textMessage) {
     bot.sendMessage(chatId, textMessage, optionsMessage)
   }
 }
