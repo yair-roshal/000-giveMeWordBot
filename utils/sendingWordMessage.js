@@ -29,19 +29,20 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
     formattedDate
   )
 
-  let firstWord = ""
-  let leftWords = ""
-  let arrayEnglishWords = []
-
-  const symbolsArray = ["-", "—", "&shy;", "–", "—", "–", "–", "–", "–", "–"]
-
-  symbolsArray.forEach((symbol) => {
-    if (wordLineDictionary.indexOf(symbol) !== -1) {
-      leftWords = wordLineDictionary.split(symbol)[0].trim()
-      firstWord = leftWords.split(" ")[0]
-      return
+  let firstWord = "";
+  let leftWords = "";
+  const symbolsArray = ["-", "—", "–", "–", "–", "–"];
+  
+  for (const symbol of symbolsArray) {
+    if (wordLineDictionary.includes(symbol)) {
+      leftWords = wordLineDictionary.split(symbol)[0].trim();
+      firstWord = leftWords.split(" ")[0];
+      break;  
     }
-  })
+  }
+  
+  
+  
 
   if (leftWords == "") {
     console.error('dont found "-" in this string :>> =====================')
