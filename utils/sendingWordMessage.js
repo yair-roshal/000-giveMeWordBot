@@ -44,7 +44,7 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
   })
 
   if (leftWords == "") {
-    console.error('dont found "-" in this string :>> =====================')
+    console.error('don`t found "-" in this string :>> =====================')
     sendingWordMessage(dictionary, bot, chatId)
     return
   }
