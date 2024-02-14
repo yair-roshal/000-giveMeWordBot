@@ -1,140 +1,138 @@
-const getTokenJWT = require("./getTokenJWT")
-const changeTokenToIAM = require("./changeTokenToIAM")
-const translateText = require("./translateText")
-const getAllWordsFromFiles = require("./getAllWordsFromFiles.js")
-const { objAllDictRows } = getAllWordsFromFiles()
-const logSendedWords = require("../utils/logSendedWords")
+const axios = require("axios")
+// const chatIdAdmin = process.env.CHAT_ID_ADMIN
+const prepareMessage = require("./sendingMessage.js")
 const formatDate = require("./formatDate.js")
-const logAlerts = require("./logAlerts")
-const dotenv = require("dotenv")
-dotenv.config()
-var urlencode = require("urlencode")
+// const langdetect = require('langdetect')
+const logAlerts = require("./logAlerts.js")
 
-module.exports = async function prepareMessage(
-  response_dictionary_api,
-  randomIndex,
-  wordLineDictionary,
-  isOneWord,
-  firstWord,
-  dictionaryLength,
-  isEnglishLanguage,
-  leftWords
-) {
+const {
+  // startMenu,
+  // mainMenu,
+  start_inline_keyboard,
+  keyboard,
+  give_me_keyboard,
+} = require("../constants/menus.js")
+
+const sendingWordMessage = async (dictionary, bot, chatId) => {
   const timestamp = Date.now()
   const formattedDate = formatDate(timestamp)
 
-  let logMessage =
-    `${randomIndex + 1}.${wordLineDictionary}  -  ` + formattedDate
-  logSendedWords(logMessage)
+  let textMessage
 
-  let responseData
-  if (response_dictionary_api != undefined && isOneWord) {
-    responseData = response_dictionary_api.data
+  const randomIndexForDictionary = Math.floor(Math.random() * dictionary.length)
+  let wordLineDictionary = dictionary[randomIndexForDictionary]
+  console.log("______________________________ :>> ")
+  console.log(
+    "wordLineDictionary :>> ",
+    wordLineDictionary,
+    "  ",
+    formattedDate
+  )
 
-    const tokenJWT = await getTokenJWT()
-    const IAM_TOKEN = await changeTokenToIAM({
-      jwt: tokenJWT,
+  let firstWord = ""
+  let leftWords = ""
+  let arrayEnglishWords = []
+
+  const symbolsArray = ["-", "—", "–", "—", "−"]
+
+  symbolsArray.forEach((symbol) => {
+    if (wordLineDictionary.indexOf(symbol) !== -1) {
+      leftWords = wordLineDictionary.split(symbol)[0].trim()
+      rightWords = wordLineDictionary.split(symbol)[1].trim()
+      firstWord = leftWords.split(" ")[0]
+      return
+    }
+  })
+
+  if (leftWords == "") {
+    console.error('don`t found "-" in this string :>> =====================')
+    sendingWordMessage(dictionary, bot, chatId)
+    return
+  }
+
+  console.log({ leftWords })
+
+  // Language detect=========
+  let isEnglishLanguage = false
+  if (/[a-zA-Z]/.test(leftWords)) {
+    isEnglishLanguage = true
+  }
+
+  // const language = langdetect.detect(leftWords)
+  // console.log('language===', language)
+
+  // const languages = langdetect.detectAll(leftWords)
+  // console.log("languages===",languages)
+
+  let isOneWord = true
+  arrayEnglishWords = leftWords.split(" ")
+  console.log("arrayEnglishWords :>> ", arrayEnglishWords)
+  if (arrayEnglishWords.length > 1) {
+    isOneWord = false
+  }
+
+  console.log(
+    `
+
+ isEnglishLanguage -- ${isEnglishLanguage},
+isOneWord -- ${isOneWord}
+
+`
+  )
+
+  let response_dictionary_api
+  if (isEnglishLanguage && isOneWord) {
+    response_dictionary_api = await axios
+      .get("https://api.dictionaryapi.dev/api/v2/entries/en/" + firstWord)
+      .then(function (response_dictionary_api) {
+        return response_dictionary_api
+      })
+      .catch(function (err) {
+        // logAlerts(err)
+
+        console.log("error_api.dictionaryapi.dev for word : " + firstWord)
+        // console.log('axios_error_api.dictionaryapi ===', err)
+      })
+  }
+  // console.log('response_dictionary_api :>> ', !!response_dictionary_api)
+
+  textMessage = await prepareMessage(
+    response_dictionary_api,
+    randomIndexForDictionary,
+    wordLineDictionary,
+    isOneWord,
+    firstWord,
+    dictionary.length,
+    isEnglishLanguage,
+    leftWords,
+    rightWords
+  )
+    .then((res) => {
+      return res
+    })
+    .catch((err) => {
+      console.log("prepareMessage : ", err)
     })
 
-    let examples = ""
-    for (const key0 in responseData[0].meanings) {
-      for (const key in responseData[0].meanings[key0].definitions) {
-        if (
-          responseData[0].meanings[key0].definitions[key].example != undefined
-        ) {
-          examples +=
-            "\r\n" +
-            `<b>- ${responseData[0].meanings[key0].definitions[key].example}</b>`
-
-          await translateText(
-            responseData[0].meanings[key0].definitions[key].example,
-            IAM_TOKEN
-          )
-            .then((translateTextVar) => {
-              // console.log('translateTextVar222', translateTextVar)
-              if (translateTextVar)
-                examples += "\r\n" + "- " + translateTextVar + "\r\n"
-            })
-            .catch((err) => {
-              // logAlerts(err)
-              console.log("err_translateText() : ", err)
-            })
-        }
-      }
-    }
-    let phonetic = ""
-    for (const key in responseData[0].phonetics) {
-      if (responseData[0].phonetics[key].text != undefined) {
-        phonetic = responseData[0].phonetics[key].text
-      }
-    }
-
-    let audio
-
-    for (const key in responseData[0].phonetics) {
-      if (responseData[0].phonetics[key].audio != undefined) {
-        audio = responseData[0].phonetics[key].audio
-      }
-    }
-
-    if (!audio) {
-      audio = `https://translate.google.com.vn/translate_tts?ie=UTF-8&q=${urlencode(
-        firstWord
-      )}&tl=en&client=tw-ob`
-    }
-
-    let phoneticLine = phonetic //pronunciation
-      ? `${phonetic} - `
-      : responseData[0] && responseData[0].phonetic
-      ? `${responseData[0] && responseData[0].phonetic} - `
-      : ""
-    phoneticLine = isOneWord ? phoneticLine : ""
-
-    let examplesLine = examples && isOneWord ? `${examples}` : ""
-
-    let audioLine =
-      audio && isOneWord && responseData[0]
-        ? `${audio}`
-        : responseData[0].phonetics[1] && responseData[0].phonetics[1].audio
-        ? `${
-            responseData[0].phonetics[1] && responseData[0].phonetics[1].audio
-          }`
-        : ""
-
-    const linkToTranslate = `https://context.reverso.net/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4/%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9/${firstWord}`
-
-    return `<b>${phoneticLine}${wordLineDictionary} </b>
-${examplesLine}
-<b>${randomIndex + 1}/(${dictionaryLength}) </b>
-
-<b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b>
-<a href="${audioLine}">   </a>
-<a href="${linkToTranslate}">Translate with Context</a>
-
-
-`
+  var optionsMessage = {
+    reply_markup: JSON.stringify(give_me_keyboard),
+    parse_mode: "HTML",
+    // disable_web_page_preview: false,
+    disable_web_page_preview: isOneWord ? false : true,
+  }
+  var optionsMessageWithoutPreview = {
+    reply_markup: JSON.stringify(give_me_keyboard),
+    parse_mode: "HTML",
+    disable_web_page_preview: true,
   }
 
-  if (response_dictionary_api == undefined || !isOneWord) {
-    const linkToTranslate = `https://translate.google.com/?hl=${
-      isEnglishLanguage ? "en" : "ru"
-    }&sl=auto&tl=ru&text=${urlencode(leftWords)}&op=translate`
+  console.log("textMessage(prepare_was_good) :>> ", !!textMessage)
 
-    let textPart1 = `<b>${wordLineDictionary} </b>
-        
-<b>${randomIndex + 1}/(${dictionaryLength})</b>
-        
-<b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b>
-         
-`
-    let textPart2_google = ` <a href="${linkToTranslate}">Translate with Google</a>
-
- 
- 
-`
-
-    let result = textPart1 + textPart2_google
-
-    return result
+  if (!response_dictionary_api) {
+    bot.sendMessage(chatId, textMessage, optionsMessageWithoutPreview)
+  } else if (textMessage) {
+    bot.sendMessage(chatId, textMessage, optionsMessage)
   }
 }
+
+module.exports = sendingWordMessage

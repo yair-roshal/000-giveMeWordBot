@@ -15,7 +15,7 @@ const { dictionaryText } = getAllWordsFromFiles()
 const CHAT_ID_ADMIN = process.env.CHAT_ID_ADMIN
 const { sec, ms, min, interval } = require("./constants/intervals.js")
 const { textMessageHtml } = require("./constants/texts.js")
-const sendingWordMessage = require("./utils/sendingWordMessage.js")
+const sendingWordMessage = require("./utils/prepareMessage.js")
 const dictionaryTextToFile = require("./utils/dictionaryTextToFile.js")
 const { give_me_keyboard } = require("./constants/menus.js")
 
@@ -63,6 +63,7 @@ bot.onText(/\/start/, async (msg) => {
   await bot.sendPhoto(chatId, photoPath, optionsMessage)
 
   sendingWordMessage(dictionary, bot, chatId)
+  
   setInterval(
     () => {
       let isTimeForSending = false
