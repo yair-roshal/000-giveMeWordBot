@@ -106,7 +106,7 @@ module.exports = async function prepareMessage(
 
     // return final sms_____________________
 
-    return `<>${isEnglishLanguage == true ? "en" : "he"} : ${rightWords}</b>
+    return `<b>${isEnglishLanguage == true ? "en" : "he"} : ${rightWords}</b>
  
  
 <b>${phoneticLine}${wordLineDictionary} </b>
@@ -128,9 +128,12 @@ ${examplesLine}
       isEnglishLanguage ? "en" : "ru"
     }&sl=auto&tl=ru&text=${urlencode(leftWords)}&op=translate`
 
-    let textPart1 = `<b> isEnglishLanguage : ${isEnglishLanguage}</b>
-    <b>${wordLineDictionary} </b>
-        
+    let textPart1 = `<b>${
+      isEnglishLanguage == true ? "en" : "he"
+    } : ${rightWords}</b>
+    
+
+<b>${wordLineDictionary} </b>
 <b>${randomIndex + 1}/(${dictionaryLength})</b>
         
 <b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b>
