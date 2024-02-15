@@ -106,7 +106,7 @@ module.exports = async function prepareMessage(
 
     // return final sms_____________________
 
-    return `<>${isEnglishLanguage==true ? "en" :"he"} : ${rightWords}</b>
+    return `<>${isEnglishLanguage == true ? "en" : "he"} : ${rightWords}</b>
  
  
 <b>${phoneticLine}${wordLineDictionary} </b>
