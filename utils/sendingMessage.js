@@ -109,6 +109,7 @@ module.exports = async function prepareMessage(
     return `<b>${isEnglishLanguage == true ? "en" : "he"} : ${rightWords}</b>
  
  
+    
 <b>${phoneticLine}${wordLineDictionary} </b>
 ${examplesLine}
 <b>${randomIndex + 1}/(${dictionaryLength}) </b>
