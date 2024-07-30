@@ -104,25 +104,35 @@ module.exports = async function prepareMessage(
 
     const linkToTranslate = `https://context.reverso.net/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4/%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9/${firstWord}`
 
-    // return final sms_____________________
+    // return final sms ===================================
 
     return `<b>${isEnglishLanguage == true ? "(en)" : "(he)"}   ${rightWords}</b>
- 
- 
-    
 <b>${phoneticLine}${wordLineDictionary} </b>
 ${examplesLine}
-<b>${randomIndex + 1}/(${dictionaryLength}) </b>
 
-<b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b>
 <a href="${audioLine}">   </a>
+
+<b>Video clips :</b>
+<b>${(isEnglishLanguage == true && isOneWord) ? `
+   
+https://www.playphrase.me/search/${firstWord}/
+   
+https://yarn.co/yarn-find?text=${firstWord}
+  
+  
+  ` : ""}  </b>
+
 <a href="${linkToTranslate}">Translate with Context</a>
 
-
+_
 `
+// save------------
+{/* <b>${randomIndex + 1}/(${dictionaryLength}) </b> */}
+{/* <b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b> */}
+
   }
 
-  //if we have  a few words _______________
+  //if we have  a few words ======================================
 
   if (response_dictionary_api == undefined || !isOneWord) {
     const linkToTranslate = `https://translate.google.com/?hl=${
@@ -137,10 +147,10 @@ ${examplesLine}
 <b>${wordLineDictionary} </b>
 <b>${randomIndex + 1}/(${dictionaryLength})</b>
         
-<b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b>
 
          
 `
+{/* <b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b> */}
 
     let textPart2_google = ` <a href="${linkToTranslate}">Translate with Google</a>
 
