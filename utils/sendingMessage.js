@@ -24,140 +24,173 @@ module.exports = async function prepareMessage(
   const timestamp = Date.now()
   const formattedDate = formatDate(timestamp)
 
-  let logMessage =
-    `${randomIndex + 1}.${wordLineDictionary}  -  ` + formattedDate
-  logSendedWords(logMessage)
+  // Логируем отправленные слова
+  logSendedWords(
+    `${randomIndex + 1}.${wordLineDictionary}  -  ${formattedDate}`
+  )
 
-  let responseData
-  if (response_dictionary_api != undefined && isOneWord) {
-    responseData = response_dictionary_api.data
+  if (response_dictionary_api && isOneWord) {
+    return await prepareSingleWordMessage(
+      response_dictionary_api,
+      firstWord,
+      isEnglishLanguage,
+      randomIndex,
+      dictionaryLength,
+      wordLineDictionary
+    )
+  } else {
+    return prepareMultiWordMessage(
+      leftWords,
+      rightWords,
+      isEnglishLanguage,
+      randomIndex,
+      dictionaryLength,
+      wordLineDictionary
+    )
+  }
+}
 
-    const tokenJWT = await getTokenJWT()
-    const IAM_TOKEN = await changeTokenToIAM({
-      jwt: tokenJWT,
-    })
+async function prepareSingleWordMessage(
+  response_dictionary_api,
+  firstWord,
+  isEnglishLanguage,
+  randomIndex,
+  dictionaryLength,
+  wordLineDictionary
+) {
+  const responseData = response_dictionary_api.data
 
-    let examples = ""
-    for (const key0 in responseData[0].meanings) {
-      for (const key in responseData[0].meanings[key0].definitions) {
-        if (
-          responseData[0].meanings[key0].definitions[key].example != undefined
-        ) {
-          examples +=
-            "\r\n" +
-            `<b>- ${responseData[0].meanings[key0].definitions[key].example}</b>`
+  const IAM_TOKEN = await getIAMToken()
 
-          await translateText(
-            responseData[0].meanings[key0].definitions[key].example,
+  const { examples, phonetic, audio } = await processDictionaryData(
+    responseData,
+    IAM_TOKEN,
+    firstWord
+  )
+
+  const phoneticLine = phonetic ? `${phonetic} - ` : ""
+  const examplesLine = examples ? `${examples}` : ""
+  const audioLine = audio ? `${audio}` : ""
+
+  const linkToTranslate = `https://context.reverso.net/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4/%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9/${firstWord}`
+
+  return formatSingleWordMessage(
+    isEnglishLanguage,
+    phoneticLine,
+    wordLineDictionary,
+    examplesLine,
+    audioLine,
+    firstWord,
+    linkToTranslate
+  )
+}
+
+async function getIAMToken() {
+  const tokenJWT = await getTokenJWT()
+  return await changeTokenToIAM({ jwt: tokenJWT })
+}
+
+async function processDictionaryData(responseData, IAM_TOKEN, firstWord) {
+  let examples = await getExamples(responseData, IAM_TOKEN)
+  let phonetic = getPhonetic(responseData)
+  let audio = getAudio(responseData, firstWord)
+
+  return { examples, phonetic, audio }
+}
+
+async function getExamples(responseData, IAM_TOKEN) {
+  let examples = ""
+  for (const meaning of responseData[0].meanings) {
+    for (const definition of meaning.definitions) {
+      if (definition.example) {
+        examples += `\r\n<b>- ${definition.example}</b>`
+        try {
+          const translatedText = await translateText(
+            definition.example,
             IAM_TOKEN
           )
-            .then((translateTextVar) => {
-              // console.log('translateTextVar222', translateTextVar)
-              if (translateTextVar)
-                examples += "\r\n" + "- " + translateTextVar + "\r\n"
-            })
-            .catch((err) => {
-              // logAlerts(err)
-              console.log("err_translateText() : ", err)
-            })
+          examples += `\r\n- ${translatedText}\r\n`
+        } catch (err) {
+          console.log("err_translateText() : ", err)
         }
       }
     }
-    let phonetic = ""
-    for (const key in responseData[0].phonetics) {
-      if (responseData[0].phonetics[key].text != undefined) {
-        phonetic = responseData[0].phonetics[key].text
-      }
+  }
+  return examples
+}
+
+function getPhonetic(responseData) {
+  for (const phonetic of responseData[0].phonetics) {
+    if (phonetic.text) {
+      return phonetic.text
     }
+  }
+  return ""
+}
 
-    let audio
-
-    for (const key in responseData[0].phonetics) {
-      if (responseData[0].phonetics[key].audio != undefined) {
-        audio = responseData[0].phonetics[key].audio
-      }
+function getAudio(responseData, firstWord) {
+  for (const phonetic of responseData[0].phonetics) {
+    if (phonetic.audio) {
+      return phonetic.audio
     }
+  }
+  return `https://translate.google.com.vn/translate_tts?ie=UTF-8&q=${urlencode(
+    firstWord
+  )}&tl=en&client=tw-ob`
+}
 
-    if (!audio) {
-      audio = `https://translate.google.com.vn/translate_tts?ie=UTF-8&q=${urlencode(
-        firstWord
-      )}&tl=en&client=tw-ob`
-    }
+function formatSingleWordMessage(
+  isEnglishLanguage,
+  phoneticLine,
+  wordLineDictionary,
+  examplesLine,
+  audioLine,
+  firstWord,
+  linkToTranslate
+) {
+  const videoClipsLinks = isEnglishLanguage
+    ? `
+    https://www.playphrase.me/search/${firstWord}/
+    https://yarn.co/yarn-find?text=${firstWord}
+  `
+    : ""
 
-    let phoneticLine = phonetic //pronunciation
-      ? `${phonetic} - `
-      : responseData[0] && responseData[0].phonetic
-      ? `${responseData[0] && responseData[0].phonetic} - `
-      : ""
-    phoneticLine = isOneWord ? phoneticLine : ""
-
-    let examplesLine = examples && isOneWord ? `${examples}` : ""
-
-    let audioLine =
-      audio && isOneWord && responseData[0]
-        ? `${audio}`
-        : responseData[0].phonetics[1] && responseData[0].phonetics[1].audio
-        ? `${
-            responseData[0].phonetics[1] && responseData[0].phonetics[1].audio
-          }`
-        : ""
-
-    const linkToTranslate = `https://context.reverso.net/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4/%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9/${firstWord}`
-
-    // return final sms ===================================
-
-    return `<b>${isEnglishLanguage == true ? "(en)" : "(he)"}   ${rightWords}</b>
+  return `<b>${isEnglishLanguage ? "(en)" : "(he)"}   ${rightWords}</b>
+  
 <b>${phoneticLine}${wordLineDictionary} </b>
+
 ${examplesLine}
 
 <a href="${audioLine}">   </a>
 
 <b>Video clips :</b>
-<b>${(isEnglishLanguage == true && isOneWord) ? `
-   
-https://www.playphrase.me/search/${firstWord}/
-   
-https://yarn.co/yarn-find?text=${firstWord}
-  
-  
-  ` : ""}  </b>
+<b>${videoClipsLinks}</b>
 
 <a href="${linkToTranslate}">Translate with Context</a>
-
 _
 `
-// save------------
-{/* <b>${randomIndex + 1}/(${dictionaryLength}) </b> */}
-{/* <b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b> */}
+}
 
-  }
+function prepareMultiWordMessage(
+  leftWords,
+  rightWords,
+  isEnglishLanguage,
+  randomIndex,
+  dictionaryLength,
+  wordLineDictionary
+) {
+  const linkToTranslate = `https://translate.google.com/?hl=${
+    isEnglishLanguage ? "en" : "ru"
+  }&sl=auto&tl=ru&text=${urlencode(leftWords)}&op=translate`
 
-  //if we have  a few words ======================================
+  return `<b>${isEnglishLanguage ? "en" : "he"} : ${rightWords}</b>
+  
+<b>${wordLineDictionary}</b>
 
-  if (response_dictionary_api == undefined || !isOneWord) {
-    const linkToTranslate = `https://translate.google.com/?hl=${
-      isEnglishLanguage ? "en" : "ru"
-    }&sl=auto&tl=ru&text=${urlencode(leftWords)}&op=translate`
-
-    let textPart1 = `<b>${
-      isEnglishLanguage == true ? "en" : "he"
-    } : ${rightWords}</b>
-    
-
-<b>${wordLineDictionary} </b>
-<b>${randomIndex + 1}/(${dictionaryLength})</b>
-        
-
-         
+<a href="${linkToTranslate}">Translate with Google</a>
 `
-{/* <b> Dictionaries : ${JSON.stringify(objAllDictRows, null, 2)}</b> */}
+}
 
-    let textPart2_google = ` <a href="${linkToTranslate}">Translate with Google</a>
-
- 
- 
-`
-
-    return textPart1 + textPart2_google
-  }
+{
+  /* <b>${randomIndex + 1}/(${dictionaryLength})</b> */
 }
