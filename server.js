@@ -1,23 +1,23 @@
 const dotenv = require("dotenv")
 dotenv.config()
 const TelegramBot = require("node-telegram-bot-api")
-const token = process.env.TELEGRAM_BOT_TOKEN
 const { clockStart, clockEnd } = require("./constants/intervals.js")
+const getAllWordsFromFiles = require("./utils/getAllWordsFromFiles.js")
+const { dictionaryText } = getAllWordsFromFiles()
+const { sec, ms, min, interval } = require("./constants/intervals.js")
+const { textMessageHtml } = require("./constants/texts.js")
+const sendingWordMessage = require("./utils/prepareMessage.js")
+const dictionaryTextToFile = require("./utils/dictionaryTextToFile.js")
+const { give_me_keyboard } = require("./constants/menus.js")
 
 // const token =
 //     process.env.NODE_ENV === 'prod'
 //         ? process.env.TELEGRAM_BOT_TOKEN
 //         : process.env.TELEGRAM_BOT_TOKEN_testing
 
+const token = process.env.TELEGRAM_BOT_TOKEN
+console.log('token :>> ', token);
 const bot = new TelegramBot(token, { polling: true })
-const getAllWordsFromFiles = require("./utils/getAllWordsFromFiles.js")
-const { dictionaryText } = getAllWordsFromFiles()
-const CHAT_ID_ADMIN = process.env.CHAT_ID_ADMIN
-const { sec, ms, min, interval } = require("./constants/intervals.js")
-const { textMessageHtml } = require("./constants/texts.js")
-const sendingWordMessage = require("./utils/prepareMessage.js")
-const dictionaryTextToFile = require("./utils/dictionaryTextToFile.js")
-const { give_me_keyboard } = require("./constants/menus.js")
 
 //caching dictionaries======
 dictionaryTextToFile()
@@ -32,6 +32,8 @@ var optionsMessage = {
 }
 // 1 message!!!!!!
 console.log("send_start_message")
+
+const CHAT_ID_ADMIN = process.env.CHAT_ID_ADMIN
 bot.sendMessage(CHAT_ID_ADMIN, textMessageHtml, optionsMessage)
 
 let dictionary
@@ -63,7 +65,7 @@ bot.onText(/\/start/, async (msg) => {
   await bot.sendPhoto(chatId, photoPath, optionsMessage)
 
   sendingWordMessage(dictionary, bot, chatId)
-  
+
   setInterval(
     () => {
       let isTimeForSending = false
@@ -86,7 +88,7 @@ bot.onText(/\/start/, async (msg) => {
     },
 
     interval
-  )  
+  )
 })
 
 // sending a list of words and adding them to the dictionary ===============
