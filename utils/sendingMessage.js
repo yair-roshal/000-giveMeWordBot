@@ -186,7 +186,7 @@ function prepareMultiWordMessage(
     isEnglishLanguage ? "en" : "ru"
   }&sl=auto&tl=ru&text=${urlencode(leftWords)}&op=translate`
 
-  return `<b>${isEnglishLanguage ? "en" : "he"} : ${rightWords}</b>
+  return `<b>${isEnglishLanguage ? "(en)" : "(he)"} : ${rightWords}</b>
   
 <b>${wordLineDictionary}</b>
 
