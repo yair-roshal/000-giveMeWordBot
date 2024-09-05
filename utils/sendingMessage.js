@@ -151,7 +151,10 @@ function formatSingleWordMessage(
   const videoClipsLinks = isEnglishLanguage
     ? `
     https://www.playphrase.me/search/${firstWord}/
+    
     https://yarn.co/yarn-find?text=${firstWord}
+    
+    https://youglish.com/pronounce/${firstWord}/english/us
   `
     : ""
 
