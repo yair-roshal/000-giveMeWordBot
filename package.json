@@ -26,5 +26,8 @@
         "pm2": "^5.2.2",
         "urlencode": "^1.1.0"
     },
-    "description": ""
+    "description": "",
+    "devDependencies": {
+        "prettier": "^3.4.2"
+    }
 }
