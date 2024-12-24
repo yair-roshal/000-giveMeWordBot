@@ -36,7 +36,16 @@ const getWordsFromGoogleDocs = require("./utils/getWordsFromGoogleDocs.js")
   bot.sendMessage(CHAT_ID_ADMIN, textMessageHtml, optionsMessage)
 
 
+  
+  // callback_query при нажатии кнопке новых слов ==========================================
+  bot.on("callback_query", (query) => {
+    const chatId = query.from.id
+    // console.log('query ---------------:>> ', query)
 
+    if (query.data === "give_me") {
+      sendingWordMessage(dictionary, bot, chatId)
+    }
+  })
 
   // start ===============================================
   bot.onText(/\/start/, async (msg) => {
@@ -88,16 +97,7 @@ const getWordsFromGoogleDocs = require("./utils/getWordsFromGoogleDocs.js")
     )
   })
   
-  
-  // callback_query при нажатии кнопке новых слов ==========================================
-  bot.on("callback_query", (query) => {
-    const chatId = query.from.id
-    // console.log('query ---------------:>> ', query)
 
-    if (query.data === "give_me") {
-      sendingWordMessage(dictionary, bot, chatId)
-    }
-  })
   
 
   // sending a list of words and adding them to the dictionary ===============
