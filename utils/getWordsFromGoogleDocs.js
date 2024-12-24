@@ -13,7 +13,7 @@ module.exports = async function fetchGoogleDocText() {
 
     if (response.status === 200) {
       // Выводим содержимое документа
-      console.log("Document content:\n", response.data)
+      // console.log("Document content:\n", response.data)
       return response.data
     } else {
       console.log(`Ошибка: статус ${response.status}`)
