@@ -9,11 +9,9 @@ const { textMessageHtml } = require("./constants/texts.js")
 const sendingWordMessage = require("./utils/prepareMessage.js")
 const dictionaryTextToFile = require("./utils/dictionaryTextToFile.js")
 const { give_me_keyboard } = require("./constants/menus.js")
-
 const getWordsFromGoogleDocs = require("./utils/getWordsFromGoogleDocs.js")
 
-async function startBot() {
-  // const token =
+   // const token =
   //     process.env.NODE_ENV === 'prod'
   //         ? process.env.TELEGRAM_BOT_TOKEN
   //         : process.env.TELEGRAM_BOT_TOKEN_testing
@@ -33,33 +31,25 @@ async function startBot() {
     //disable because we don't want show description links
     disable_web_page_preview: true,
   }
-  // 1 message!!!!!!
-  console.log("send_start_message")
-
+ 
   const CHAT_ID_ADMIN = process.env.CHAT_ID_ADMIN
   bot.sendMessage(CHAT_ID_ADMIN, textMessageHtml, optionsMessage)
 
-  const dictionaryText = await getWordsFromGoogleDocs()
 
-  console.log("dictionaryText", dictionaryText)
 
-  let dictionary
-  if (dictionaryText) {
-    dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
-  }
-
-  // callback_query ===============================================
-  bot.on("callback_query", (query) => {
-    const chatId = query.from.id
-    // console.log('query ---------------:>> ', query)
-
-    if (query.data === "give_me") {
-      sendingWordMessage(dictionary, bot, chatId)
-    }
-  })
 
   // start ===============================================
   bot.onText(/\/start/, async (msg) => {
+    
+    
+    const dictionaryText = await getWordsFromGoogleDocs()
+    console.log("dictionaryText", dictionaryText)
+  
+    let dictionary
+    if (dictionaryText) {
+      dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
+    }
+    
     const chatId = msg.chat.id
     var photoPath = __dirname + "/media/logo.jpg"
     // console.log('photoPath :>> ', photoPath)
@@ -97,6 +87,18 @@ async function startBot() {
       interval
     )
   })
+  
+  
+  // callback_query при нажатии кнопке новых слов ==========================================
+  bot.on("callback_query", (query) => {
+    const chatId = query.from.id
+    // console.log('query ---------------:>> ', query)
+
+    if (query.data === "give_me") {
+      sendingWordMessage(dictionary, bot, chatId)
+    }
+  })
+  
 
   // sending a list of words and adding them to the dictionary ===============
 
@@ -133,6 +135,4 @@ async function startBot() {
   //             interval,
   //         )
   // }
-}
-
-startBot()
+ 
