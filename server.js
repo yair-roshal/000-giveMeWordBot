@@ -11,6 +11,43 @@ const dictionaryTextToFile = require("./utils/dictionaryTextToFile.js")
 const { give_me_keyboard } = require("./constants/menus.js")
 const getWordsFromGoogleDocs = require("./utils/getWordsFromGoogleDocs.js")
 
+const fs = require("fs")
+const path = require("path")
+
+const pidFile = path.join(__dirname, "bot.pid")
+
+// Проверяем, существует ли PID-файл
+if (fs.existsSync(pidFile)) {
+  const pid = parseInt(fs.readFileSync(pidFile, "utf8"), 10)
+
+  try {
+    // Проверяем, активен ли процесс
+    process.kill(pid, 0)
+    console.log(`Bot is already running with PID ${pid}. Exiting...`)
+    process.exit(1) // Завершаем текущий процесс
+  } catch (err) {
+    // Если процесс не существует, продолжаем
+    console.log(
+      "Stale PID file found. Starting new bot instance...",
+      new Date().toLocaleTimeString("en-GB")
+    )
+    fs.unlinkSync(pidFile) // Удаляем старый PID-файл
+  }
+}
+
+// Записываем текущий PID в файл
+fs.writeFileSync(pidFile, process.pid.toString())
+
+// Удаляем PID-файл при завершении процесса
+process.on("exit", () => fs.unlinkSync(pidFile))
+process.on("SIGINT", () => {
+  fs.unlinkSync(pidFile)
+  process.exit(0)
+})
+
+// =================================
+
+
 // const token =
 //     process.env.NODE_ENV === 'prod'
 //         ? process.env.TELEGRAM_BOT_TOKEN
@@ -58,7 +95,7 @@ bot.onText(/\/start/, async (msg) => {
     dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
   }
 
-  console.log("dictionary", dictionary)
+  // console.log("dictionary", dictionary)
   const chatId = msg.chat.id
   var photoPath = __dirname + "/media/logo.jpg"
   // console.log('photoPath :>> ', photoPath)
@@ -132,3 +169,6 @@ console.log("server started with interval:", interval / ms / sec, "min")
 //             interval,
 //         )
 // }
+
+
+

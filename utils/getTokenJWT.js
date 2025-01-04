@@ -28,9 +28,9 @@ const getTokenJWT = async () => {
     .update(JSON.stringify(payload))
     .final()
 
-  console.log("getTokenJWT_now", formatDate(payload?.iat))
-  console.log("getTokenJWT_exp", formatDate(payload?.exp))
-  console.log("TokenJWT", token)
+  // console.log("getTokenJWT_now", formatDate(payload?.iat))
+  // console.log("getTokenJWT_exp", formatDate(payload?.exp))
+  // console.log("TokenJWT", token)
 
   return token
 }

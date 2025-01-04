@@ -49,7 +49,7 @@ module.exports = async function translateText(texts, IAM_TOKEN) {
             headers,
             5, // number of attempts
         )
-        console.log('translate :>> ', translate)
+        // console.log('translate :>> ', translate)
     } catch (err) {
         console.log('yandex_api_ERROR_translate: ')
         console.error("err.message", err?.message)
