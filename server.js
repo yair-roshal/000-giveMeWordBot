@@ -120,31 +120,31 @@ bot.onText(/\/start/, async (msg) => {
   let previousDictionaryHash = null; // Для проверки изменений в словаре
 
 // Функция для хеширования словаря (для проверки изменений)
-const hashDictionary = (dictionary) => {
-  const hash = require("crypto").createHash("sha256");
-  hash.update(dictionary.join(""));
-  return hash.digest("hex");
-};
+// const hashDictionary = (dictionary) => {
+//   const hash = require("crypto").createHash("sha256");
+//   hash.update(dictionary.join(""));
+//   return hash.digest("hex");
+// };
 
   
   // Проверяем изменения в словаре
-const checkForDictionaryUpdates = async () => {
-  const newDictionaryText = await getWordsFromGoogleDocs();
-  if (newDictionaryText) {
-    const newDictionary = newDictionaryText.split(/\r?\n/).filter(Boolean);
+// const checkForDictionaryUpdates = async () => {
+//   const newDictionaryText = await getWordsFromGoogleDocs();
+//   if (newDictionaryText) {
+//     const newDictionary = newDictionaryText.split(/\r?\n/).filter(Boolean);
 
-    // Проверяем, изменился ли словарь
-    const newHash = hashDictionary(newDictionary);
-    if (newHash !== previousDictionaryHash) {
-      dictionary = newDictionary;
-      previousDictionaryHash = newHash;
-      console.log("Словарь обновлен!");
-    }
-  }
-};
+//     // Проверяем, изменился ли словарь
+//     const newHash = hashDictionary(newDictionary);
+//     if (newHash !== previousDictionaryHash) {
+//       dictionary = newDictionary;
+//       previousDictionaryHash = newHash;
+//       console.log("Словарь обновлен!");
+//     }
+//   }
+// };
 
 // Интервал для проверки изменений в словаре
-setInterval(checkForDictionaryUpdates, 1440 * min); // Проверяем каждые X минут
+// setInterval(checkForDictionaryUpdates, 1440 * min); // Проверяем каждые X минут
 
    
   setInterval(
