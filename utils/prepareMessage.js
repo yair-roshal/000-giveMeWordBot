@@ -21,13 +21,13 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
 
   const randomIndexForDictionary = Math.floor(Math.random() * dictionary.length)
   let wordLineDictionary = dictionary[randomIndexForDictionary]
-  console.log("______________________________ :>> ")
-  console.log(
-    "wordLineDictionary :>> ",
-    wordLineDictionary,
-    "  ",
-    formattedDate
-  )
+  // console.log("______________________________ :>> ")
+  // console.log(
+  //   "wordLineDictionary :>> ",
+  //   wordLineDictionary,
+  //   "  ",
+  //   formattedDate
+  // )
 
   let firstWord = ""
   let leftWords = ""
@@ -50,7 +50,7 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
     return
   }
 
-  console.log({ leftWords })
+  // console.log({ leftWords })
 
   // Language detect=========
   let isEnglishLanguage = false
@@ -66,19 +66,17 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
 
   let isOneWord = true
   arrayEnglishWords = leftWords.split(" ")
-  console.log("arrayEnglishWords :>> ", arrayEnglishWords)
+  // console.log("arrayEnglishWords :>> ", arrayEnglishWords)
   if (arrayEnglishWords.length > 1) {
     isOneWord = false
   }
 
-  console.log(
-    `
-
- isEnglishLanguage -- ${isEnglishLanguage},
-isOneWord -- ${isOneWord}
-
-`
-  )
+//   console.log(
+//     `
+//  isEnglishLanguage -- ${isEnglishLanguage},
+// isOneWord -- ${isOneWord}
+// `
+//   )
 
   let response_dictionary_api
   if (isEnglishLanguage && isOneWord) {
@@ -126,7 +124,7 @@ isOneWord -- ${isOneWord}
     disable_web_page_preview: true,
   }
 
-  console.log("textMessage(prepare_was_good) :>> ", !!textMessage)
+  // console.log("textMessage(prepare_was_good) :>> ", !!textMessage)
 
   if (!response_dictionary_api) {
     bot.sendMessage(chatId, textMessage, optionsMessageWithoutPreview)

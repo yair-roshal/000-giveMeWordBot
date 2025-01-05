@@ -56,8 +56,10 @@ const getWordsFromGoogleDocs = require("./utils/getWordsFromGoogleDocs.js")
 const token = process.env.TELEGRAM_BOT_TOKEN
 console.log("token :>> ", token)
 console.log("process.env.NODE_ENV", process.env.NODE_ENV)
-const bot = new TelegramBot(token, { polling: true })
-
+const bot = new TelegramBot(token, {
+  polling: true,
+  // contentTypeFix: false,
+});
 //caching dictionaries======
 // dictionaryTextToFile()
 // logSessions()
@@ -100,24 +102,22 @@ bot.onText(/\/start/, async (msg) => {
   var photoPath = __dirname + "/media/logo.jpg"
   // console.log('photoPath :>> ', photoPath)
 
-  var optionsMessage = {
+  var optionsMessage2 = {
     caption: `Catch the first word, the rest will be in ${min} minutes`,
     reply_markup: JSON.stringify(give_me_keyboard),
+    // contentType: 'image/jpeg', // Указываем тип содержимого
+
   }
 
-  await bot.sendPhoto(chatId, photoPath, optionsMessage)
+  await bot.sendPhoto(chatId, photoPath, optionsMessage2)
 
+   
   sendingWordMessage(dictionary, bot, chatId)
 
   
+   
   
-  
-  
-  
-  
-  
-  
-  let previousDictionaryHash = null; // Для проверки изменений в словаре
+  // let previousDictionaryHash = null; // Для проверки изменений в словаре
 
 // Функция для хеширования словаря (для проверки изменений)
 // const hashDictionary = (dictionary) => {
