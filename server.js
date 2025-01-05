@@ -144,7 +144,7 @@ const checkForDictionaryUpdates = async () => {
 };
 
 // Интервал для проверки изменений в словаре
-setInterval(checkForDictionaryUpdates, 1440 * min); // Проверяем каждые X минут
+// setInterval(checkForDictionaryUpdates, 1440 * min); // Проверяем каждые X минут
 
    
   setInterval(
@@ -165,6 +165,8 @@ setInterval(checkForDictionaryUpdates, 1440 * min); // Проверяем каж
         )
       }
 
+    //  await checkForDictionaryUpdates()
+      
       isTimeForSending && sendingWordMessage(dictionary, bot, chatId)
        
       
