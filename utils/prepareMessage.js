@@ -13,21 +13,18 @@ const {
   give_me_keyboard,
 } = require("../constants/menus.js")
 
-const sendingWordMessage = async (dictionary, bot, chatId) => {
+const sendingWordMessage = async (dictionary, currentIndex, bot, chatId) => {
   const timestamp = Date.now()
   const formattedDate = formatDate(timestamp)
 
   let textMessage
 
   const randomIndexForDictionary = Math.floor(Math.random() * dictionary.length)
-  let wordLineDictionary = dictionary[randomIndexForDictionary]
-  // console.log("______________________________ :>> ")
-  // console.log(
-  //   "wordLineDictionary :>> ",
-  //   wordLineDictionary,
-  //   "  ",
-  //   formattedDate
-  // )
+  let wordLineDictionary = dictionary[currentIndex]
+
+  // let wordLineDictionary = dictionary[randomIndexForDictionary]
+console.log("currentIndex", currentIndex);
+  console.log("wordLineDictionary :>> ", wordLineDictionary)
 
   let firstWord = ""
   let leftWords = ""
@@ -36,7 +33,7 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
   const symbolsArray = ["-", "—", "–", "—", "−"]
 
   symbolsArray.forEach((symbol) => {
-    if (wordLineDictionary.indexOf(symbol) !== -1) {
+    if (wordLineDictionary && wordLineDictionary.indexOf(symbol) !== -1) {
       leftWords = wordLineDictionary.split(symbol)[0].trim()
       rightWords = wordLineDictionary.split(symbol)[1].trim()
       firstWord = leftWords.split(" ")[0]
@@ -46,7 +43,7 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
 
   if (leftWords == "") {
     console.error('don`t found "-" in this string :>> =====================')
-    sendingWordMessage(dictionary, bot, chatId)
+    sendingWordMessage(dictionary,currentIndex+1, bot, chatId)
     return
   }
 
@@ -71,12 +68,12 @@ const sendingWordMessage = async (dictionary, bot, chatId) => {
     isOneWord = false
   }
 
-//   console.log(
-//     `
-//  isEnglishLanguage -- ${isEnglishLanguage},
-// isOneWord -- ${isOneWord}
-// `
-//   )
+  //   console.log(
+  //     `
+  //  isEnglishLanguage -- ${isEnglishLanguage},
+  // isOneWord -- ${isOneWord}
+  // `
+  //   )
 
   let response_dictionary_api
   if (isEnglishLanguage && isOneWord) {

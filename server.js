@@ -10,7 +10,8 @@ const sendingWordMessage = require("./utils/prepareMessage.js")
 const dictionaryTextToFile = require("./utils/dictionaryTextToFile.js")
 const { give_me_keyboard } = require("./constants/menus.js")
 const getWordsFromGoogleDocs = require("./utils/getWordsFromGoogleDocs.js")
-
+const formatDate = require("./utils/formatDate.js")
+var currentIndex = 0
 // const fs = require("fs")
 // const path = require("path")
 
@@ -47,7 +48,6 @@ const getWordsFromGoogleDocs = require("./utils/getWordsFromGoogleDocs.js")
 
 // =================================
 
-
 // const token =
 //     process.env.NODE_ENV === 'prod'
 //         ? process.env.TELEGRAM_BOT_TOKEN
@@ -59,7 +59,7 @@ console.log("process.env.NODE_ENV", process.env.NODE_ENV)
 const bot = new TelegramBot(token, {
   polling: true,
   // contentTypeFix: false,
-});
+})
 //caching dictionaries======
 // dictionaryTextToFile()
 // logSessions()
@@ -82,7 +82,12 @@ bot.on("callback_query", (query) => {
   // console.log('query ---------------:>> ', query)
 
   if (query.data === "give_me") {
-    sendingWordMessage(dictionary, bot, chatId)
+    sendingWordMessage(dictionary, currentIndex, bot, chatId)
+    if (currentIndex == dictionary.length - 1) {
+      currentIndex = 0
+    } else {
+      currentIndex++
+    }
   }
 })
 
@@ -106,49 +111,49 @@ bot.onText(/\/start/, async (msg) => {
     caption: `Catch the first word, the rest will be in ${min} minutes`,
     reply_markup: JSON.stringify(give_me_keyboard),
     // contentType: 'image/jpeg', // Указываем тип содержимого
-
   }
 
   await bot.sendPhoto(chatId, photoPath, optionsMessage2)
 
-   
-  sendingWordMessage(dictionary, bot, chatId)
+  sendingWordMessage(dictionary, currentIndex, bot, chatId)
+  if (currentIndex == dictionary.length - 1) {
+    currentIndex = 0
+  } else {
+    currentIndex++
+  }
 
-  
-   
-  
-  // let previousDictionaryHash = null; // Для проверки изменений в словаре
+  let previousDictionaryHash = null // Для проверки изменений в словаре
 
-// Функция для хеширования словаря (для проверки изменений)
-// const hashDictionary = (dictionary) => {
-//   const hash = require("crypto").createHash("sha256");
-//   hash.update(dictionary.join(""));
-//   return hash.digest("hex");
-// };
+  // Функция для хеширования словаря (для проверки изменений)
+  const hashDictionary = (dictionary) => {
+    const hash = require("crypto").createHash("sha256")
+    hash.update(dictionary.join(""))
+    return hash.digest("hex")
+  }
 
-  
   // Проверяем изменения в словаре
-// const checkForDictionaryUpdates = async () => {
-//   const newDictionaryText = await getWordsFromGoogleDocs();
-//   if (newDictionaryText) {
-//     const newDictionary = newDictionaryText.split(/\r?\n/).filter(Boolean);
+  const checkForDictionaryUpdates = async () => {
+    const newDictionaryText = await getWordsFromGoogleDocs()
+    if (newDictionaryText) {
+      const newDictionary = newDictionaryText.split(/\r?\n/).filter(Boolean)
 
-//     // Проверяем, изменился ли словарь
-//     const newHash = hashDictionary(newDictionary);
-//     if (newHash !== previousDictionaryHash) {
-//       dictionary = newDictionary;
-//       previousDictionaryHash = newHash;
-//       console.log("Словарь обновлен!");
-//     }
-//   }
-// };
+      // Проверяем, изменился ли словарь
+      const newHash = hashDictionary(newDictionary)
+      if (newHash !== previousDictionaryHash) {
+        dictionary = newDictionary
+        previousDictionaryHash = newHash
+        console.log("Словарь обновлен!")
+      } else {
+        console.log("Словарь не изменен!")
+      }
+    }
+  }
 
-// Интервал для проверки изменений в словаре
-// setInterval(checkForDictionaryUpdates, 1440 * min); // Проверяем каждые X минут
+  // Интервал для проверки изменений в словаре
+  // setInterval(checkForDictionaryUpdates, 1 * min); // Проверяем каждые X минут
 
-   
   setInterval(
-    () => {
+    async () => {
       let isTimeForSending = false
 
       let currentDate = new Date()
@@ -165,11 +170,21 @@ bot.onText(/\/start/, async (msg) => {
         )
       }
 
-    //  await checkForDictionaryUpdates()
-      
-      isTimeForSending && sendingWordMessage(dictionary, bot, chatId)
-       
-      
+      //  await checkForDictionaryUpdates()
+      if (isTimeForSending) {
+        const timestamp = Date.now()
+        const formattedDate = formatDate(timestamp)
+
+        await checkForDictionaryUpdates()
+        console.log("______________")
+        console.log("formattedDate", formattedDate)
+        await sendingWordMessage(dictionary, currentIndex, bot, chatId)
+        if (currentIndex == dictionary.length - 1) {
+          currentIndex = 0
+        } else {
+          currentIndex++
+        }
+      }
     },
 
     interval
@@ -211,6 +226,3 @@ console.log("server started with interval:", interval / ms / sec, "min")
 //             interval,
 //         )
 // }
-
-
-
