@@ -91,7 +91,7 @@ bot.on("callback_query", (query) => {
   }
 })
 
-bot.on("polling_error", console.log)
+// bot.on("polling_error", console.log)
 
 // start ===============================================
 bot.onText(/\/start/, async (msg) => {

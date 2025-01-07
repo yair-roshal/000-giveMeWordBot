@@ -19,15 +19,16 @@ module.exports = async function prepareMessage(
   dictionaryLength,
   isEnglishLanguage,
   leftWords,
-  rightWords
+  rightWords,
+  currentIndex
 ) {
-  const timestamp = Date.now()
-  const formattedDate = formatDate(timestamp)
+  // const timestamp = Date.now()
+  // const formattedDate = formatDate(timestamp)
 
   // Логируем отправленные слова
-  logSendedWords(
-    `${randomIndex + 1}.${wordLineDictionary}  -  ${formattedDate}`
-  )
+  // logSendedWords(
+  //   `${randomIndex + 1}.${wordLineDictionary}  -  ${formattedDate}`
+  // )
 
   if (response_dictionary_api && isOneWord) {
     return await prepareSingleWordMessage(
@@ -36,7 +37,8 @@ module.exports = async function prepareMessage(
       isEnglishLanguage,
       randomIndex,
       dictionaryLength,
-      wordLineDictionary
+      wordLineDictionary,
+      currentIndex
     )
   } else {
     return prepareMultiWordMessage(
@@ -45,7 +47,8 @@ module.exports = async function prepareMessage(
       isEnglishLanguage,
       randomIndex,
       dictionaryLength,
-      wordLineDictionary
+      wordLineDictionary,
+      currentIndex
     )
   }
 }
@@ -56,8 +59,12 @@ async function prepareSingleWordMessage(
   isEnglishLanguage,
   randomIndex,
   dictionaryLength,
-  wordLineDictionary
+  wordLineDictionary,
+  currentIndex
 ) {
+  console.log("currentIndex", currentIndex);
+  console.log("dictionaryLength", dictionaryLength);
+  
   const responseData = response_dictionary_api.data
 
   const IAM_TOKEN = await getIAMToken()
@@ -81,7 +88,9 @@ async function prepareSingleWordMessage(
     examplesLine,
     audioLine,
     firstWord,
-    linkToTranslate
+    linkToTranslate,
+    currentIndex,
+    dictionaryLength
   )
 }
 
@@ -146,15 +155,21 @@ function formatSingleWordMessage(
   examplesLine,
   audioLine,
   firstWord,
-  linkToTranslate
+  linkToTranslate,
+  currentIndex,
+  dictionaryLength
 ) {
+  console.log("currentIndex", currentIndex);
+  console.log("dictionaryLength", dictionaryLength);
+  
   const videoClipsLinks = isEnglishLanguage
     ? `
+    https://youglish.com/pronounce/${firstWord}/english/us
+
     https://www.playphrase.me/search/${firstWord}/
     
     https://yarn.co/yarn-find?text=${firstWord}
     
-    https://youglish.com/pronounce/${firstWord}/english/us
   `
     : ""
 
@@ -171,6 +186,10 @@ ${examplesLine}
 
 <a href="${linkToTranslate}">Translate with Context</a>
 _
+
+  <b>
+    ${currentIndex + 1}/(${dictionaryLength})
+  </b>
 `
 }
 
@@ -180,8 +199,12 @@ function prepareMultiWordMessage(
   isEnglishLanguage,
   randomIndex,
   dictionaryLength,
-  wordLineDictionary
+  wordLineDictionary,
+  currentIndex
 ) {
+  console.log("currentIndex", currentIndex);
+  console.log("dictionaryLength", dictionaryLength);
+  
   const linkToTranslate = `https://translate.google.com/?hl=${
     isEnglishLanguage ? "en" : "ru"
   }&sl=auto&tl=ru&text=${urlencode(leftWords)}&op=translate`
@@ -191,9 +214,9 @@ function prepareMultiWordMessage(
 <b>${wordLineDictionary}</b>
 
 <a href="${linkToTranslate}">Translate with Google</a>
-`
-}
 
-{
-  /* <b>${randomIndex + 1}/(${dictionaryLength})</b> */
+  <b>
+    ${currentIndex + 1}/(${dictionaryLength})
+  </b>
+`
 }

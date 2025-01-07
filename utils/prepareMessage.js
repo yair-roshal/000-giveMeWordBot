@@ -100,7 +100,8 @@ console.log("currentIndex", currentIndex);
     dictionary.length,
     isEnglishLanguage,
     leftWords,
-    rightWords
+    rightWords,
+    currentIndex
   )
     .then((res) => {
       return res
