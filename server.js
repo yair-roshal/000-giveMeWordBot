@@ -143,6 +143,7 @@ bot.onText(/\/start/, async (msg) => {
         dictionary = newDictionary
         previousDictionaryHash = newHash
         console.log("Словарь обновлен!")
+        currentIndex = 0
       } else {
         console.log("Словарь не изменен!")
       }
