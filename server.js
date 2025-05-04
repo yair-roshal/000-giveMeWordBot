@@ -1,16 +1,16 @@
-const dotenv = require("dotenv")
+const dotenv = require('dotenv')
 dotenv.config()
-const TelegramBot = require("node-telegram-bot-api")
-const { clockStart, clockEnd } = require("./constants/intervals.js")
+const TelegramBot = require('node-telegram-bot-api')
+const { clockStart, clockEnd } = require('./constants/intervals.js')
 // const getAllWordsFromFiles = require("./utils/getAllWordsFromFiles.js")
 // const { dictionaryText } = getAllWordsFromFiles()
-const { sec, ms, min, interval } = require("./constants/intervals.js")
-const { textMessageHtml } = require("./constants/texts.js")
-const sendingWordMessage = require("./utils/prepareMessage.js")
-const dictionaryTextToFile = require("./utils/dictionaryTextToFile.js")
-const { give_me_keyboard } = require("./constants/menus.js")
-const getWordsFromGoogleDocs = require("./utils/getWordsFromGoogleDocs.js")
-const formatDate = require("./utils/formatDate.js")
+const { sec, ms, min, interval } = require('./constants/intervals.js')
+const { textMessageHtml } = require('./constants/texts.js')
+const sendingWordMessage = require('./utils/prepareMessage.js')
+const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
+const { give_me_keyboard } = require('./constants/menus.js')
+const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
+const formatDate = require('./utils/formatDate.js')
 var currentIndex = 0
 // const fs = require("fs")
 // const path = require("path")
@@ -54,8 +54,8 @@ var currentIndex = 0
 //         : process.env.TELEGRAM_BOT_TOKEN_testing
 
 const token = process.env.TELEGRAM_BOT_TOKEN
-console.log("token :>> ", token)
-console.log("process.env.NODE_ENV", process.env.NODE_ENV)
+console.log('token :>> ', token)
+console.log('process.env.NODE_ENV', process.env.NODE_ENV)
 const bot = new TelegramBot(token, {
   polling: true,
   // contentTypeFix: false,
@@ -67,7 +67,7 @@ const bot = new TelegramBot(token, {
 var optionsMessage = {
   // keyboard=====
   // reply_markup: JSON.stringify(start_keyboard),
-  parse_mode: "HTML",
+  parse_mode: 'HTML',
   //disable because we don't want show description links
   disable_web_page_preview: true,
 }
@@ -77,13 +77,13 @@ bot.sendMessage(CHAT_ID_ADMIN, textMessageHtml, optionsMessage)
 var dictionary
 
 // callback_query при нажатии кнопке новых слов ==========================================
-bot.on("callback_query", (query) => {
+bot.on('callback_query', (query) => {
   const chatId = query.from.id
   // console.log('query ---------------:>> ', query)
 
-  if (query.data === "give_me") {
+  if (query.data === 'give_me') {
     sendingWordMessage(dictionary, currentIndex, bot, chatId)
-    if (currentIndex == dictionary.length - 1) {
+    if (currentIndex == dictionary?.length - 1) {
       currentIndex = 0
     } else {
       currentIndex++
@@ -104,7 +104,7 @@ bot.onText(/\/start/, async (msg) => {
 
   // console.log("dictionary", dictionary)
   const chatId = msg.chat.id
-  var photoPath = __dirname + "/media/logo.jpg"
+  var photoPath = __dirname + '/media/logo.jpg'
   // console.log('photoPath :>> ', photoPath)
 
   var optionsMessage2 = {
@@ -126,9 +126,9 @@ bot.onText(/\/start/, async (msg) => {
 
   // Функция для хеширования словаря (для проверки изменений)
   const hashDictionary = (dictionary) => {
-    const hash = require("crypto").createHash("sha256")
-    hash.update(dictionary.join(""))
-    return hash.digest("hex")
+    const hash = require('crypto').createHash('sha256')
+    hash.update(dictionary.join(''))
+    return hash.digest('hex')
   }
 
   // Проверяем изменения в словаре
@@ -142,10 +142,10 @@ bot.onText(/\/start/, async (msg) => {
       if (newHash !== previousDictionaryHash) {
         dictionary = newDictionary
         previousDictionaryHash = newHash
-        console.log("Словарь обновлен!")
+        console.log('Словарь обновлен!')
         currentIndex = 0
       } else {
-        console.log("Словарь не изменен!")
+        console.log('Словарь не изменен!')
       }
     }
   }
@@ -161,14 +161,12 @@ bot.onText(/\/start/, async (msg) => {
       let nowHours = currentDate.getHours()
       let nowMinutes = currentDate.getMinutes()
 
-      if (process.env.NODE_ENV === "dev") {
+      if (process.env.NODE_ENV === 'dev') {
         isTimeForSending = true
       } else if (nowHours < clockEnd && nowHours > clockStart) {
         isTimeForSending = true
       } else {
-        console.log(
-          `it isn't time for sending messages  -   ${nowHours}:${nowMinutes}`
-        )
+        console.log(`it isn't time for sending messages  -   ${nowHours}:${nowMinutes}`)
       }
 
       //  await checkForDictionaryUpdates()
@@ -177,8 +175,8 @@ bot.onText(/\/start/, async (msg) => {
         const formattedDate = formatDate(timestamp)
 
         await checkForDictionaryUpdates()
-        console.log("______________")
-        console.log("formattedDate", formattedDate)
+        console.log('______________')
+        console.log('formattedDate', formattedDate)
         await sendingWordMessage(dictionary, currentIndex, bot, chatId)
         if (currentIndex == dictionary.length - 1) {
           currentIndex = 0
@@ -188,7 +186,7 @@ bot.onText(/\/start/, async (msg) => {
       }
     },
 
-    interval
+    interval,
   )
 })
 
@@ -217,7 +215,7 @@ bot.onText(/\/start/, async (msg) => {
 
 //===============
 
-console.log("server started with interval:", interval / ms / sec, "min")
+console.log('server started with interval:', interval / ms / sec, 'min')
 
 // {
 //     process.env.NODE_ENV === 'dev' &&

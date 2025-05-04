@@ -1,9 +1,9 @@
-const axios = require("axios")
+const axios = require('axios')
 // const chatIdAdmin = process.env.CHAT_ID_ADMIN
-const prepareMessage = require("./sendingMessage.js")
-const formatDate = require("./formatDate.js")
+const prepareMessage = require('./sendingMessage.js')
+const formatDate = require('./formatDate.js')
 // const langdetect = require('langdetect')
-const logAlerts = require("./logAlerts.js")
+const logAlerts = require('./logAlerts.js')
 
 const {
   // startMenu,
@@ -11,39 +11,45 @@ const {
   start_inline_keyboard,
   keyboard,
   give_me_keyboard,
-} = require("../constants/menus.js")
+} = require('../constants/menus.js')
 
 const sendingWordMessage = async (dictionary, currentIndex, bot, chatId) => {
+  if (!dictionary || !dictionary[currentIndex]) {
+    console.error('Invalid currentIndex: ', currentIndex);
+    return;
+  }
+  
+  
   const timestamp = Date.now()
   const formattedDate = formatDate(timestamp)
 
   let textMessage
 
-  const randomIndexForDictionary = Math.floor(Math.random() * dictionary.length)
+  const randomIndexForDictionary = Math.floor(Math.random() * dictionary?.length)
   let wordLineDictionary = dictionary[currentIndex]
 
   // let wordLineDictionary = dictionary[randomIndexForDictionary]
-console.log("currentIndex", currentIndex);
-  console.log("wordLineDictionary :>> ", wordLineDictionary)
+  console.log('currentIndex', currentIndex)
+  console.log('wordLineDictionary :>> ', wordLineDictionary)
 
-  let firstWord = ""
-  let leftWords = ""
+  let firstWord = ''
+  let leftWords = ''
   let arrayEnglishWords = []
 
-  const symbolsArray = ["-", "—", "–", "—", "−"]
+  const symbolsArray = ['-', '—', '–', '—', '−']
 
   symbolsArray.forEach((symbol) => {
     if (wordLineDictionary && wordLineDictionary.indexOf(symbol) !== -1) {
       leftWords = wordLineDictionary.split(symbol)[0].trim()
       rightWords = wordLineDictionary.split(symbol)[1].trim()
-      firstWord = leftWords.split(" ")[0]
+      firstWord = leftWords.split(' ')[0]
       return
     }
   })
 
-  if (leftWords == "") {
+  if (leftWords == '') {
     console.error('don`t found "-" in this string :>> =====================')
-    sendingWordMessage(dictionary,currentIndex+1, bot, chatId)
+    sendingWordMessage(dictionary, currentIndex + 1, bot, chatId)
     return
   }
 
@@ -62,7 +68,7 @@ console.log("currentIndex", currentIndex);
   // console.log("languages===",languages)
 
   let isOneWord = true
-  arrayEnglishWords = leftWords.split(" ")
+  arrayEnglishWords = leftWords.split(' ')
   // console.log("arrayEnglishWords :>> ", arrayEnglishWords)
   if (arrayEnglishWords.length > 1) {
     isOneWord = false
@@ -78,14 +84,14 @@ console.log("currentIndex", currentIndex);
   let response_dictionary_api
   if (isEnglishLanguage && isOneWord) {
     response_dictionary_api = await axios
-      .get("https://api.dictionaryapi.dev/api/v2/entries/en/" + firstWord)
+      .get('https://api.dictionaryapi.dev/api/v2/entries/en/' + firstWord)
       .then(function (response_dictionary_api) {
         return response_dictionary_api
       })
       .catch(function (err) {
         // logAlerts(err)
 
-        console.log("error_api.dictionaryapi.dev for word : " + firstWord)
+        console.log('error_api.dictionaryapi.dev for word : ' + firstWord)
         // console.log('axios_error_api.dictionaryapi ===', err)
       })
   }
@@ -101,24 +107,24 @@ console.log("currentIndex", currentIndex);
     isEnglishLanguage,
     leftWords,
     rightWords,
-    currentIndex
+    currentIndex,
   )
     .then((res) => {
       return res
     })
     .catch((err) => {
-      console.log("prepareMessage : ", err)
+      console.log('prepareMessage : ', err)
     })
 
   var optionsMessage = {
     reply_markup: JSON.stringify(give_me_keyboard),
-    parse_mode: "HTML",
+    parse_mode: 'HTML',
     // disable_web_page_preview: false,
     disable_web_page_preview: isOneWord ? false : true,
   }
   var optionsMessageWithoutPreview = {
     reply_markup: JSON.stringify(give_me_keyboard),
-    parse_mode: "HTML",
+    parse_mode: 'HTML',
     disable_web_page_preview: true,
   }
 

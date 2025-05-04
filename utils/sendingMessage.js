@@ -1,16 +1,16 @@
-const getTokenJWT = require("./getTokenJWT.js")
-const changeTokenToIAM = require("./changeTokenToIAM.js")
-const translateText = require("./translateText.js")
-const getAllWordsFromFiles = require("./getAllWordsFromFiles.js")
+const getTokenJWT = require('./getTokenJWT.js')
+const changeTokenToIAM = require('./changeTokenToIAM.js')
+const translateText = require('./translateText.js')
+const getAllWordsFromFiles = require('./getAllWordsFromFiles.js')
 const { objAllDictRows } = getAllWordsFromFiles()
-const logSendedWords = require("./logSendedWords.js")
-const formatDate = require("./formatDate.js")
-const logAlerts = require("./logAlerts.js")
-const dotenv = require("dotenv")
-const getMnemonic = require("./getMnemonic.js")
+const logSendedWords = require('./logSendedWords.js')
+const formatDate = require('./formatDate.js')
+const logAlerts = require('./logAlerts.js')
+const dotenv = require('dotenv')
+const getMnemonic = require('./getMnemonic.js')
 
 dotenv.config()
-var urlencode = require("urlencode")
+var urlencode = require('urlencode')
 
 module.exports = async function prepareMessage(
   response_dictionary_api,
@@ -22,8 +22,10 @@ module.exports = async function prepareMessage(
   isEnglishLanguage,
   leftWords,
   rightWords,
-  currentIndex
+  currentIndex,
 ) {
+  const mnemonic = await getMnemonic(leftWords)
+
   // const timestamp = Date.now()
   // const formattedDate = formatDate(timestamp)
 
@@ -40,7 +42,8 @@ module.exports = async function prepareMessage(
       randomIndex,
       dictionaryLength,
       wordLineDictionary,
-      currentIndex
+      currentIndex,
+      mnemonic,
     )
   } else {
     return prepareMultiWordMessage(
@@ -50,7 +53,8 @@ module.exports = async function prepareMessage(
       randomIndex,
       dictionaryLength,
       wordLineDictionary,
-      currentIndex
+      currentIndex,
+      mnemonic,
     )
   }
 }
@@ -62,24 +66,21 @@ async function prepareSingleWordMessage(
   randomIndex,
   dictionaryLength,
   wordLineDictionary,
-  currentIndex
+  currentIndex,
+  mnemonic,
 ) {
-  console.log("currentIndex", currentIndex);
-  console.log("dictionaryLength", dictionaryLength);
-  
+  console.log('currentIndex', currentIndex)
+  console.log('dictionaryLength', dictionaryLength)
+
   const responseData = response_dictionary_api.data
 
   const IAM_TOKEN = await getIAMToken()
 
-  const { examples, phonetic, audio } = await processDictionaryData(
-    responseData,
-    IAM_TOKEN,
-    firstWord
-  )
+  const { examples, phonetic, audio } = await processDictionaryData(responseData, IAM_TOKEN, firstWord)
 
-  const phoneticLine = phonetic ? `${phonetic} - ` : ""
-  const examplesLine = examples ? `${examples}` : ""
-  const audioLine = audio ? `${audio}` : ""
+  const phoneticLine = phonetic ? `${phonetic} - ` : ''
+  const examplesLine = examples ? `${examples}` : ''
+  const audioLine = audio ? `${audio}` : ''
 
   const linkToTranslate = `https://context.reverso.net/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4/%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9/${firstWord}`
 
@@ -92,7 +93,9 @@ async function prepareSingleWordMessage(
     firstWord,
     linkToTranslate,
     currentIndex,
-    dictionaryLength
+    mnemonic,
+    dictionaryLength,
+    rightWords,
   )
 }
 
@@ -110,19 +113,16 @@ async function processDictionaryData(responseData, IAM_TOKEN, firstWord) {
 }
 
 async function getExamples(responseData, IAM_TOKEN) {
-  let examples = ""
+  let examples = ''
   for (const meaning of responseData[0].meanings) {
     for (const definition of meaning.definitions) {
       if (definition.example) {
         examples += `\r\n<b>- ${definition.example}</b>`
         try {
-          const translatedText = await translateText(
-            definition.example,
-            IAM_TOKEN
-          )
+          const translatedText = await translateText(definition.example, IAM_TOKEN)
           examples += `\r\n- ${translatedText}\r\n`
         } catch (err) {
-          console.log("err_translateText() : ", err)
+          console.log('err_translateText() : ', err)
         }
       }
     }
@@ -136,7 +136,7 @@ function getPhonetic(responseData) {
       return phonetic.text
     }
   }
-  return ""
+  return ''
 }
 
 function getAudio(responseData, firstWord) {
@@ -145,11 +145,8 @@ function getAudio(responseData, firstWord) {
       return phonetic.audio
     }
   }
-  return `https://translate.google.com.vn/translate_tts?ie=UTF-8&q=${urlencode(
-    firstWord
-  )}&tl=en&client=tw-ob`
+  return `https://translate.google.com.vn/translate_tts?ie=UTF-8&q=${urlencode(firstWord)}&tl=en&client=tw-ob`
 }
-const mnemonic = await getMnemonic(firstWord)
 
 function formatSingleWordMessage(
   isEnglishLanguage,
@@ -160,11 +157,12 @@ function formatSingleWordMessage(
   firstWord,
   linkToTranslate,
   currentIndex,
-  dictionaryLength
+  mnemonic,
+  dictionaryLength,
 ) {
-  console.log("currentIndex", currentIndex);
-  console.log("dictionaryLength", dictionaryLength);
-  
+  console.log('currentIndex', currentIndex)
+  console.log('dictionaryLength', dictionaryLength)
+
   const videoClipsLinks = isEnglishLanguage
     ? `
     https://youglish.com/pronounce/${firstWord}/english/us
@@ -174,9 +172,9 @@ function formatSingleWordMessage(
     https://yarn.co/yarn-find?text=${firstWord}
     
   `
-    : ""
+    : ''
 
-  return `<b>${isEnglishLanguage ? "(en)" : "(he)"}   ${rightWords}</b>
+  return `<b>${isEnglishLanguage ? '(en)' : '(he)'}   ${rightWords}</b>
   
 <b>${phoneticLine}${wordLineDictionary} </b>
 
@@ -209,16 +207,17 @@ function prepareMultiWordMessage(
   randomIndex,
   dictionaryLength,
   wordLineDictionary,
-  currentIndex
+  currentIndex,
+  mnemonic,
 ) {
-  console.log("currentIndex", currentIndex);
-  console.log("dictionaryLength", dictionaryLength);
-  
+  console.log('currentIndex', currentIndex)
+  console.log('dictionaryLength', dictionaryLength)
+
   const linkToTranslate = `https://translate.google.com/?hl=${
-    isEnglishLanguage ? "en" : "ru"
+    isEnglishLanguage ? 'en' : 'ru'
   }&sl=auto&tl=ru&text=${urlencode(leftWords)}&op=translate`
 
-  return `<b>${isEnglishLanguage ? "(en)" : "(he)"} : ${rightWords}</b>
+  return `<b>${isEnglishLanguage ? '(en)' : '(he)'} : ${rightWords}</b>
   
 <b>${wordLineDictionary}</b>
 
