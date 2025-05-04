@@ -7,6 +7,8 @@ const logSendedWords = require("./logSendedWords.js")
 const formatDate = require("./formatDate.js")
 const logAlerts = require("./logAlerts.js")
 const dotenv = require("dotenv")
+const getMnemonic = require("./getMnemonic.js")
+
 dotenv.config()
 var urlencode = require("urlencode")
 
@@ -147,6 +149,7 @@ function getAudio(responseData, firstWord) {
     firstWord
   )}&tl=en&client=tw-ob`
 }
+const mnemonic = await getMnemonic(firstWord)
 
 function formatSingleWordMessage(
   isEnglishLanguage,
@@ -185,11 +188,17 @@ ${examplesLine}
 <b>${videoClipsLinks}</b>
 
 <a href="${linkToTranslate}">Translate with Context</a>
-_
+
+_______________________________
+<b>🧠 Mnemonic:</b>
+<pre>${mnemonic}</pre>
+_______________________________
 
   <b>
     ${currentIndex + 1}/(${dictionaryLength})
   </b>
+  
+  
 `
 }
 
@@ -214,6 +223,11 @@ function prepareMultiWordMessage(
 <b>${wordLineDictionary}</b>
 
 <a href="${linkToTranslate}">Translate with Google</a>
+
+_______________________________
+<b>🧠 Mnemonic:</b>
+<pre>${mnemonic}</pre>
+_______________________________
 
   <b>
     ${currentIndex + 1}/(${dictionaryLength})
