@@ -54,7 +54,7 @@ var currentIndex = 0
 //         : process.env.TELEGRAM_BOT_TOKEN_testing
 
 const token = process.env.TELEGRAM_BOT_TOKEN
-console.log('token :>> ', token)
+// console.log('token :>> ', token)
 console.log('process.env.NODE_ENV', process.env.NODE_ENV)
 const bot = new TelegramBot(token, {
   polling: true,
