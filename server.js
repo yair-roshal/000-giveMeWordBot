@@ -11,6 +11,8 @@ const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
 const { give_me_keyboard } = require('./constants/menus.js')
 const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
 const formatDate = require('./utils/formatDate.js')
+const crypto = require('crypto');
+
 var currentIndex = 0
 // const fs = require("fs")
 // const path = require("path")
@@ -91,7 +93,21 @@ bot.on('callback_query', (query) => {
   }
 })
 
-// bot.on("polling_error", console.log)
+bot.on('polling_error', (error) => {
+  console.error('Polling error:', error.code, error.message);
+  // Можно добавить логику повторного подключения или просто логировать
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Здесь можно отправить уведомление, или залогировать
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception thrown:', err);
+  // Здесь можно принять решение завершить процесс или попытаться продолжить
+});
+
 
 // start ===============================================
 bot.onText(/\/start/, async (msg) => {
@@ -126,7 +142,7 @@ bot.onText(/\/start/, async (msg) => {
 
   // Функция для хеширования словаря (для проверки изменений)
   const hashDictionary = (dictionary) => {
-    const hash = require('crypto').createHash('sha256')
+    const hash = crypto.createHash('sha256')
     hash.update(dictionary.join(''))
     return hash.digest('hex')
   }
