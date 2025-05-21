@@ -1,0 +1,13 @@
+---
+description: How I like to codes
+globs: 
+alwaysApply: false
+---
+# Coding workflow preferences
+
+
+- Focus only on the code areas that are directly relevant to the task.
+- Do not modify unrelated parts of the codebase.
+- Write thorough tests for all major functionality.
+- Do not change the patterns or architecture of a working feature unless explicitly instructed.
+- Always consider how your changes might affect other parts of the codebase.

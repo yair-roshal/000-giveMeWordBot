@@ -1,0 +1,18 @@
+---
+description: how we should prefer to code
+globs: 
+alwaysApply: false
+---
+# Coding pattern preferences
+
+- Always prefer simple and readable solutions.
+- Always check for existing code before writing new logic to avoid duplication.
+- Always make sure your code works properly in dev, test, and prod environments.
+- Only make changes that are explicitly requested, or that are clearly related and well understood.
+- When fixing a bug or issue, avoid introducing new patterns or technologies unless necessary. If you do, make sure to fully remove the old implementation afterward to avoid duplicated logic.
+- Keep the codebase well-structured, clean, and easy to navigate.
+- Avoid writing standalone scripts unless they are truly reusable. Never leave temporary or one-off scripts in the repo.
+- Keep files under 300 lines. Refactor when a file grows too large.
+- Only use mocked data inside test files. Do not mock data in development or production code.
+- Never add fake data or stub logic in code that runs in dev or prod.
+- Never overwrite the existing `.env` file without explicit confirmation from the developer.
