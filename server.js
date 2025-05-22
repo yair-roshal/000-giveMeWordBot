@@ -11,7 +11,7 @@ const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
 const { give_me_keyboard } = require('./constants/menus.js')
 const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
 const formatDate = require('./utils/formatDate.js')
-const crypto = require('crypto');
+// const crypto = require('crypto')
 
 var currentIndex = 0
 // const fs = require("fs")
@@ -93,21 +93,20 @@ bot.on('callback_query', (query) => {
   }
 })
 
-bot.on('polling_error', (error) => {
-  console.error('Polling error:', error.code, error.message);
-  // Можно добавить логику повторного подключения или просто логировать
-});
+// bot.on('polling_error', (error) => {
+//   console.error('Polling error:', error.code, error.message)
+//   // Можно добавить логику повторного подключения или просто логировать
+// })
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  // Здесь можно отправить уведомление, или залогировать
-});
+// process.on('unhandledRejection', (reason, promise) => {
+//   console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+//   // Здесь можно отправить уведомление, или залогировать
+// })
 
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception thrown:', err);
-  // Здесь можно принять решение завершить процесс или попытаться продолжить
-});
-
+// process.on('uncaughtException', (err) => {
+//   console.error('Uncaught Exception thrown:', err)
+//   // Здесь можно принять решение завершить процесс или попытаться продолжить
+// })
 
 // start ===============================================
 bot.onText(/\/start/, async (msg) => {
@@ -131,7 +130,11 @@ bot.onText(/\/start/, async (msg) => {
 
   await bot.sendPhoto(chatId, photoPath, optionsMessage2)
 
-  sendingWordMessage(dictionary, currentIndex, bot, chatId)
+  try {
+    await sendingWordMessage(dictionary, currentIndex, bot, chatId)
+  } catch (err) {
+    console.error('Ошибка в sendingWordMessage:', err)
+  }
   if (currentIndex == dictionary.length - 1) {
     currentIndex = 0
   } else {
@@ -142,29 +145,66 @@ bot.onText(/\/start/, async (msg) => {
 
   // Функция для хеширования словаря (для проверки изменений)
   const hashDictionary = (dictionary) => {
-    const hash = crypto.createHash('sha256')
+    const hash = require('crypto').createHash('sha256')
     hash.update(dictionary.join(''))
     return hash.digest('hex')
   }
 
-  // Проверяем изменения в словаре
-  const checkForDictionaryUpdates = async () => {
-    const newDictionaryText = await getWordsFromGoogleDocs()
-    if (newDictionaryText) {
-      const newDictionary = newDictionaryText.split(/\r?\n/).filter(Boolean)
+  // // Проверяем изменения в словаре
+  // const checkForDictionaryUpdates = async () => {
+  //   const newDictionaryText = await getWordsFromGoogleDocs()
+  //   if (newDictionaryText) {
+  //     const newDictionary = newDictionaryText.split(/\r?\n/).filter(Boolean)
 
-      // Проверяем, изменился ли словарь
-      const newHash = hashDictionary(newDictionary)
-      if (newHash !== previousDictionaryHash) {
-        dictionary = newDictionary
-        previousDictionaryHash = newHash
-        console.log('Словарь обновлен!')
-        currentIndex = 0
-      } else {
-        console.log('Словарь не изменен!')
-      }
+  //     // Проверяем, изменился ли словарь
+  //     const newHash = hashDictionary(newDictionary)
+  //     if (newHash !== previousDictionaryHash) {
+  //       dictionary = newDictionary
+  //       previousDictionaryHash = newHash
+  //       console.log('Словарь обновлен!')
+  //       currentIndex = 0
+  //     } else {
+  //       console.log('Словарь не изменен!')
+  //     }
+  //   }
+  // }
+  
+  
+  // Проверяем изменения в словаре
+const checkForDictionaryUpdates = async () => {
+  const newDictionaryText = await getWordsFromGoogleDocs()
+  if (newDictionaryText) {
+    const newDictionary = newDictionaryText.split(/\r?\n/).filter(Boolean)
+
+    // Сравнение: если больше 10 отличий
+    const diffCount = getDictionaryDiffCount(dictionary, newDictionary)
+
+    if (diffCount > 10) {
+      dictionary = newDictionary
+      console.log(`Словарь обновлен! Различий: ${diffCount}`)
+      currentIndex = 0
+    } else {
+      console.log(`Словарь не изменен (различий: ${diffCount})`)
     }
   }
+}
+
+// Функция для подсчета различий между двумя массивами слов
+function getDictionaryDiffCount(oldDict, newDict) {
+  const oldSet = new Set(oldDict)
+  const newSet = new Set(newDict)
+
+  let diff = 0
+  for (let word of newSet) {
+    if (!oldSet.has(word)) diff++
+  }
+  for (let word of oldSet) {
+    if (!newSet.has(word)) diff++
+  }
+
+  return diff
+}
+
 
   // Интервал для проверки изменений в словаре
   // setInterval(checkForDictionaryUpdates, 1 * min); // Проверяем каждые X минут
@@ -193,7 +233,13 @@ bot.onText(/\/start/, async (msg) => {
         await checkForDictionaryUpdates()
         console.log('______________')
         console.log('formattedDate', formattedDate)
-        await sendingWordMessage(dictionary, currentIndex, bot, chatId)
+
+        try {
+          await sendingWordMessage(dictionary, currentIndex, bot, chatId)
+        } catch (err) {
+          console.error('Ошибка в sendingWordMessage:', err)
+        }
+
         if (currentIndex == dictionary.length - 1) {
           currentIndex = 0
         } else {
