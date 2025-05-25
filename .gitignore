@@ -14,6 +14,10 @@ utils/mnemonicsCache.json
 /logs
 data/logs/
 
+data/cache_allWords.txt
+give_me_word_bot_error.log 
+give_me_word_bot_out.log 
+
 # classic ignoring files===============
 
 /.pnp
