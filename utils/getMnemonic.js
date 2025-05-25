@@ -79,6 +79,7 @@ async function getMnemonic(word, rightWords = []) {
       return 'Mnemonic not available!'
     }
 
+    
     console.log('✅ Мнемоника получена. Сохраняю в кэш.')
 
     // Сохраняем в кэш
