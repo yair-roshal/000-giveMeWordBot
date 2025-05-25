@@ -2,7 +2,7 @@ const axios = require("axios")
 
 // Конфигурация для axios
 const axiosConfig = {
-  timeout: 10000, // 10 секунд таймаут
+  timeout: 30000, // увеличиваем таймаут до 30 секунд
   maxRetries: 3, // количество попыток
   retryDelay: 1000, // задержка между попытками в миллисекундах
 }
@@ -13,7 +13,13 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 // Функция для выполнения запроса с повторными попытками
 async function makeRequestWithRetry(url, retries = axiosConfig.maxRetries) {
   try {
-    const response = await axios.get(url, { timeout: axiosConfig.timeout })
+    const response = await axios.get(url, { 
+      timeout: axiosConfig.timeout,
+      maxRedirects: 5, // разрешаем до 5 редиректов
+      validateStatus: function (status) {
+        return status >= 200 && status < 400; // принимаем статусы 2xx и 3xx
+      }
+    })
     return response
   } catch (error) {
     if (retries > 0 && (error.code === 'ECONNABORTED' || error.message.includes('socket hang up'))) {

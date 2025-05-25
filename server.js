@@ -120,6 +120,21 @@ bot.onText(/\/start/, async (msg) => {
   }
 
   dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
+  
+  // Добавляем проверку валидности словаря
+  if (!Array.isArray(dictionary) || dictionary.length === 0) {
+    console.error('Получен невалидный словарь:', dictionary)
+    const chatId = msg.chat.id
+    await bot.sendMessage(chatId, 'Извините, получен невалидный словарь. Пожалуйста, попробуйте позже.')
+    return
+  }
+
+  // Проверяем формат каждой строки словаря
+  const invalidLines = dictionary.filter(line => !line.includes('-') && !line.includes('—') && !line.includes('–'))
+  if (invalidLines.length > 0) {
+    console.error('Найдены строки с неверным форматом:', invalidLines)
+  }
+
   // console.log("dictionaryText", dictionaryText)
 
   // console.log("dictionary", dictionary)
