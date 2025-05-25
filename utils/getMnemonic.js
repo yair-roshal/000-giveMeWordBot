@@ -83,7 +83,7 @@ async function getMnemonic(word, rightWords = []) {
     // Сохраняем в кэш
     cache[word] = result
     console.log('cache_length', Object.keys(cache).length)
-     fs.writeFileSync(cacheFilePath, JSON.stringify(cache, null, 2), 'utf-8')
+    fs.writeFileSync(cacheFilePath, JSON.stringify(cache, null, 2), 'utf-8')
 
     return result
   } catch (err) {
