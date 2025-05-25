@@ -20,20 +20,17 @@ async function getMnemonic(word, rightWords = []) {
     return 'Mnemonic not available.'
   }
 
-  // Уникальный ключ с учетом переводов
-  const cacheKey = `${word}::${rightWords.join(',')}`
-
   // Проверка кэша
-  if (cache[cacheKey]) {
-    console.log(`♻️ Возвращаю кэш для слова: "${word}" с переводами: [${rightWords.join(', ')}]`)
-    return cache[cacheKey]
+  if (cache[word]) {
+    console.log(`♻️ Возвращаю кэш для слова: "${word}"`)
+    return cache[word]
   }
 
-  console.log(`🔍 Запрос мнемоники для слова: "${word}" с переводами: [${rightWords.join(', ')}]`)
+  console.log(`🔍 Запрос мнемоники для слова: "${word}"`)
 
   // Формируем уточняющее сообщение для перевода
   const clarification =
-    rightWords.length > 0 ? `Сфокусируйся на следующих значениях слова "${word}": ${rightWords.join(', ')}.` : ''
+    rightWords.length > 0 ? `Сфокусируйся на следующих значениях слова "${word}": ${rightWords}.` : ''
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -86,7 +83,7 @@ async function getMnemonic(word, rightWords = []) {
     console.log('✅ Мнемоника получена. Сохраняю в кэш.')
 
     // Сохраняем в кэш
-    cache[cacheKey] = result
+    cache[word] = result
     console.log('cache.length', cache.length)
     fs.writeFileSync(cacheFilePath, JSON.stringify(cache, null, 2), 'utf-8')
 
