@@ -44,6 +44,7 @@ module.exports = async function prepareMessage(
       wordLineDictionary,
       currentIndex,
       mnemonic,
+      rightWords,
     )
   } else {
     return prepareMultiWordMessage(
@@ -68,6 +69,7 @@ async function prepareSingleWordMessage(
   wordLineDictionary,
   currentIndex,
   mnemonic,
+  rightWords,
 ) {
   console.log('currentIndex', currentIndex)
   console.log('dictionaryLength', dictionaryLength)
@@ -159,6 +161,7 @@ function formatSingleWordMessage(
   currentIndex,
   mnemonic,
   dictionaryLength,
+  rightWords,
 ) {
   console.log('currentIndex', currentIndex)
   console.log('dictionaryLength', dictionaryLength)
