@@ -111,11 +111,16 @@ bot.on('callback_query', (query) => {
 // start ===============================================
 bot.onText(/\/start/, async (msg) => {
   const dictionaryText = await getWordsFromGoogleDocs()
-  // console.log("dictionaryText", dictionaryText)
-
-  if (dictionaryText) {
-    dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
+  
+  if (!dictionaryText) {
+    console.error('Не удалось получить словарь из Google Docs')
+    const chatId = msg.chat.id
+    await bot.sendMessage(chatId, 'Извините, произошла ошибка при загрузке словаря. Пожалуйста, попробуйте позже.')
+    return
   }
+
+  dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
+  // console.log("dictionaryText", dictionaryText)
 
   // console.log("dictionary", dictionary)
   const chatId = msg.chat.id
@@ -172,19 +177,22 @@ bot.onText(/\/start/, async (msg) => {
   // Проверяем изменения в словаре
   const checkForDictionaryUpdates = async () => {
     const newDictionaryText = await getWordsFromGoogleDocs()
-    if (newDictionaryText) {
-      const newDictionary = newDictionaryText.split(/\r?\n/).filter(Boolean)
+    if (!newDictionaryText) {
+      console.error('Не удалось получить обновленный словарь из Google Docs')
+      return
+    }
+    
+    const newDictionary = newDictionaryText.split(/\r?\n/).filter(Boolean)
 
-      // Сравнение: если больше 10 отличий
-      const diffCount = getDictionaryDiffCount(dictionary, newDictionary)
+    // Сравнение: если больше 10 отличий
+    const diffCount = getDictionaryDiffCount(dictionary, newDictionary)
 
-      if (diffCount > 10) {
-        dictionary = newDictionary
-        console.log(`Словарь обновлен! Различий: ${diffCount}`)
-        currentIndex = 0
-      } else {
-        console.log(`Словарь не изменен (различий: ${diffCount})`)
-      }
+    if (diffCount > 10) {
+      dictionary = newDictionary
+      console.log(`Словарь обновлен! Различий: ${diffCount}`)
+      currentIndex = 0
+    } else {
+      console.log(`Словарь не изменен (различий: ${diffCount})`)
     }
   }
 
