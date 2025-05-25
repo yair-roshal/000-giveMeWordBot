@@ -9,6 +9,7 @@
 0-save
 
 **/log-words.txt
+**/mnemonicsCache.json
 /logs
 data/logs/
 
