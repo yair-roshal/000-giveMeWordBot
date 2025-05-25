@@ -72,7 +72,6 @@ async function getMnemonic(word, rightWords = []) {
 
     const data = await response.json()
     const result = data?.choices?.[0]?.message?.content
-
     
     if (!result) {
       console.warn('⚠️ Пустой ответ от OpenAI.')
