@@ -28,6 +28,7 @@ module.exports = {
                 'newBot-error.log',
                 'data/cache_allWords.txt',
                 '**/cache_allWords.txt',
+                '**/mnemonicsCache.json'
             ],
 
             // Env Specific Config

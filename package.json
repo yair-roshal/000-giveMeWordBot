@@ -4,7 +4,7 @@
     "main": "server.js",
     "scripts": {
         "start": "NODE_ENV=prod node server.js",
-        "dev": "NODE_ENV=dev nodemon server.js",
+        "dev": "NODE_ENV=dev nodemon --config nodemon.json server.js",
         "dev-debug": "NODE_ENV=dev DEBUG=* nodemon server.js",
         "prod": "NODE_ENV=prod node server.js"
     },

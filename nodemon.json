@@ -1,0 +1,5 @@
+{
+  "ignore": ["mnemonicsCache.json"],
+  "watch": ["*.js", "*.mjs"],
+  "ext": "js,mjs"
+} 
