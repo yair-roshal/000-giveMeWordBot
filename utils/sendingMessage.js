@@ -24,7 +24,7 @@ module.exports = async function prepareMessage(
   rightWords,
   currentIndex,
 ) {
-  const mnemonic = await getMnemonic(leftWords)
+  const mnemonic = await getMnemonic(leftWords,rightWords)
 
   // const timestamp = Date.now()
   // const formattedDate = formatDate(timestamp)

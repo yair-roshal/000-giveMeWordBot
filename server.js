@@ -168,43 +168,41 @@ bot.onText(/\/start/, async (msg) => {
   //     }
   //   }
   // }
-  
-  
+
   // Проверяем изменения в словаре
-const checkForDictionaryUpdates = async () => {
-  const newDictionaryText = await getWordsFromGoogleDocs()
-  if (newDictionaryText) {
-    const newDictionary = newDictionaryText.split(/\r?\n/).filter(Boolean)
+  const checkForDictionaryUpdates = async () => {
+    const newDictionaryText = await getWordsFromGoogleDocs()
+    if (newDictionaryText) {
+      const newDictionary = newDictionaryText.split(/\r?\n/).filter(Boolean)
 
-    // Сравнение: если больше 10 отличий
-    const diffCount = getDictionaryDiffCount(dictionary, newDictionary)
+      // Сравнение: если больше 10 отличий
+      const diffCount = getDictionaryDiffCount(dictionary, newDictionary)
 
-    if (diffCount > 10) {
-      dictionary = newDictionary
-      console.log(`Словарь обновлен! Различий: ${diffCount}`)
-      currentIndex = 0
-    } else {
-      console.log(`Словарь не изменен (различий: ${diffCount})`)
+      if (diffCount > 10) {
+        dictionary = newDictionary
+        console.log(`Словарь обновлен! Различий: ${diffCount}`)
+        currentIndex = 0
+      } else {
+        console.log(`Словарь не изменен (различий: ${diffCount})`)
+      }
     }
   }
-}
 
-// Функция для подсчета различий между двумя массивами слов
-function getDictionaryDiffCount(oldDict, newDict) {
-  const oldSet = new Set(oldDict)
-  const newSet = new Set(newDict)
+  // Функция для подсчета различий между двумя массивами слов
+  function getDictionaryDiffCount(oldDict, newDict) {
+    const oldSet = new Set(oldDict)
+    const newSet = new Set(newDict)
 
-  let diff = 0
-  for (let word of newSet) {
-    if (!oldSet.has(word)) diff++
+    let diff = 0
+    for (let word of newSet) {
+      if (!oldSet.has(word)) diff++
+    }
+    for (let word of oldSet) {
+      if (!newSet.has(word)) diff++
+    }
+
+    return diff
   }
-  for (let word of oldSet) {
-    if (!newSet.has(word)) diff++
-  }
-
-  return diff
-}
-
 
   // Интервал для проверки изменений в словаре
   // setInterval(checkForDictionaryUpdates, 1 * min); // Проверяем каждые X минут

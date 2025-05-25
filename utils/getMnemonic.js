@@ -14,19 +14,26 @@ if (fs.existsSync(cacheFilePath)) {
   }
 }
 
-async function getMnemonic(word) {
+async function getMnemonic(word, rightWords = []) {
   if (!openaiApiKey) {
     console.error('❌ OPENAI_API_KEY не найден в переменных окружения.')
     return 'Mnemonic not available.'
   }
 
+  // Уникальный ключ с учетом переводов
+  const cacheKey = `${word}::${rightWords.join(',')}`
+
   // Проверка кэша
-  if (cache[word]) {
-    console.log(`♻️ Возвращаю кэш для слова: "${word}"`)
-    return cache[word]
+  if (cache[cacheKey]) {
+    console.log(`♻️ Возвращаю кэш для слова: "${word}" с переводами: [${rightWords.join(', ')}]`)
+    return cache[cacheKey]
   }
 
-  console.log(`🔍 Запрос мнемоники для слова: "${word}"`)
+  console.log(`🔍 Запрос мнемоники для слова: "${word}" с переводами: [${rightWords.join(', ')}]`)
+
+  // Формируем уточняющее сообщение для перевода
+  const clarification =
+    rightWords.length > 0 ? `Сфокусируйся на следующих значениях слова "${word}": ${rightWords.join(', ')}.` : ''
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -37,7 +44,7 @@ async function getMnemonic(word) {
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
-        max_tokens: 700, // ограничим чтобы не тратить много
+        max_tokens: 700,
         messages: [
           {
             role: 'system',
@@ -56,7 +63,7 @@ async function getMnemonic(word) {
           },
           {
             role: 'user',
-            content: word,
+            content: `${word}\n\n${clarification}`.trim(),
           },
         ],
       }),
@@ -79,7 +86,8 @@ async function getMnemonic(word) {
     console.log('✅ Мнемоника получена. Сохраняю в кэш.')
 
     // Сохраняем в кэш
-    cache[word] = result
+    cache[cacheKey] = result
+    console.log('cache.length', cache.length)
     fs.writeFileSync(cacheFilePath, JSON.stringify(cache, null, 2), 'utf-8')
 
     return result
