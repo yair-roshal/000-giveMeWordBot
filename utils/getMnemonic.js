@@ -69,6 +69,7 @@ async function getMnemonic(word, rightWords = []) {
       console.error(`❌ Ошибка от OpenAI API (${response.status}): ${errorText}`)
       return 'Mnemonic not available.'
     }
+    
 
     const data = await response.json()
     const result = data?.choices?.[0]?.message?.content
