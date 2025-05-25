@@ -10,6 +10,7 @@
 
 **/log-words.txt
 **/mnemonicsCache.json
+utils/mnemonicsCache.json
 /logs
 data/logs/
 
