@@ -75,7 +75,7 @@ async function getMnemonic(word, rightWords = []) {
 
     if (!result) {
       console.warn('⚠️ Пустой ответ от OpenAI.')
-      return 'Mnemonic not available.'
+      return 'Mnemonic not available!'
     }
 
     console.log('✅ Мнемоника получена. Сохраняю в кэш.')
