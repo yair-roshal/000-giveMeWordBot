@@ -78,6 +78,49 @@ const CHAT_ID_ADMIN = process.env.CHAT_ID_ADMIN
 bot.sendMessage(CHAT_ID_ADMIN, textMessageHtml, optionsMessage)
 var dictionary
 
+// Добавляем обработку ошибок polling
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
+const RECONNECT_DELAY = 5000; // 5 секунд
+
+bot.on('polling_error', async (error) => {
+  console.error('Polling error:', error.code, error.message);
+  
+  if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+    reconnectAttempts++;
+    console.log(`Attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
+    
+    try {
+      await bot.stopPolling();
+      await new Promise(resolve => setTimeout(resolve, RECONNECT_DELAY));
+      await bot.startPolling();
+      console.log('Successfully reconnected to Telegram');
+      reconnectAttempts = 0;
+    } catch (reconnectError) {
+      console.error('Failed to reconnect:', reconnectError);
+    }
+  } else {
+    console.error('Max reconnection attempts reached. Please check your internet connection and Telegram API status.');
+    // Можно добавить уведомление администратору
+    if (CHAT_ID_ADMIN) {
+      bot.sendMessage(CHAT_ID_ADMIN, '⚠️ Бот остановлен из-за проблем с подключением. Требуется ручной перезапуск.');
+    }
+  }
+});
+
+// Добавляем обработку необработанных ошибок
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception thrown:', err);
+  // Отправляем уведомление администратору
+  if (CHAT_ID_ADMIN) {
+    bot.sendMessage(CHAT_ID_ADMIN, `⚠️ Критическая ошибка в боте: ${err.message}`);
+  }
+});
+
 // callback_query при нажатии кнопке новых слов ==========================================
 bot.on('callback_query', (query) => {
   const chatId = query.from.id
