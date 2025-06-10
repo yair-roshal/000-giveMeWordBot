@@ -13,6 +13,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 // Функция для выполнения запроса с повторными попытками
 async function makeRequestWithRetry(url, retries = axiosConfig.maxRetries) {
   try {
+    console.log(`Попытка запроса к Google Docs (осталось попыток: ${retries})`)
     const response = await axios.get(url, { 
       timeout: axiosConfig.timeout,
       maxRedirects: 5, // разрешаем до 5 редиректов
@@ -20,8 +21,20 @@ async function makeRequestWithRetry(url, retries = axiosConfig.maxRetries) {
         return status >= 200 && status < 400; // принимаем статусы 2xx и 3xx
       }
     })
+    
+    if (!response.data) {
+      throw new Error('Пустой ответ от Google Docs')
+    }
+    
     return response
   } catch (error) {
+    console.error('Ошибка при запросе к Google Docs:', {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      statusText: error.response?.statusText
+    })
+    
     if (retries > 0 && (error.code === 'ECONNABORTED' || error.message.includes('socket hang up'))) {
       console.log(`Попытка запроса не удалась, осталось попыток: ${retries - 1}`)
       await delay(axiosConfig.retryDelay)
@@ -39,19 +52,34 @@ module.exports = async function fetchGoogleDocText() {
   const exportUrl = `https://docs.google.com/document/d/${documentId}/export?format=txt`
 
   try {
+    console.log('Начинаю загрузку словаря из Google Docs...')
     const response = await makeRequestWithRetry(exportUrl)
 
     if (response.status === 200) {
-      // Выводим содержимое документа
-      // console.log("Document content:\n", response.data)
-      return response.data
+      const content = response.data
+      
+      if (!content || typeof content !== 'string') {
+        throw new Error('Неверный формат данных от Google Docs')
+      }
+      
+      // Проверяем, что контент не пустой
+      if (content.trim().length === 0) {
+        throw new Error('Получен пустой словарь из Google Docs')
+      }
+      
+      console.log('Словарь успешно загружен из Google Docs')
+      return content
     } else {
-      console.log(`Ошибка: статус ${response.status}`)
+      console.error(`Ошибка: статус ${response.status}`)
       return null
     }
   } catch (error) {
-    console.error("Ошибка при запросе документа:", error.message)
-    // Возвращаем null в случае ошибки, чтобы приложение могло продолжить работу
+    console.error("Ошибка при запросе документа:", {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      statusText: error.response?.statusText
+    })
     return null
   }
 }

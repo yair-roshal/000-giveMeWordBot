@@ -153,6 +153,7 @@ bot.on('callback_query', (query) => {
 
 // start ===============================================
 bot.onText(/\/start/, async (msg) => {
+  console.log('Получена команда /start')
   const dictionaryText = await getWordsFromGoogleDocs()
   
   if (!dictionaryText) {
@@ -162,42 +163,55 @@ bot.onText(/\/start/, async (msg) => {
     return
   }
 
-  dictionary = dictionaryText.split(/\r?\n/).filter(Boolean)
+  // Разбиваем текст на строки и фильтруем пустые
+  dictionary = dictionaryText.split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line && !line.startsWith('🇮🇱') && !line.startsWith('___')) // Фильтруем заголовки и разделители
   
   // Добавляем проверку валидности словаря
   if (!Array.isArray(dictionary) || dictionary.length === 0) {
-    console.error('Получен невалидный словарь:', dictionary)
+    console.error('Получен невалидный словарь:', {
+      isArray: Array.isArray(dictionary),
+      length: dictionary?.length,
+      firstFewLines: dictionary?.slice(0, 3)
+    })
     const chatId = msg.chat.id
     await bot.sendMessage(chatId, 'Извините, получен невалидный словарь. Пожалуйста, попробуйте позже.')
     return
   }
 
   // Проверяем формат каждой строки словаря
-  const invalidLines = dictionary.filter(line => !line.includes('-') && !line.includes('—') && !line.includes('–'))
+  const invalidLines = dictionary.filter(line => {
+    const hasValidSeparator = ['-', '—', '–', '—', '−'].some(sep => line.includes(sep))
+    return !hasValidSeparator
+  })
+  
   if (invalidLines.length > 0) {
-    console.error('Найдены строки с неверным форматом:', invalidLines)
+    console.error('Найдены строки с неверным форматом:', {
+      count: invalidLines.length,
+      examples: invalidLines.slice(0, 5)
+    })
   }
 
-  // console.log("dictionaryText", dictionaryText)
-
-  // console.log("dictionary", dictionary)
+  console.log(`Словарь успешно загружен. Количество слов: ${dictionary.length}`)
+  
   const chatId = msg.chat.id
   var photoPath = __dirname + '/media/logo.jpg'
-  // console.log('photoPath :>> ', photoPath)
 
   var optionsMessage2 = {
     caption: `Catch the first word, the rest will be in ${min} minutes`,
     reply_markup: JSON.stringify(give_me_keyboard),
-    // contentType: 'image/jpeg', // Указываем тип содержимого
   }
-
-  await bot.sendPhoto(chatId, photoPath, optionsMessage2)
 
   try {
+    await bot.sendPhoto(chatId, photoPath, optionsMessage2)
     await sendingWordMessage(dictionary, currentIndex, bot, chatId)
   } catch (err) {
-    console.error('Ошибка в sendingWordMessage:', err)
+    console.error('Ошибка при отправке сообщения:', err)
+    await bot.sendMessage(chatId, 'Извините, произошла ошибка при отправке слова. Пожалуйста, попробуйте позже.')
+    return
   }
+
   if (currentIndex == dictionary.length - 1) {
     currentIndex = 0
   } else {
