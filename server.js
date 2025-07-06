@@ -8,9 +8,11 @@ const { sec, ms, min, interval } = require('./constants/intervals.js')
 const { textMessageHtml } = require('./constants/texts.js')
 const sendingWordMessage = require('./utils/prepareMessage.js')
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
-const { give_me_keyboard } = require('./constants/menus.js')
+const { give_me_keyboard, intervalSettingsKeyboard, startMenu } = require('./constants/menus.js')
 const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
 const formatDate = require('./utils/formatDate.js')
+const { setUserInterval, getUserInterval, getUserIntervalMs } = require('./utils/userIntervals.js')
+const { createOrUpdateUserTimer, stopUserTimer, getUserTimerInfo, stopAllTimers } = require('./utils/userTimers.js')
 // const crypto = require('crypto')
 
 var currentIndex = 0
@@ -121,8 +123,21 @@ process.on('uncaughtException', (err) => {
   }
 });
 
+// Обработка завершения работы приложения
+process.on('SIGINT', () => {
+  console.log('Получен сигнал SIGINT, останавливаем все таймеры...');
+  stopAllTimers();
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('Получен сигнал SIGTERM, останавливаем все таймеры...');
+  stopAllTimers();
+  process.exit(0);
+});
+
 // callback_query при нажатии кнопке новых слов ==========================================
-bot.on('callback_query', (query) => {
+bot.on('callback_query', async (query) => {
   const chatId = query.from.id
   // console.log('query ---------------:>> ', query)
 
@@ -133,6 +148,75 @@ bot.on('callback_query', (query) => {
     } else {
       currentIndex++
     }
+  } else if (query.data === 'interval_settings') {
+    // Показываем меню настроек интервала
+    const userInterval = getUserInterval(chatId)
+    const intervalText = userInterval ? `Текущий интервал: ${userInterval} минут` : 'Интервал не настроен'
+    
+    await bot.editMessageReplyMarkup(
+      intervalSettingsKeyboard,
+      {
+        chat_id: chatId,
+        message_id: query.message.message_id
+      }
+    )
+    
+    await bot.answerCallbackQuery(query.id, {
+      text: intervalText
+    })
+  } else if (query.data.startsWith('interval_')) {
+    // Обработка выбора интервала
+    const intervalValue = parseInt(query.data.replace('interval_', ''))
+    
+    if (intervalValue) {
+      setUserInterval(chatId, intervalValue)
+      
+      // Создаем или обновляем таймер пользователя
+      createOrUpdateUserTimer(chatId, bot, dictionary, { currentIndex }, async (chatId, bot, dictionary, currentIndexRef) => {
+        const timestamp = Date.now()
+        const formattedDate = formatDate(timestamp)
+        console.log(`Отправляем слово пользователю ${chatId} в ${formattedDate}`)
+        
+        try {
+          await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, chatId)
+        } catch (err) {
+          console.error('Ошибка в sendingWordMessage:', err)
+        }
+
+        if (currentIndexRef.currentIndex == dictionary.length - 1) {
+          currentIndexRef.currentIndex = 0
+        } else {
+          currentIndexRef.currentIndex++
+        }
+      })
+      
+      await bot.answerCallbackQuery(query.id, {
+        text: `Интервал установлен: ${intervalValue} минут`
+      })
+      
+      // Возвращаемся к основному меню
+      await bot.editMessageReplyMarkup(
+        give_me_keyboard,
+        {
+          chat_id: chatId,
+          message_id: query.message.message_id
+        }
+      )
+    }
+  } else if (query.data === 'back_to_main') {
+    // Возврат к обычной клавиатуре
+    await bot.sendMessage(chatId, 'Главное меню:', {
+      reply_markup: {
+        keyboard: [
+          [{ text: 'Классика333' }, { text: 'Закрыть' }],
+          [{ text: 'Заказать разработку бота' }],
+          [{ text: 'Про автора' }],
+          [{ text: '⚙️ Настройки интервала' }]
+        ],
+        one_time_keyboard: true
+      }
+    })
+    await bot.answerCallbackQuery(query.id)
   }
 })
 
@@ -151,6 +235,27 @@ bot.on('callback_query', (query) => {
 //   // Здесь можно принять решение завершить процесс или попытаться продолжить
 // })
 
+// Команда для просмотра текущего интервала
+bot.onText(/\/interval/, async (msg) => {
+  const chatId = msg.chat.id
+  const userInterval = getUserInterval(chatId)
+  const timerInfo = getUserTimerInfo(chatId)
+  
+  let message = '📊 Информация о вашем интервале:\n\n'
+  
+  if (userInterval) {
+    message += `✅ Установлен интервал: ${userInterval} минут\n`
+    message += `🔄 Таймер: ${timerInfo.isActive ? 'активен' : 'неактивен'}\n\n`
+    message += 'Используйте кнопку "⚙️ Настройки интервала" для изменения'
+  } else {
+    message += `❌ Интервал не настроен\n`
+    message += `📝 Используется интервал по умолчанию: ${min} минут\n\n`
+    message += 'Используйте кнопку "⚙️ Настройки интервала" для настройки'
+  }
+  
+  await bot.sendMessage(chatId, message)
+})
+
 // start ===============================================
 bot.onText(/\/start/, async (msg) => {
   console.log('Получена команда /start')
@@ -159,7 +264,9 @@ bot.onText(/\/start/, async (msg) => {
   if (!dictionaryText) {
     console.error('Не удалось получить словарь из Google Docs')
     const chatId = msg.chat.id
-    await bot.sendMessage(chatId, 'Извините, произошла ошибка при загрузке словаря. Пожалуйста, попробуйте позже.')
+    await bot.sendMessage(chatId, 'Извините, произошла ошибка при загрузке словаря. Пожалуйста, попробуйте позже.', {
+      reply_markup: startMenu
+    })
     return
   }
 
@@ -176,7 +283,9 @@ bot.onText(/\/start/, async (msg) => {
       firstFewLines: dictionary?.slice(0, 3)
     })
     const chatId = msg.chat.id
-    await bot.sendMessage(chatId, 'Извините, получен невалидный словарь. Пожалуйста, попробуйте позже.')
+    await bot.sendMessage(chatId, 'Извините, получен невалидный словарь. Пожалуйста, попробуйте позже.', {
+      reply_markup: startMenu
+    })
     return
   }
 
@@ -198,10 +307,17 @@ bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id
   var photoPath = __dirname + '/media/logo.jpg'
 
+  // Получаем интервал пользователя
+  const userInterval = getUserInterval(chatId)
+  const intervalText = userInterval ? `${userInterval} минут` : `${min} минут (по умолчанию)`
+  
   var optionsMessage2 = {
-    caption: `Catch the first word, the rest will be in ${min} minutes`,
+    caption: `Catch the first word, the rest will be in ${intervalText}`,
     reply_markup: JSON.stringify(give_me_keyboard),
   }
+
+  // Сначала отправляем меню
+  await bot.sendMessage(chatId, 'Меню:', { reply_markup: startMenu })
 
   try {
     await bot.sendPhoto(chatId, photoPath, optionsMessage2)
@@ -365,3 +481,13 @@ console.log('server started with interval:', interval / ms / sec, 'min')
 //             interval,
 //         )
 // }
+
+// Обработка reply-кнопки "⚙️ Настройки интервала"
+bot.on('message', async (msg) => {
+  if (msg.text === '⚙️ Настройки интервала') {
+    // Показываем инлайн-меню выбора интервала
+    await bot.sendMessage(msg.chat.id, 'Выберите интервал появления новых слов:', {
+      reply_markup: intervalSettingsKeyboard
+    })
+  }
+})

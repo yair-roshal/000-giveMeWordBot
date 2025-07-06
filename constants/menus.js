@@ -13,24 +13,14 @@ var keyboard = {
 const startMenu = {
     keyboard: [
         [
-            {
-                text: 'Main',
-            },
-            {
-                text: 'Description',
-            },
+            { text: 'Классика222' },
+            { text: 'Закрыть' }
         ],
         [
-            {
-                text: 'Order bot development',
-                request_contact: true,
-            },
-        ],
-        [
-            {
-                text: 'About me',
-            },
-        ],
+            { text: 'Заказать разработку бота' },
+            { text: 'Про автора' },
+            { text: '⚙️ Настройки интервала' }
+        ]
     ],
     one_time_keyboard: true,
 }
@@ -86,6 +76,58 @@ const give_me_keyboard = {
     ],
 }
 
+// Меню для выбора интервала
+const intervalSettingsKeyboard = {
+    inline_keyboard: [
+        [
+            {
+                text: '1 минута',
+                callback_data: 'interval_1',
+            },
+            {
+                text: '5 минут',
+                callback_data: 'interval_5',
+            },
+        ],
+        [
+            {
+                text: '10 минут',
+                callback_data: 'interval_10',
+            },
+            {
+                text: '15 минут',
+                callback_data: 'interval_15',
+            },
+        ],
+        [
+            {
+                text: '30 минут',
+                callback_data: 'interval_30',
+            },
+            {
+                text: '1 час',
+                callback_data: 'interval_60',
+            },
+        ],
+        [
+            {
+                text: '2 часа',
+                callback_data: 'interval_120',
+            },
+            {
+                text: '4 часа',
+                callback_data: 'interval_240',
+            },
+        ],
+        [
+            {
+                text: '🔙 Назад',
+                callback_data: 'back_to_main',
+            },
+        ],
+    ],
+}
+
 module.exports = {
     startMenu,
     mainMenu,
@@ -93,4 +135,5 @@ module.exports = {
     start_inline_keyboard,
     keyboard,
     start_keyboard,
+    intervalSettingsKeyboard,
 }
