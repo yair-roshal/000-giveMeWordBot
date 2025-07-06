@@ -131,9 +131,11 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId) => {
   // console.log("textMessage(prepare_was_good) :>> ", !!textMessage)
 
   if (!response_dictionary_api) {
-    bot.sendMessage(chatId, textMessage, optionsMessageWithoutPreview)
+    await bot.sendMessage(chatId, textMessage, optionsMessageWithoutPreview)
+    return { leftWords, currentIndex }
   } else if (textMessage) {
-    bot.sendMessage(chatId, textMessage, optionsMessage)
+    await bot.sendMessage(chatId, textMessage, optionsMessage)
+    return { leftWords, currentIndex }
   }
 }
 

@@ -17,9 +17,9 @@ Our Group in Telegram : <a href="${link_to_public}">Very Simple English</a>
 
 💬 If you have any questions or suggestions, email admin @yair770.
 
-🔥 To start getting words, click on start below 👇🏻 or here /start
-
 ⚙️ Use /interval or the ⚙️ button to check/change your interval settings
+
+🔥 To start getting words, click on start below 👇🏻 or here /start
 
  `
 

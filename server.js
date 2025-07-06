@@ -13,6 +13,8 @@ const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
 const formatDate = require('./utils/formatDate.js')
 const { setUserInterval, getUserInterval, getUserIntervalMs } = require('./utils/userIntervals.js')
 const { createOrUpdateUserTimer, stopUserTimer, getUserTimerInfo, stopAllTimers } = require('./utils/userTimers.js')
+const { addLearnedWord, isWordLearned, loadLearnedWords } = require('./utils/learnedWords.js')
+const { getUserIndex, setUserIndex } = require('./utils/userProgress.js')
 // const crypto = require('crypto')
 
 var currentIndex = 0
@@ -136,18 +138,20 @@ process.on('SIGTERM', () => {
   process.exit(0);
 });
 
+// Для хранения оригинала слова и индекса для каждого пользователя
+const userCurrentOriginal = {}
+const userCurrentIndex = {}
+
 // callback_query при нажатии кнопке новых слов ==========================================
 bot.on('callback_query', async (query) => {
   const chatId = query.from.id
   // console.log('query ---------------:>> ', query)
 
   if (query.data === 'give_me') {
-    sendingWordMessage(dictionary, currentIndex, bot, chatId)
-    if (currentIndex == dictionary?.length - 1) {
-      currentIndex = 0
-    } else {
-      currentIndex++
-    }
+    const nextIdx = getNextUnlearnedIndex(dictionary, chatId, getUserIndex(chatId) + 1)
+    setUserIndex(chatId, nextIdx)
+    const result = await sendingWordMessage(dictionary, nextIdx, bot, chatId)
+    userCurrentOriginal[chatId] = result.leftWords
   } else if (query.data === 'interval_settings') {
     // Показываем меню настроек интервала
     const userInterval = getUserInterval(chatId)
@@ -178,7 +182,8 @@ bot.on('callback_query', async (query) => {
         console.log(`Отправляем слово пользователю ${chatId} в ${formattedDate}`)
         
         try {
-          await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, chatId)
+          const result = await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, chatId)
+          userCurrentOriginal[chatId] = result.leftWords
         } catch (err) {
           console.error('Ошибка в sendingWordMessage:', err)
         }
@@ -217,6 +222,21 @@ bot.on('callback_query', async (query) => {
       }
     })
     await bot.answerCallbackQuery(query.id)
+  } else if (query.data === 'mark_learned') {
+    const original = userCurrentOriginal[chatId]
+    if (original) {
+      addLearnedWord(chatId, original)
+      console.log(`[LEARNED] chatId: ${chatId}, original: '${original}', index: ${getUserIndex(chatId)}`)
+      await bot.answerCallbackQuery(query.id, { text: 'Слово отмечено как выученное!' })
+    } else {
+      console.log(`[LEARNED][SKIP] chatId: ${chatId}, не удалось получить оригинал`)
+      await bot.answerCallbackQuery(query.id, { text: 'Не удалось определить оригинал слова!' })
+    }
+    // Найти следующее невыученное слово
+    setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0) + 1))
+    const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
+    userCurrentOriginal[chatId] = result.leftWords
+    return
   }
 })
 
@@ -321,17 +341,19 @@ bot.onText(/\/start/, async (msg) => {
 
   try {
     await bot.sendPhoto(chatId, photoPath, optionsMessage2)
-    await sendingWordMessage(dictionary, currentIndex, bot, chatId)
+    setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0)))
+    const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
+    userCurrentOriginal[chatId] = result.leftWords
   } catch (err) {
     console.error('Ошибка при отправке сообщения:', err)
     await bot.sendMessage(chatId, 'Извините, произошла ошибка при отправке слова. Пожалуйста, попробуйте позже.')
     return
   }
 
-  if (currentIndex == dictionary.length - 1) {
-    currentIndex = 0
+  if (getUserIndex(chatId) == dictionary.length - 1) {
+    setUserIndex(chatId, 0)
   } else {
-    currentIndex++
+    setUserIndex(chatId, getUserIndex(chatId) + 1)
   }
 
   let previousDictionaryHash = null // Для проверки изменений в словаре
@@ -342,25 +364,6 @@ bot.onText(/\/start/, async (msg) => {
     hash.update(dictionary.join(''))
     return hash.digest('hex')
   }
-
-  // // Проверяем изменения в словаре
-  // const checkForDictionaryUpdates = async () => {
-  //   const newDictionaryText = await getWordsFromGoogleDocs()
-  //   if (newDictionaryText) {
-  //     const newDictionary = newDictionaryText.split(/\r?\n/).filter(Boolean)
-
-  //     // Проверяем, изменился ли словарь
-  //     const newHash = hashDictionary(newDictionary)
-  //     if (newHash !== previousDictionaryHash) {
-  //       dictionary = newDictionary
-  //       previousDictionaryHash = newHash
-  //       console.log('Словарь обновлен!')
-  //       currentIndex = 0
-  //     } else {
-  //       console.log('Словарь не изменен!')
-  //     }
-  //   }
-  // }
 
   // Проверяем изменения в словаре
   const checkForDictionaryUpdates = async () => {
@@ -378,7 +381,7 @@ bot.onText(/\/start/, async (msg) => {
     if (diffCount > 10) {
       dictionary = newDictionary
       console.log(`Словарь обновлен! Различий: ${diffCount}`)
-      currentIndex = 0
+      setUserIndex(chatId, 0)
     } else {
       console.log(`Словарь не изменен (различий: ${diffCount})`)
     }
@@ -428,20 +431,17 @@ bot.onText(/\/start/, async (msg) => {
         console.log('______________')
         console.log('formattedDate', formattedDate)
 
-        try {
-          await sendingWordMessage(dictionary, currentIndex, bot, chatId)
-        } catch (err) {
-          console.error('Ошибка в sendingWordMessage:', err)
-        }
+        setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0) + 1))
+        const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
+        userCurrentOriginal[chatId] = result.leftWords
 
-        if (currentIndex == dictionary.length - 1) {
-          currentIndex = 0
+        if (getUserIndex(chatId) == dictionary.length - 1) {
+          setUserIndex(chatId, 0)
         } else {
-          currentIndex++
+          setUserIndex(chatId, getUserIndex(chatId) + 1)
         }
       }
     },
-
     interval,
   )
 })
@@ -491,3 +491,24 @@ bot.on('message', async (msg) => {
     })
   }
 })
+
+function getNextUnlearnedIndex(dictionary, chatId, fromIndex = 0) {
+  let idx = fromIndex
+  let attempts = 0
+  while (true) {
+    const line = dictionary[idx]
+    let original = line
+    const symbolsArray = ['-', '—', '–', '—', '−']
+    symbolsArray.forEach((symbol) => {
+      if (line && line.indexOf(symbol) !== -1) {
+        original = line.split(symbol)[0].trim()
+      }
+    })
+    if (!isWordLearned(chatId, original) || attempts >= dictionary.length) {
+      break
+    }
+    idx = (idx + 1) % dictionary.length
+    attempts++
+  }
+  return idx
+}

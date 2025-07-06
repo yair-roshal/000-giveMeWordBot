@@ -73,6 +73,12 @@ const give_me_keyboard = {
                 callback_data: 'give_me',
             },
         ],
+        [
+            {
+                text: '✅ Я выучил это слово',
+                callback_data: 'mark_learned',
+            },
+        ],
     ],
 }
 
