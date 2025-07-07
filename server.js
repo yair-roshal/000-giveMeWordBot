@@ -11,7 +11,7 @@ const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
 const { give_me_keyboard, intervalSettingsKeyboard, startMenu } = require('./constants/menus.js')
 const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
 const formatDate = require('./utils/formatDate.js')
-const { setUserInterval, getUserInterval, getUserIntervalMs } = require('./utils/userIntervals.js')
+const { setUserInterval, getUserInterval, getUserIntervalMs, loadUserIntervals } = require('./utils/userIntervals.js')
 const { createOrUpdateUserTimer, stopUserTimer, getUserTimerInfo, stopAllTimers } = require('./utils/userTimers.js')
 const { addLearnedWord, isWordLearned, loadLearnedWords } = require('./utils/learnedWords.js')
 const { getUserIndex, setUserIndex } = require('./utils/userProgress.js')
@@ -406,44 +406,44 @@ bot.onText(/\/start/, async (msg) => {
   // Интервал для проверки изменений в словаре
   // setInterval(checkForDictionaryUpdates, 1 * min); // Проверяем каждые X минут
 
-  setInterval(
-    async () => {
-      let isTimeForSending = false
-
-      let currentDate = new Date()
-      let nowHours = currentDate.getHours()
-      let nowMinutes = currentDate.getMinutes()
-
-      if (process.env.NODE_ENV === 'dev') {
-        isTimeForSending = true
-      } else if (nowHours < clockEnd && nowHours > clockStart) {
-        isTimeForSending = true
-      } else {
-        console.log(`it isn't time for sending messages  -   ${nowHours}:${nowMinutes}`)
-      }
-
-      //  await checkForDictionaryUpdates()
-      if (isTimeForSending) {
-        const timestamp = Date.now()
-        const formattedDate = formatDate(timestamp)
-
-        await checkForDictionaryUpdates()
-        console.log('______________')
-        console.log('formattedDate', formattedDate)
-
-        setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0) + 1))
-        const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
-        userCurrentOriginal[chatId] = result.leftWords
-
-        if (getUserIndex(chatId) == dictionary.length - 1) {
-          setUserIndex(chatId, 0)
-        } else {
-          setUserIndex(chatId, getUserIndex(chatId) + 1)
-        }
-      }
-    },
-    interval,
-  )
+  // setInterval(
+  //   async () => {
+  //     let isTimeForSending = false
+  //
+  //     let currentDate = new Date()
+  //     let nowHours = currentDate.getHours()
+  //     let nowMinutes = currentDate.getMinutes()
+  //
+  //     if (process.env.NODE_ENV === 'dev') {
+  //       isTimeForSending = true
+  //     } else if (nowHours < clockEnd && nowHours > clockStart) {
+  //       isTimeForSending = true
+  //     } else {
+  //       console.log(`it isn't time for sending messages  -   ${nowHours}:${nowMinutes}`)
+  //     }
+  //
+  //     //  await checkForDictionaryUpdates()
+  //     if (isTimeForSending) {
+  //       const timestamp = Date.now()
+  //       const formattedDate = formatDate(timestamp)
+  //
+  //       await checkForDictionaryUpdates()
+  //       console.log('______________')
+  //       console.log('formattedDate', formattedDate)
+  //
+  //       setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0) + 1))
+  //       const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
+  //       userCurrentOriginal[chatId] = result.leftWords
+  //
+  //       if (getUserIndex(chatId) == dictionary.length - 1) {
+  //         setUserIndex(chatId, 0)
+  //       } else {
+  //         setUserIndex(chatId, getUserIndex(chatId) + 1)
+  //       }
+  //     }
+  //   },
+  //   interval,
+  // )
 })
 
 // sending a list of words and adding them to the dictionary ===============
@@ -493,7 +493,8 @@ bot.on('message', async (msg) => {
 })
 
 function getNextUnlearnedIndex(dictionary, chatId, fromIndex = 0) {
-  let idx = fromIndex
+  if (!dictionary || !dictionary.length) return 0
+  let idx = fromIndex % dictionary.length
   let attempts = 0
   while (true) {
     const line = dictionary[idx]
@@ -512,3 +513,36 @@ function getNextUnlearnedIndex(dictionary, chatId, fromIndex = 0) {
   }
   return idx
 }
+
+// После загрузки словаря и перед обработкой команд
+(async () => {
+  const userIntervals = loadUserIntervals()
+  if (userIntervals && typeof userIntervals === 'object') {
+    Object.entries(userIntervals).forEach(([chatId, intervalMinutes]) => {
+      if (intervalMinutes && dictionary && dictionary.length > 0) {
+        createOrUpdateUserTimer(
+          chatId,
+          bot,
+          dictionary,
+          { currentIndex },
+          async (chatId, bot, dictionary, currentIndexRef) => {
+            const timestamp = Date.now()
+            const formattedDate = formatDate(timestamp)
+            console.log(`(auto) Отправляем слово пользователю ${chatId} в ${formattedDate}`)
+            try {
+              const result = await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, chatId)
+              userCurrentOriginal[chatId] = result.leftWords
+            } catch (err) {
+              console.error('Ошибка в sendingWordMessage:', err)
+            }
+            if (currentIndexRef.currentIndex == dictionary.length - 1) {
+              currentIndexRef.currentIndex = 0
+            } else {
+              currentIndexRef.currentIndex++
+            }
+          }
+        )
+      }
+    })
+  }
+})()
