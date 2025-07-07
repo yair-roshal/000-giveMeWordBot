@@ -276,7 +276,7 @@ bot.onText(/\/interval/, async (msg) => {
   await bot.sendMessage(chatId, message)
 })
 
-// start ===============================================
+// Показываем меню с новой кнопкой при /start
 bot.onText(/\/start/, async (msg) => {
   console.log('Получена команда /start')
   const dictionaryText = await getWordsFromGoogleDocs()
@@ -482,14 +482,39 @@ console.log('server started with interval:', interval / ms / sec, 'min')
 //         )
 // }
 
-// Обработка reply-кнопки "⚙️ Настройки интервала"
+// Обработка кнопки "ℹ️ Мои настройки"
 bot.on('message', async (msg) => {
-  if (msg.text === '⚙️ Настройки интервала') {
-    // Показываем инлайн-меню выбора интервала
-    await bot.sendMessage(msg.chat.id, 'Выберите интервал появления новых слов:', {
-      reply_markup: intervalSettingsKeyboard
-    })
+  if (msg.text === 'ℹ️ Мои настройки') {
+    const chatId = msg.chat.id
+    const userInterval = getUserInterval(chatId)
+    const timerInfo = getUserTimerInfo(chatId)
+    const learnedWords = loadLearnedWords(chatId)
+    const userIndex = getUserIndex(chatId)
+
+    let message = '🛠️ <b>Ваши настройки:</b>\n\n'
+    message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}</b>\n`
+    message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
+    message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
+    message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n\n`
+
+    if (learnedWords.length > 0) {
+      message += '<b>Список выученных слов:</b>\n'
+      learnedWords.forEach(word => {
+        // Поиск индекса слова в словаре
+        const idx = dictionary.findIndex(line => {
+          const original = line.split(/[-—–−]/)[0].trim()
+          return original === word
+        })
+        message += `• ${word} <i>(индекс: ${idx !== -1 ? idx : 'не найден'})</i>\n`
+      })
+    } else {
+      message += 'Нет выученных слов.'
+    }
+
+    await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
+    return
   }
+  // ... existing code for interval settings ...
 })
 
 function getNextUnlearnedIndex(dictionary, chatId, fromIndex = 0) {

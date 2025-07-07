@@ -17,9 +17,11 @@ data/logs/
 data/cache_allWords.txt
 give_me_word_bot_error.log 
 give_me_word_bot_out.log 
-user_progress.json
+
 mnemonicsCache.json
 user_intervals.json
+user_progress.json
+learned_words_386212074
 
 # classic ignoring files===============
 

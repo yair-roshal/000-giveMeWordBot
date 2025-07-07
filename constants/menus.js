@@ -13,6 +13,9 @@ var keyboard = {
 const startMenu = {
     keyboard: [
         [
+            { text: 'ℹ️ Мои настройки' }
+        ],
+        [
             { text: 'Классика222' },
             { text: 'Закрыть' }
         ],
