@@ -22,7 +22,7 @@ function createOrUpdateUserTimer(chatId, bot, dictionary, currentIndexRef, callb
 
   console.log(`Создаём таймер для пользователя ${chatId} с интервалом ${userIntervalMs / 60000} минут (отложенный старт)`)
 
-  // Сначала setTimeout, потом setInterval
+  // Первый запуск только через userIntervalMs
   const timeout = setTimeout(() => {
     console.log(`[TIMER] Первый запуск для chatId=${chatId}`)
     callback(chatId, bot, dictionary, currentIndexRef)

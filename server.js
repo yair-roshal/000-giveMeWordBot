@@ -8,7 +8,7 @@ const { sec, ms, min, interval } = require('./constants/intervals.js')
 const { textMessageHtml } = require('./constants/texts.js')
 const sendingWordMessage = require('./utils/prepareMessage.js')
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
-const { give_me_keyboard, intervalSettingsKeyboard, startMenu } = require('./constants/menus.js')
+const { give_me_keyboard, intervalSettingsKeyboard, startMenu, periodSettingsKeyboard, getHourKeyboard } = require('./constants/menus.js')
 const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
 const formatDate = require('./utils/formatDate.js')
 const { setUserInterval, getUserInterval, getUserIntervalMs, loadUserIntervals } = require('./utils/userIntervals.js')
@@ -16,6 +16,39 @@ const { createOrUpdateUserTimer, stopUserTimer, getUserTimerInfo, stopAllTimers 
 const { addLearnedWord, isWordLearned, loadLearnedWords } = require('./utils/learnedWords.js')
 const { getUserIndex, setUserIndex } = require('./utils/userProgress.js')
 // const crypto = require('crypto')
+const fs = require('fs')
+const path = require('path')
+const PERIODS_FILE = path.join(__dirname, 'data/user_periods.json')
+
+function loadUserPeriods() {
+  try {
+    if (fs.existsSync(PERIODS_FILE)) {
+      const data = fs.readFileSync(PERIODS_FILE, 'utf8')
+      return JSON.parse(data)
+    }
+  } catch (error) {
+    console.error('Ошибка при загрузке пользовательских периодов:', error)
+  }
+  return {}
+}
+function saveUserPeriods(periods) {
+  try {
+    const dir = path.dirname(PERIODS_FILE)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(PERIODS_FILE, JSON.stringify(periods, null, 2))
+  } catch (error) {
+    console.error('Ошибка при сохранении пользовательских периодов:', error)
+  }
+}
+function getUserPeriod(chatId) {
+  const periods = loadUserPeriods()
+  return periods[chatId] || { start: clockStart, end: clockEnd }
+}
+function setUserPeriod(chatId, start, end) {
+  const periods = loadUserPeriods()
+  periods[chatId] = { start, end }
+  saveUserPeriods(periods)
+}
 
 var currentIndex = 0
 // const fs = require("fs")
@@ -194,7 +227,8 @@ bot.on('callback_query', async (query) => {
       message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}</b>\n`
       message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
       message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
-      message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n\n`
+      message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
+      message += `🕒 Период рассылки: <b>${clockStart}:00 - ${clockEnd}:00</b>\n\n`
       if (learnedWords.length > 0) {
         message += '<b>Список выученных слов:</b>\n'
         learnedWords.forEach(word => {
@@ -250,6 +284,80 @@ bot.on('callback_query', async (query) => {
     setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0) + 1))
     const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
     userCurrentOriginal[chatId] = result.leftWords
+    return
+  } else if (query.data.startsWith('period_')) {
+    const chatId = query.from.id
+    const [_, start, end] = query.data.split('_')
+    setUserPeriod(chatId, Number(start), Number(end))
+    await bot.answerCallbackQuery(query.id, { text: `Период установлен: ${start}:00-${end}:00` })
+    // Показываем настройки
+    const userInterval = getUserInterval(chatId)
+    const timerInfo = getUserTimerInfo(chatId)
+    const learnedWords = loadLearnedWords(chatId)
+    const userIndex = getUserIndex(chatId)
+    const userPeriod = getUserPeriod(chatId)
+    let message = '🛠️ <b>Ваши настройки:</b>\n\n'
+    message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}</b>\n`
+    message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
+    message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
+    message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
+    message += `🕒 Период рассылки: <b>${userPeriod.start}:00 - ${userPeriod.end}:00</b>\n\n`
+    if (learnedWords.length > 0) {
+      message += '<b>Список выученных слов:</b>\n'
+      learnedWords.forEach(word => {
+        const idx = dictionary.findIndex(line => {
+          const original = line.split(/[-—–−]/)[0].trim()
+          return original === word
+        })
+        message += `• ${word} <i>(индекс: ${idx !== -1 ? idx : 'не найден'})</i>\n`
+      })
+    } else {
+      message += 'Нет выученных слов.'
+    }
+    await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
+    return
+  } else if (query.data.startsWith('hour_start_')) {
+    const chatId = query.from.id
+    const start = Number(query.data.replace('hour_start_', ''))
+    await bot.sendMessage(chatId, 'Выберите час окончания периода:', {
+      reply_markup: JSON.stringify(getHourKeyboard(`hour_end_${start}_`, start))
+    })
+    await bot.answerCallbackQuery(query.id)
+    return
+  } else if (query.data.startsWith('he_')) {
+    const chatId = query.from.id
+    const [_, start, end] = query.data.split('_')
+    if (Number(end) <= Number(start)) {
+      await bot.answerCallbackQuery(query.id, { text: 'Конец должен быть больше начала!' })
+      return
+    }
+    setUserPeriod(chatId, Number(start), Number(end))
+    await bot.answerCallbackQuery(query.id, { text: `Период установлен: ${start}:00-${end}:00` })
+    // Показываем настройки
+    const userInterval = getUserInterval(chatId)
+    const timerInfo = getUserTimerInfo(chatId)
+    const learnedWords = loadLearnedWords(chatId)
+    const userIndex = getUserIndex(chatId)
+    const userPeriod = getUserPeriod(chatId)
+    let message = '🛠️ <b>Ваши настройки:</b>\n\n'
+    message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}</b>\n`
+    message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
+    message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
+    message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
+    message += `🕒 Период рассылки: <b>${userPeriod.start}:00 - ${userPeriod.end}:00</b>\n\n`
+    if (learnedWords.length > 0) {
+      message += '<b>Список выученных слов:</b>\n'
+      learnedWords.forEach(word => {
+        const idx = dictionary.findIndex(line => {
+          const original = line.split(/[-—–−]/)[0].trim()
+          return original === word
+        })
+        message += `• ${word} <i>(индекс: ${idx !== -1 ? idx : 'не найден'})</i>\n`
+      })
+    } else {
+      message += 'Нет выученных слов.'
+    }
+    await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
     return
   }
 })
@@ -357,8 +465,8 @@ bot.onText(/\/start/, async (msg) => {
   try {
     await bot.sendPhoto(chatId, photoPath, optionsMessage2)
     setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0)))
-    const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
-    userCurrentOriginal[chatId] = result.leftWords
+    // const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
+    // userCurrentOriginal[chatId] = result.leftWords
   } catch (err) {
     console.error('Ошибка при отправке сообщения:', err)
     await bot.sendMessage(chatId, 'Извините, произошла ошибка при отправке слова. Пожалуйста, попробуйте позже.')
@@ -497,20 +605,22 @@ console.log('server started with interval:', interval / ms / sec, 'min')
 //         )
 // }
 
-// Обработка кнопки "ℹ️ Мои настройки"
+// Обработка кнопки "ℹ️ Показать настройки"
 bot.on('message', async (msg) => {
-  if (msg.text === 'ℹ️ Мои настройки') {
+  if (msg.text === 'ℹ️ Показать настройки') {
     const chatId = msg.chat.id
     const userInterval = getUserInterval(chatId)
     const timerInfo = getUserTimerInfo(chatId)
     const learnedWords = loadLearnedWords(chatId)
     const userIndex = getUserIndex(chatId)
+    const userPeriod = getUserPeriod(chatId)
 
     let message = '🛠️ <b>Ваши настройки:</b>\n\n'
     message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}</b>\n`
     message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
     message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
-    message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n\n`
+    message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
+    message += `🕒 Период рассылки: <b>${userPeriod.start}:00 - ${userPeriod.end}:00</b>\n\n`
 
     if (learnedWords.length > 0) {
       message += '<b>Список выученных слов:</b>\n'
@@ -526,8 +636,8 @@ bot.on('message', async (msg) => {
       message += 'Нет выученных слов.'
     }
 
-    await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
-    return
+    await bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+    return;
   }
   // Добавлено: обработка кнопки "⚙️ Настройки интервала"
   if (msg.text === '⚙️ Настройки интервала') {
@@ -536,6 +646,12 @@ bot.on('message', async (msg) => {
     const intervalText = userInterval ? `Текущий интервал: ${userInterval} минут` : 'Интервал не настроен'
     await bot.sendMessage(chatId, intervalText, {
       reply_markup: JSON.stringify(intervalSettingsKeyboard)
+    })
+    return
+  }
+  if (msg.text === '🛠️ Сменить период') {
+    await bot.sendMessage(msg.chat.id, 'Выберите час начала периода:', {
+      reply_markup: JSON.stringify(getHourKeyboard('hour_start_'))
     })
     return
   }
