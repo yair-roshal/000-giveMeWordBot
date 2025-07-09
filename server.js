@@ -515,7 +515,16 @@ bot.on('message', async (msg) => {
     await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
     return
   }
-  // ... existing code for interval settings ...
+  // Добавлено: обработка кнопки "⚙️ Настройки интервала"
+  if (msg.text === '⚙️ Настройки интервала') {
+    const chatId = msg.chat.id
+    const userInterval = getUserInterval(chatId)
+    const intervalText = userInterval ? `Текущий интервал: ${userInterval} минут` : 'Интервал не настроен'
+    await bot.sendMessage(chatId, intervalText, {
+      reply_markup: JSON.stringify(intervalSettingsKeyboard)
+    })
+    return
+  }
 })
 
 function getNextUnlearnedIndex(dictionary, chatId, fromIndex = 0) {
