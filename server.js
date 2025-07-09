@@ -153,52 +153,61 @@ bot.on('callback_query', async (query) => {
     const result = await sendingWordMessage(dictionary, nextIdx, bot, chatId)
     userCurrentOriginal[chatId] = result.leftWords
   } else if (query.data === 'interval_settings') {
-    // Показываем меню настроек интервала
     const userInterval = getUserInterval(chatId)
     const intervalText = userInterval ? `Текущий интервал: ${userInterval} минут` : 'Интервал не настроен'
-    
-    await bot.editMessageReplyMarkup(
-      intervalSettingsKeyboard,
-      {
-        chat_id: chatId,
-        message_id: query.message.message_id
-      }
-    )
-    
-    await bot.answerCallbackQuery(query.id, {
-      text: intervalText
+    await bot.sendMessage(chatId, intervalText, {
+      reply_markup: JSON.stringify(intervalSettingsKeyboard)
     })
+    await bot.answerCallbackQuery(query.id)
+    return
   } else if (query.data.startsWith('interval_')) {
     // Обработка выбора интервала
     const intervalValue = parseInt(query.data.replace('interval_', ''))
     
     if (intervalValue) {
       setUserInterval(chatId, intervalValue)
-      
-      // Создаем или обновляем таймер пользователя
       createOrUpdateUserTimer(chatId, bot, dictionary, { currentIndex }, async (chatId, bot, dictionary, currentIndexRef) => {
         const timestamp = Date.now()
         const formattedDate = formatDate(timestamp)
         console.log(`Отправляем слово пользователю ${chatId} в ${formattedDate}`)
-        
         try {
           const result = await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, chatId)
           userCurrentOriginal[chatId] = result.leftWords
         } catch (err) {
           console.error('Ошибка в sendingWordMessage:', err)
         }
-
         if (currentIndexRef.currentIndex == dictionary.length - 1) {
           currentIndexRef.currentIndex = 0
         } else {
           currentIndexRef.currentIndex++
         }
       })
-      
       await bot.answerCallbackQuery(query.id, {
         text: `Интервал установлен: ${intervalValue} минут`
       })
-      
+      // Отправляем актуальные настройки
+      const userInterval = getUserInterval(chatId)
+      const timerInfo = getUserTimerInfo(chatId)
+      const learnedWords = loadLearnedWords(chatId)
+      const userIndex = getUserIndex(chatId)
+      let message = '🛠️ <b>Ваши настройки:</b>\n\n'
+      message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}</b>\n`
+      message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
+      message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
+      message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n\n`
+      if (learnedWords.length > 0) {
+        message += '<b>Список выученных слов:</b>\n'
+        learnedWords.forEach(word => {
+          const idx = dictionary.findIndex(line => {
+            const original = line.split(/[-—–−]/)[0].trim()
+            return original === word
+          })
+          message += `• ${word} <i>(индекс: ${idx !== -1 ? idx : 'не найден'})</i>\n`
+        })
+      } else {
+        message += 'Нет выученных слов.'
+      }
+      await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
       // Возвращаемся к основному меню
       await bot.editMessageReplyMarkup(
         give_me_keyboard,
@@ -209,19 +218,11 @@ bot.on('callback_query', async (query) => {
       )
     }
   } else if (query.data === 'back_to_main') {
-    // Возврат к обычной клавиатуре
     await bot.sendMessage(chatId, 'Главное меню:', {
-      reply_markup: {
-        keyboard: [
-          [{ text: 'Классика333' }, { text: 'Закрыть' }],
-          [{ text: 'Заказать разработку бота' }],
-          [{ text: 'Про автора' }],
-          [{ text: '⚙️ Настройки интервала' }]
-        ],
-        one_time_keyboard: true
-      }
+      reply_markup: startMenu
     })
     await bot.answerCallbackQuery(query.id)
+    return
   } else if (query.data === 'mark_learned') {
     const original = userCurrentOriginal[chatId]
     if (original) {

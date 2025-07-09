@@ -52,8 +52,11 @@ function getUserInterval(chatId) {
 // Устанавливаем интервал для пользователя
 function setUserInterval(chatId, intervalMinutes) {
   const userIntervals = loadUserIntervals()
+  const oldValue = userIntervals[chatId]
+  console.log(`[setUserInterval] chatId: ${chatId}, old: ${oldValue}, new: ${intervalMinutes}`)
   userIntervals[chatId] = intervalMinutes
   saveUserIntervals(userIntervals)
+  console.log(`[setUserInterval] userIntervals сохранён:`, userIntervals)
 }
 
 // Получаем все доступные интервалы
