@@ -18,7 +18,7 @@ const startMenu = {
 
     [{ text: 'Закрыть' }],
   ],
-  one_time_keyboard: true,
+  resize_keyboard: true,
 }
 
 const mainMenu = {
@@ -65,7 +65,7 @@ const give_me_keyboard = {
   inline_keyboard: [
     [
       {
-        text: '🔂Покажи новое слово',
+        text: '🔂 Покажи новое слово',
         callback_data: 'give_me',
       },
     ],
@@ -130,47 +130,51 @@ const intervalSettingsKeyboard = {
   ],
 }
 
-const periodSettingsKeyboard = {
-  inline_keyboard: [
-    [
-      { text: 'Утро (6:00-12:00)', callback_data: 'period_6_12' },
-      { text: 'День (12:00-18:00)', callback_data: 'period_12_18' },
-    ],
-    [
-      { text: 'Вечер (18:00-23:00)', callback_data: 'period_18_23' },
-      { text: 'Круглосуточно', callback_data: 'period_0_24' },
-    ],
-    [{ text: '🔙 Назад', callback_data: 'back_to_main' }],
-  ],
-}
-
 function getHourKeyboard(prefix, min = -1) {
-  // Собираем только часы больше min
   const hours = []
   for (let h = min + 1; h <= 23; h++) {
     hours.push(h)
   }
-  // Разбиваем на ряды по 6
+
   const rows = []
-  for (let i = 0; i < hours.length; i += 6) {
-    rows.push(hours.slice(i, i + 6).map((h) => {
-      // Если prefix начинается с 'hour_end_', сокращаем callback_data
-      if (prefix.startsWith('hour_end_')) {
-        const start = prefix.split('_')[2]
-        return { text: `${h}:00`, callback_data: `he_${start}_${h}` }
+
+  const isEnd = prefix.startsWith('hour_end_')
+  const startMatch = prefix.match(/^hour_end_(\d{1,2})$/)
+  const start = isEnd && startMatch ? startMatch[1] : null
+
+  for (let i = 0; i < hours.length; i += 4) {
+    const row = []
+
+    for (let j = 0; j < 4; j++) {
+      const h = hours[i + j]
+
+      if (h !== undefined) {
+        const text = `🕒 ${h}:00`
+        let callback_data = isEnd && start !== null
+          ? `he_${start}_${h}`
+          : `${prefix}${h}`
+
+        // Безопасность
+        if (callback_data.length > 64) {
+          callback_data = callback_data.slice(0, 64)
+        }
+
+        row.push({ text, callback_data })
+      } else {
+        // Добавим пустышку
+        row.push({ text: ' ', callback_data: 'noop' })
       }
-      return { text: `${h}:00`, callback_data: `${prefix}${h}` }
-    }))
+    }
+
+    rows.push(row)
   }
-  // Добавляем кнопку назад
+
   rows.push([{ text: '🔙 Назад', callback_data: 'back_to_main' }])
-  // Для отладки
-  console.log('getHourKeyboard rows:', JSON.stringify(rows))
+
   return {
     inline_keyboard: rows,
   }
 }
-
 module.exports = {
   startMenu,
   mainMenu,
@@ -179,6 +183,5 @@ module.exports = {
   keyboard,
   start_keyboard,
   intervalSettingsKeyboard,
-  periodSettingsKeyboard,
   getHourKeyboard,
 }

@@ -324,9 +324,9 @@ bot.on('callback_query', async (query) => {
     })
     await bot.answerCallbackQuery(query.id)
     return
-  } else if (query.data.startsWith('he_')) {
+  } else if (query.data.startsWith('hour_end_')) {
     const chatId = query.from.id
-    const [_, start, end] = query.data.split('_')
+    const [_, __, start, end] = query.data.split('_')
     if (Number(end) <= Number(start)) {
       await bot.answerCallbackQuery(query.id, { text: 'Конец должен быть больше начала!' })
       return
@@ -357,7 +357,7 @@ bot.on('callback_query', async (query) => {
     } else {
       message += 'Нет выученных слов.'
     }
-    await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
+    await bot.sendMessage(chatId, message, { parse_mode: 'HTML', reply_markup: startMenu })
     return
   }
 })
