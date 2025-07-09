@@ -148,15 +148,22 @@ function getHourKeyboard(prefix, min = -1) {
     for (let j = 0; j < 4; j++) {
       const h = hours[i + j]
 
-      const text = `${h}:00`
-      let callback_data = isEnd && start !== null ? `he_${start}_${h}` : `${prefix}${h}`
+      if (h !== undefined) {
+        const text = `${h}:00`
+        let callback_data = isEnd && start !== null
+          ? `he_${start}_${h}`
+          : `${prefix}${h}`
 
-      // Безопасность
-      if (callback_data.length > 64) {
-        callback_data = callback_data.slice(0, 64)
+        // Безопасность
+        if (callback_data.length > 64) {
+          callback_data = callback_data.slice(0, 64)
+        }
+
+        row.push({ text, callback_data })
+      } else {
+        // Добавим пустышку
+        row.push({ text: ' ', callback_data: 'noop' })
       }
-
-      row.push({ text, callback_data })
     }
 
     rows.push(row)
