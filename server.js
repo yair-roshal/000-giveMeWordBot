@@ -209,13 +209,26 @@ bot.on('callback_query', async (query) => {
       }
       await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
       // Возвращаемся к основному меню
-      await bot.editMessageReplyMarkup(
-        give_me_keyboard,
-        {
-          chat_id: chatId,
-          message_id: query.message.message_id
+      try {
+        await bot.editMessageReplyMarkup(
+          give_me_keyboard,
+          {
+            chat_id: chatId,
+            message_id: query.message.message_id
+          }
+        )
+      } catch (err) {
+        if (
+          err.response &&
+          err.response.body &&
+          err.response.body.description &&
+          err.response.body.description.includes('message is not modified')
+        ) {
+          // Игнорируем эту ошибку
+        } else {
+          console.error('Ошибка при editMessageReplyMarkup:', err)
         }
-      )
+      }
     }
   } else if (query.data === 'back_to_main') {
     await bot.sendMessage(chatId, 'Главное меню:', {

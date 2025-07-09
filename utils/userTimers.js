@@ -7,39 +7,42 @@ const userTimers = new Map()
 function createOrUpdateUserTimer(chatId, bot, dictionary, currentIndexRef, callback) {
   // Останавливаем существующий таймер, если есть
   if (userTimers.has(chatId)) {
-    clearInterval(userTimers.get(chatId))
+    const timers = userTimers.get(chatId)
+    if (timers.timeout) clearTimeout(timers.timeout)
+    if (timers.interval) clearInterval(timers.interval)
+    userTimers.delete(chatId)
   }
 
   // Получаем интервал пользователя
   const userIntervalMs = getUserIntervalMs(chatId)
-  
-  // Если у пользователя нет настроенного интервала, не создаем таймер
   if (!userIntervalMs) {
     console.log(`Пользователь ${chatId} не настроил интервал`)
     return null
   }
 
-  console.log(`Создаем таймер для пользователя ${chatId} с интервалом ${userIntervalMs / 60000} минут`)
+  console.log(`Создаём таймер для пользователя ${chatId} с интервалом ${userIntervalMs / 60000} минут (отложенный старт)`)
 
-  // Создаем новый таймер
-  const timer = setInterval(async () => {
-    try {
-      await callback(chatId, bot, dictionary, currentIndexRef)
-    } catch (error) {
-      console.error(`Ошибка в таймере пользователя ${chatId}:`, error)
-    }
+  // Сначала setTimeout, потом setInterval
+  const timeout = setTimeout(() => {
+    console.log(`[TIMER] Первый запуск для chatId=${chatId}`)
+    callback(chatId, bot, dictionary, currentIndexRef)
+    const interval = setInterval(() => {
+      console.log(`[TIMER] Периодический запуск для chatId=${chatId}`)
+      callback(chatId, bot, dictionary, currentIndexRef)
+    }, userIntervalMs)
+    userTimers.set(chatId, { timeout, interval })
   }, userIntervalMs)
 
-  // Сохраняем таймер
-  userTimers.set(chatId, timer)
-  
-  return timer
+  userTimers.set(chatId, { timeout, interval: null })
+  return timeout
 }
 
 // Функция для остановки таймера пользователя
 function stopUserTimer(chatId) {
   if (userTimers.has(chatId)) {
-    clearInterval(userTimers.get(chatId))
+    const timers = userTimers.get(chatId)
+    if (timers.timeout) clearTimeout(timers.timeout)
+    if (timers.interval) clearInterval(timers.interval)
     userTimers.delete(chatId)
     console.log(`Таймер пользователя ${chatId} остановлен`)
   }
@@ -59,8 +62,9 @@ function getUserTimerInfo(chatId) {
 
 // Функция для остановки всех таймеров
 function stopAllTimers() {
-  for (const [chatId, timer] of userTimers) {
-    clearInterval(timer)
+  for (const [chatId, timers] of userTimers) {
+    if (timers.timeout) clearTimeout(timers.timeout)
+    if (timers.interval) clearInterval(timers.interval)
   }
   userTimers.clear()
   console.log('Все пользовательские таймеры остановлены')
