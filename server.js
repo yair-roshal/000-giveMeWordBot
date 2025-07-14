@@ -437,8 +437,8 @@ bot.onText(/\/start/, async (msg) => {
   try {
     await bot.sendPhoto(chatId, photoPath, optionsMessage2)
     setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0)))
-    // const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
-    // userCurrentOriginal[chatId] = result.leftWords
+    const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
+    userCurrentOriginal[chatId] = result.leftWords
   } catch (err) {
     console.error('Ошибка при отправке сообщения:', err)
     await bot.sendMessage(chatId, 'Извините, произошла ошибка при отправке слова. Пожалуйста, попробуйте позже.')
