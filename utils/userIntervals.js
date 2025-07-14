@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const INTERVALS_FILE = path.join(__dirname, '../data/user_intervals.json')
+const SETTINGS_FILE = path.join(__dirname, '../data/user_settings.json')
 
 // Интервалы в минутах
 const AVAILABLE_INTERVALS = [
@@ -15,69 +15,56 @@ const AVAILABLE_INTERVALS = [
   { label: '4 часа', value: 240 }
 ]
 
-// Загружаем пользовательские интервалы из файла
-function loadUserIntervals() {
+function loadUserSettings() {
   try {
-    if (fs.existsSync(INTERVALS_FILE)) {
-      const data = fs.readFileSync(INTERVALS_FILE, 'utf8')
+    if (fs.existsSync(SETTINGS_FILE)) {
+      const data = fs.readFileSync(SETTINGS_FILE, 'utf8')
       return JSON.parse(data)
     }
   } catch (error) {
-    console.error('Ошибка при загрузке пользовательских интервалов:', error)
+    console.error('Ошибка при загрузке настроек:', error)
   }
   return {}
 }
 
-// Сохраняем пользовательские интервалы в файл
-function saveUserIntervals(userIntervals) {
+function saveUserSettings(settings) {
   try {
-    // Создаем директорию, если она не существует
-    const dir = path.dirname(INTERVALS_FILE)
+    const dir = path.dirname(SETTINGS_FILE)
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true })
     }
-    
-    fs.writeFileSync(INTERVALS_FILE, JSON.stringify(userIntervals, null, 2))
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2))
   } catch (error) {
-    console.error('Ошибка при сохранении пользовательских интервалов:', error)
+    console.error('Ошибка при сохранении настроек:', error)
   }
 }
 
-// Получаем интервал для конкретного пользователя
 function getUserInterval(chatId) {
-  const userIntervals = loadUserIntervals()
-  return userIntervals[chatId] || null
+  const settings = loadUserSettings()
+  return settings[chatId]?.interval || null
 }
 
-// Устанавливаем интервал для пользователя
 function setUserInterval(chatId, intervalMinutes) {
-  const userIntervals = loadUserIntervals()
-  const oldValue = userIntervals[chatId]
+  const settings = loadUserSettings()
+  const oldValue = settings[chatId]?.interval
+  if (!settings[chatId]) settings[chatId] = {}
+  settings[chatId].interval = intervalMinutes
+  saveUserSettings(settings)
   console.log(`[setUserInterval] chatId: ${chatId}, old: ${oldValue}, new: ${intervalMinutes}`)
-  userIntervals[chatId] = intervalMinutes
-  saveUserIntervals(userIntervals)
-  console.log(`[setUserInterval] userIntervals сохранён:`, userIntervals)
 }
 
-// Получаем все доступные интервалы
-function getAvailableIntervals() {
-  return AVAILABLE_INTERVALS
-}
-
-// Получаем интервал в миллисекундах для пользователя
 function getUserIntervalMs(chatId) {
   const intervalMinutes = getUserInterval(chatId)
   if (intervalMinutes) {
-    return intervalMinutes * 60 * 1000 // минуты в миллисекунды
+    return intervalMinutes * 60 * 1000
   }
   return null
 }
 
 module.exports = {
-  loadUserIntervals,
-  saveUserIntervals,
   getUserInterval,
   setUserInterval,
-  getAvailableIntervals,
-  getUserIntervalMs
+  getUserIntervalMs,
+  loadUserSettings,
+  saveUserSettings,
 } 

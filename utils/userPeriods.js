@@ -2,41 +2,42 @@
 const fs = require('fs')
 const path = require('path')
 const { clockStart, clockEnd } = require('../constants/intervals.js')
-const PERIODS_FILE = path.join(__dirname, '../data/user_periods.json')
+const SETTINGS_FILE = path.join(__dirname, '../data/user_settings.json')
 
-function loadUserPeriods() {
+function loadUserSettings() {
   try {
-    if (fs.existsSync(PERIODS_FILE)) {
-      const data = fs.readFileSync(PERIODS_FILE, 'utf8')
+    if (fs.existsSync(SETTINGS_FILE)) {
+      const data = fs.readFileSync(SETTINGS_FILE, 'utf8')
       return JSON.parse(data)
     }
   } catch (error) {
-    console.error('Ошибка при загрузке пользовательских периодов:', error)
+    console.error('Ошибка при загрузке настроек:', error)
   }
   return {}
 }
-function saveUserPeriods(periods) {
+function saveUserSettings(settings) {
   try {
-    const dir = path.dirname(PERIODS_FILE)
+    const dir = path.dirname(SETTINGS_FILE)
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-    fs.writeFileSync(PERIODS_FILE, JSON.stringify(periods, null, 2))
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2))
   } catch (error) {
-    console.error('Ошибка при сохранении пользовательских периодов:', error)
+    console.error('Ошибка при сохранении настроек:', error)
   }
 }
 function getUserPeriod(chatId) {
-  const periods = loadUserPeriods()
-  if (periods[chatId]) {
-    return periods[chatId]
+  const settings = loadUserSettings()
+  if (settings[chatId]?.period) {
+    return settings[chatId].period
   } else {
     console.log(`[PERIOD] Для chatId=${chatId} используются дефолтные значения периода: 0-24`)
     return { start: clockStart, end: clockEnd }
   }
 }
 function setUserPeriod(chatId, start, end) {
-  const periods = loadUserPeriods()
-  periods[chatId] = { start, end }
-  saveUserPeriods(periods)
+  const settings = loadUserSettings()
+  if (!settings[chatId]) settings[chatId] = {}
+  settings[chatId].period = { start, end }
+  saveUserSettings(settings)
 }
 
-module.exports = { loadUserPeriods, saveUserPeriods, getUserPeriod, setUserPeriod } 
+module.exports = { getUserPeriod, setUserPeriod } 

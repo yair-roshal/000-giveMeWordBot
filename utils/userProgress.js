@@ -1,12 +1,12 @@
 const fs = require('fs')
 const path = require('path')
 
-const PROGRESS_FILE = path.join(__dirname, '../data/user_progress.json')
+const SETTINGS_FILE = path.join(__dirname, '../data/user_settings.json')
 
-function loadUserProgress() {
-  if (fs.existsSync(PROGRESS_FILE)) {
+function loadUserSettings() {
+  if (fs.existsSync(SETTINGS_FILE)) {
     try {
-      return JSON.parse(fs.readFileSync(PROGRESS_FILE, 'utf8'))
+      return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'))
     } catch (e) {
       return {}
     }
@@ -14,24 +14,23 @@ function loadUserProgress() {
   return {}
 }
 
-function saveUserProgress(progress) {
-  fs.writeFileSync(PROGRESS_FILE, JSON.stringify(progress, null, 2))
+function saveUserSettings(settings) {
+  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2))
 }
 
 function getUserIndex(chatId) {
-  const progress = loadUserProgress()
-  return progress[chatId] || 0
+  const settings = loadUserSettings()
+  return settings[chatId]?.progress || 0
 }
 
 function setUserIndex(chatId, idx) {
-  const progress = loadUserProgress()
-  progress[chatId] = idx
-  saveUserProgress(progress)
+  const settings = loadUserSettings()
+  if (!settings[chatId]) settings[chatId] = {}
+  settings[chatId].progress = idx
+  saveUserSettings(settings)
 }
 
 module.exports = {
-  loadUserProgress,
-  saveUserProgress,
   getUserIndex,
   setUserIndex
 } 

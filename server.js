@@ -483,6 +483,21 @@ bot.onText(/\/start/, async (msg) => {
   
   // Запускаем таймеры для всех найденных пользователей
   allChatIds.forEach(chatId => {
+    // Получаем настройки пользователя
+    const userInterval = getUserInterval(chatId)
+    const timerInfo = getUserTimerInfo(chatId)
+    const learnedWords = loadLearnedWords(chatId)
+    const userIndex = getUserIndex(chatId)
+    const userPeriod = getUserPeriod(chatId)
+    // Формируем строку лога
+    let logMsg = `\n[НАСТРОЙКИ] chatId=${chatId}\n`;
+    logMsg += `🛠️ Ваши настройки:` + "\n";
+    logMsg += `⏱️ Интервал: ${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}\n`;
+    logMsg += `⏳ Таймер: ${timerInfo.isActive ? 'активен' : 'неактивен'}\n`;
+    logMsg += `📚 Выучено слов: ${learnedWords.length}\n`;
+    logMsg += `🔢 Индекс (user_progress): ${userIndex}\n`;
+    logMsg += `🕒 Период рассылки: ${userPeriod.start}:00 - ${userPeriod.end}:00\n`;
+    console.log(logMsg)
     console.log(`[AUTO] Запускаем таймер для chatId=${chatId}`)
     createOrUpdateUserTimer(
       chatId,

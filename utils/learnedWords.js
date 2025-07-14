@@ -1,25 +1,34 @@
+// utils/learnedWords.js
 const fs = require('fs')
 const path = require('path')
 
-function getFilePath(chatId) {
-  return path.join(__dirname, `../data/learned_words_${chatId}.json`)
+const SETTINGS_FILE = path.join(__dirname, '../data/user_settings.json')
+
+function loadUserSettings() {
+  if (fs.existsSync(SETTINGS_FILE)) {
+    try {
+      return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'))
+    } catch (e) {
+      return {}
+    }
+  }
+  return {}
+}
+
+function saveUserSettings(settings) {
+  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2))
 }
 
 function loadLearnedWords(chatId) {
-  const file = getFilePath(chatId)
-  if (fs.existsSync(file)) {
-    try {
-      return JSON.parse(fs.readFileSync(file, 'utf8'))
-    } catch (e) {
-      return []
-    }
-  }
-  return []
+  const settings = loadUserSettings()
+  return settings[chatId]?.learnedWords || []
 }
 
 function saveLearnedWords(chatId, words) {
-  const file = getFilePath(chatId)
-  fs.writeFileSync(file, JSON.stringify(words, null, 2))
+  const settings = loadUserSettings()
+  if (!settings[chatId]) settings[chatId] = {}
+  settings[chatId].learnedWords = words
+  saveUserSettings(settings)
 }
 
 function addLearnedWord(chatId, word) {
