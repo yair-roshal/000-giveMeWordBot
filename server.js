@@ -170,7 +170,7 @@ bot.on('callback_query', async (query) => {
     
     if (intervalValue) {
       setUserInterval(chatId, intervalValue)
-      createOrUpdateUserTimer(chatId, bot, dictionary, { currentIndex }, async (chatId, bot, dictionary, currentIndexRef) => {
+      createOrUpdateUserTimer(chatId, bot, dictionary, { currentIndex: getUserIndex(chatId) }, async (chatId, bot, dictionary, currentIndexRef) => {
         const timestamp = Date.now()
         const formattedDate = formatDate(timestamp)
         console.log(`Отправляем слово пользователю ${chatId} в ${formattedDate}`)
@@ -185,6 +185,7 @@ bot.on('callback_query', async (query) => {
         } else {
           currentIndexRef.currentIndex++
         }
+        setUserIndex(chatId, currentIndexRef.currentIndex)
       })
       await bot.answerCallbackQuery(query.id, {
         text: `Интервал установлен: ${intervalValue} минут`
@@ -503,7 +504,7 @@ bot.onText(/\/start/, async (msg) => {
       chatId,
       bot,
       dictionary,
-      { currentIndex },
+      { currentIndex: getUserIndex(chatId) },
       async (chatId, bot, dictionary, currentIndexRef) => {
         console.log(`[CALLBACK] Начинаем отправку слова для chatId=${chatId}`)
         const timestamp = Date.now()
@@ -522,6 +523,7 @@ bot.onText(/\/start/, async (msg) => {
         } else {
           currentIndexRef.currentIndex++
         }
+        setUserIndex(chatId, currentIndexRef.currentIndex)
         console.log(`[CALLBACK] Завершили отправку слова для chatId=${chatId}, новый индекс: ${currentIndexRef.currentIndex}`)
       }
     )

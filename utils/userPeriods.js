@@ -40,4 +40,4 @@ function setUserPeriod(chatId, start, end) {
   saveUserSettings(settings)
 }
 
-module.exports = { getUserPeriod, setUserPeriod } 
+module.exports = { getUserPeriod, setUserPeriod, loadUserPeriods: loadUserSettings } 

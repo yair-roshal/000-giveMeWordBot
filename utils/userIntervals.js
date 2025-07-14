@@ -67,4 +67,5 @@ module.exports = {
   getUserIntervalMs,
   loadUserSettings,
   saveUserSettings,
+  loadUserIntervals: loadUserSettings,
 } 

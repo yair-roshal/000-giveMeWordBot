@@ -32,5 +32,6 @@ function setUserIndex(chatId, idx) {
 
 module.exports = {
   getUserIndex,
-  setUserIndex
+  setUserIndex,
+  loadUserProgress: loadUserSettings
 } 
