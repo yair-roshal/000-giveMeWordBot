@@ -19,36 +19,7 @@ const { getUserIndex, setUserIndex } = require('./utils/userProgress.js')
 const fs = require('fs')
 const path = require('path')
 const PERIODS_FILE = path.join(__dirname, 'data/user_periods.json')
-
-function loadUserPeriods() {
-  try {
-    if (fs.existsSync(PERIODS_FILE)) {
-      const data = fs.readFileSync(PERIODS_FILE, 'utf8')
-      return JSON.parse(data)
-    }
-  } catch (error) {
-    console.error('Ошибка при загрузке пользовательских периодов:', error)
-  }
-  return {}
-}
-function saveUserPeriods(periods) {
-  try {
-    const dir = path.dirname(PERIODS_FILE)
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-    fs.writeFileSync(PERIODS_FILE, JSON.stringify(periods, null, 2))
-  } catch (error) {
-    console.error('Ошибка при сохранении пользовательских периодов:', error)
-  }
-}
-function getUserPeriod(chatId) {
-  const periods = loadUserPeriods()
-  return periods[chatId] || { start: clockStart, end: clockEnd }
-}
-function setUserPeriod(chatId, start, end) {
-  const periods = loadUserPeriods()
-  periods[chatId] = { start, end }
-  saveUserPeriods(periods)
-}
+const { loadUserPeriods, saveUserPeriods, getUserPeriod, setUserPeriod } = require('./utils/userPeriods.js')
 
 var currentIndex = 0
 // const fs = require("fs")
@@ -223,12 +194,13 @@ bot.on('callback_query', async (query) => {
       const timerInfo = getUserTimerInfo(chatId)
       const learnedWords = loadLearnedWords(chatId)
       const userIndex = getUserIndex(chatId)
+      const userPeriod = getUserPeriod(chatId)
       let message = '🛠️ <b>Ваши настройки:</b>\n\n'
       message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}</b>\n`
       message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
       message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
       message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
-      message += `🕒 Период рассылки: <b>${clockStart}:00 - ${clockEnd}:00</b>\n\n`
+      message += `🕒 Период рассылки: <b>${userPeriod.start}:00 - ${userPeriod.end}:00</b>\n\n`
       if (learnedWords.length > 0) {
         message += '<b>Список выученных слов:</b>\n'
         learnedWords.forEach(word => {
@@ -479,6 +451,68 @@ bot.onText(/\/start/, async (msg) => {
     setUserIndex(chatId, getUserIndex(chatId) + 1)
   }
 
+  // Запускаем таймеры ПОСЛЕ загрузки словаря
+  console.log('[AUTO] Начинаем автоматический запуск таймеров после загрузки словаря')
+  const userIntervals = loadUserIntervals()
+  console.log('[AUTO] userIntervals:', userIntervals)
+  
+  // Получаем список всех пользователей из разных файлов
+  const allChatIds = new Set()
+  
+  // Из user_intervals.json
+  if (userIntervals && typeof userIntervals === 'object') {
+    Object.keys(userIntervals).forEach(chatId => allChatIds.add(chatId))
+  }
+  
+  // Из user_periods.json
+  const userPeriods = loadUserPeriods()
+  console.log('[AUTO] userPeriods:', userPeriods)
+  if (userPeriods && typeof userPeriods === 'object') {
+    Object.keys(userPeriods).forEach(chatId => allChatIds.add(chatId))
+  }
+  
+  // Из user_progress.json
+  const { loadUserProgress } = require('./utils/userProgress.js')
+  const userProgress = loadUserProgress()
+  console.log('[AUTO] userProgress:', userProgress)
+  if (userProgress && typeof userProgress === 'object') {
+    Object.keys(userProgress).forEach(chatId => allChatIds.add(chatId))
+  }
+  
+  console.log('[AUTO] Все найденные chatIds:', Array.from(allChatIds))
+  
+  // Запускаем таймеры для всех найденных пользователей
+  allChatIds.forEach(chatId => {
+    console.log(`[AUTO] Запускаем таймер для chatId=${chatId}`)
+    createOrUpdateUserTimer(
+      chatId,
+      bot,
+      dictionary,
+      { currentIndex },
+      async (chatId, bot, dictionary, currentIndexRef) => {
+        console.log(`[CALLBACK] Начинаем отправку слова для chatId=${chatId}`)
+        const timestamp = Date.now()
+        const formattedDate = formatDate(timestamp)
+        console.log(`(auto) Отправляем слово пользователю ${chatId} в ${formattedDate}`)
+        try {
+          console.log(`[CALLBACK] Вызываем sendingWordMessage для chatId=${chatId}, index=${currentIndexRef.currentIndex}`)
+          const result = await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, chatId)
+          console.log(`[CALLBACK] sendingWordMessage завершился для chatId=${chatId}, result:`, result)
+          userCurrentOriginal[chatId] = result.leftWords
+        } catch (err) {
+          console.error('Ошибка в sendingWordMessage:', err)
+        }
+        if (currentIndexRef.currentIndex == dictionary.length - 1) {
+          currentIndexRef.currentIndex = 0
+        } else {
+          currentIndexRef.currentIndex++
+        }
+        console.log(`[CALLBACK] Завершили отправку слова для chatId=${chatId}, новый индекс: ${currentIndexRef.currentIndex}`)
+      }
+    )
+  })
+  console.log('[AUTO] Автоматический запуск таймеров завершён')
+
   let previousDictionaryHash = null // Для проверки изменений в словаре
 
   // Функция для хеширования словаря (для проверки изменений)
@@ -680,34 +714,8 @@ function getNextUnlearnedIndex(dictionary, chatId, fromIndex = 0) {
 }
 
 // После загрузки словаря и перед обработкой команд
-(async () => {
-  const userIntervals = loadUserIntervals()
-  if (userIntervals && typeof userIntervals === 'object') {
-    Object.entries(userIntervals).forEach(([chatId, intervalMinutes]) => {
-      if (intervalMinutes && dictionary && dictionary.length > 0) {
-        createOrUpdateUserTimer(
-          chatId,
-          bot,
-          dictionary,
-          { currentIndex },
-          async (chatId, bot, dictionary, currentIndexRef) => {
-            const timestamp = Date.now()
-            const formattedDate = formatDate(timestamp)
-            console.log(`(auto) Отправляем слово пользователю ${chatId} в ${formattedDate}`)
-            try {
-              const result = await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, chatId)
-              userCurrentOriginal[chatId] = result.leftWords
-            } catch (err) {
-              console.error('Ошибка в sendingWordMessage:', err)
-            }
-            if (currentIndexRef.currentIndex == dictionary.length - 1) {
-              currentIndexRef.currentIndex = 0
-            } else {
-              currentIndexRef.currentIndex++
-            }
-          }
-        )
-      }
-    })
-  }
-})()
+// Удаляем старый автоматический запуск - теперь он в команде /start
+
+module.exports = {
+  getUserPeriod,
+}
