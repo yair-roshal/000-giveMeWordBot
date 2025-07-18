@@ -174,6 +174,7 @@ bot.on('callback_query', async (query) => {
     
     if (intervalValue) {
       setUserInterval(chatId, intervalValue)
+      // Остановить и создать таймер только для текущего пользователя
       createOrUpdateUserTimer(chatId, bot, dictionary, { currentIndex: getUserIndex(chatId) }, async (chatId, bot, dictionary, currentIndexRef) => {
         const timestamp = Date.now()
         const formattedDate = formatDate(timestamp)
@@ -373,6 +374,69 @@ bot.onText(/\/interval/, async (msg) => {
   }
   
   await bot.sendMessage(chatId, message)
+})
+
+// === КОМАНДА ДЛЯ ПЕРЕЗАПУСКА ВСЕХ ТАЙМЕРОВ (только для админа) ===
+bot.onText(/\/перезапусти_таймеры/, async (msg) => {
+  const chatId = msg.chat.id
+  if (String(chatId) !== String(CHAT_ID_ADMIN)) {
+    await bot.sendMessage(chatId, '⛔ Только администратор может использовать эту команду.')
+    return
+  }
+  await bot.sendMessage(chatId, '⏳ Перезапускаю все таймеры пользователей...')
+  stopAllTimers()
+
+  // Собираем всех chatId из user_settings.json (интервалы, прогресс, периоды)
+  const userIntervals = loadUserIntervals()
+  const userPeriods = loadUserPeriods()
+  const { loadUserProgress } = require('./utils/userProgress.js')
+  const userProgress = loadUserProgress()
+  const allChatIds = new Set()
+  if (userIntervals && typeof userIntervals === 'object') {
+    Object.keys(userIntervals).forEach(id => allChatIds.add(id))
+  }
+  if (userPeriods && typeof userPeriods === 'object') {
+    Object.keys(userPeriods).forEach(id => allChatIds.add(id))
+  }
+  if (userProgress && typeof userProgress === 'object') {
+    Object.keys(userProgress).forEach(id => allChatIds.add(id))
+  }
+
+  // Если словарь не загружен — загружаем
+  if (!dictionary || !Array.isArray(dictionary) || dictionary.length === 0) {
+    const dictionaryText = await getWordsFromGoogleDocs()
+    if (!dictionaryText) {
+      await bot.sendMessage(chatId, '❌ Не удалось загрузить словарь. Таймеры не перезапущены.')
+      return
+    }
+    dictionary = dictionaryText.split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(line => line && !line.startsWith('🇮🇱') && !line.startsWith('___'))
+  }
+
+  allChatIds.forEach(userId => {
+    createOrUpdateUserTimer(
+      userId,
+      bot,
+      dictionary,
+      { currentIndex: getUserIndex(userId) },
+      async (userId, bot, dictionary, currentIndexRef) => {
+        try {
+          const result = await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, userId)
+          userCurrentOriginal[userId] = result.leftWords
+        } catch (err) {
+          console.error('Ошибка в sendingWordMessage:', err)
+        }
+        if (currentIndexRef.currentIndex == dictionary.length - 1) {
+          currentIndexRef.currentIndex = 0
+        } else {
+          currentIndexRef.currentIndex++
+        }
+        setUserIndex(userId, currentIndexRef.currentIndex)
+      }
+    )
+  })
+  await bot.sendMessage(chatId, `✅ Перезапуск завершён. Активных таймеров: ${allChatIds.size}`)
 })
 
 // Показываем меню с новой кнопкой при /start

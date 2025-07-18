@@ -4,6 +4,10 @@ const { getUserPeriod } = require('./userPeriods.js')
 // Хранилище активных таймеров для каждого пользователя
 const userTimers = new Map()
 
+function normalizeChatId(chatId) {
+  return String(chatId)
+}
+
 function logTimersState(action, chatId) {
   const allChatIds = Array.from(userTimers.keys())
   console.log(`[TIMER][${chatId}] [${action}] Активных таймеров: ${userTimers.size}. Список chatId:`, allChatIds)
@@ -11,6 +15,7 @@ function logTimersState(action, chatId) {
 
 // Функция для создания или обновления таймера пользователя
 function createOrUpdateUserTimer(chatId, bot, dictionary, currentIndexRef, callback) {
+  chatId = normalizeChatId(chatId)
   console.log(`[TIMER][${chatId}] createOrUpdateUserTimer вызван`)
   if (userTimers.has(chatId)) {
     const timers = userTimers.get(chatId)
@@ -48,7 +53,7 @@ function createOrUpdateUserTimer(chatId, bot, dictionary, currentIndexRef, callb
       console.log(`[TIMER][${chatId}] Вызываем callback`)
       callback(chatId, bot, dictionary, currentIndexRef)
     }, intervalMs)
-    userTimers.set(chatId, { timeout, interval: interval })
+    userTimers.set(chatId, { timeout, interval })
     logTimersState('setInterval', chatId)
 
     // Первый запуск (отложенный)
@@ -66,13 +71,15 @@ function createOrUpdateUserTimer(chatId, bot, dictionary, currentIndexRef, callb
     callback(chatId, bot, dictionary, currentIndexRef)
   }, intervalMs)
 
-  userTimers.set(chatId, { timeout, interval: null })
+  // Не записываем в userTimers до создания обоих таймеров (timeout и interval)
+  // userTimers.set(chatId, { timeout, interval: null }) // УДАЛЕНО
   logTimersState('setTimeout', chatId)
   return timeout
 }
 
 // Функция для остановки таймера пользователя
 function stopUserTimer(chatId) {
+  chatId = normalizeChatId(chatId)
   if (userTimers.has(chatId)) {
     const timers = userTimers.get(chatId)
     if (timers.timeout) clearTimeout(timers.timeout)
@@ -85,9 +92,9 @@ function stopUserTimer(chatId) {
 
 // Функция для получения информации о таймере пользователя
 function getUserTimerInfo(chatId) {
+  chatId = normalizeChatId(chatId)
   const hasTimer = userTimers.has(chatId)
   const intervalMinutes = getUserInterval(chatId)
-  
   return {
     hasTimer,
     intervalMinutes,
