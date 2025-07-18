@@ -116,6 +116,8 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId) => {
       console.log('prepareMessage : ', err)
     })
 
+  textMessage += `\n🆔 User ID: <b>${chatId}</b>\n\n`
+
   var optionsMessage = {
     reply_markup: JSON.stringify(give_me_keyboard),
     parse_mode: 'HTML',

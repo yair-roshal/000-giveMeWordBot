@@ -4,61 +4,70 @@ const { getUserPeriod } = require('./userPeriods.js')
 // Хранилище активных таймеров для каждого пользователя
 const userTimers = new Map()
 
+function logTimersState(action, chatId) {
+  const allChatIds = Array.from(userTimers.keys())
+  console.log(`[TIMER][${chatId}] [${action}] Активных таймеров: ${userTimers.size}. Список chatId:`, allChatIds)
+}
+
 // Функция для создания или обновления таймера пользователя
 function createOrUpdateUserTimer(chatId, bot, dictionary, currentIndexRef, callback) {
-  // Останавливаем существующий таймер, если есть
+  console.log(`[TIMER][${chatId}] createOrUpdateUserTimer вызван`)
   if (userTimers.has(chatId)) {
     const timers = userTimers.get(chatId)
+    console.log(`[TIMER][${chatId}] Останавливаю старый таймер`)
     if (timers.timeout) clearTimeout(timers.timeout)
     if (timers.interval) clearInterval(timers.interval)
     userTimers.delete(chatId)
+    logTimersState('delete', chatId)
   }
 
   // Получаем интервал пользователя
   const userIntervalMs = getUserIntervalMs(chatId)
   if (!userIntervalMs) {
-    console.log(`Пользователь ${chatId} не настроил интервал, используем дефолт 120 минут`)
+    console.log(`[TIMER][${chatId}] Не настроен интервал, используем дефолт 120 минут`)
   }
   const intervalMs = userIntervalMs || (120 * 60 * 1000) // 120 минут в миллисекундах
 
-  console.log(`Создаём таймер для пользователя ${chatId} с интервалом ${intervalMs / 60000} минут (отложенный старт)`)
+  console.log(`[TIMER][${chatId}] Создаю новый таймер с интервалом ${intervalMs / 60000} минут (отложенный старт)`)
 
   // Первый запуск только через userIntervalMs
   const timeout = setTimeout(() => {
-    console.log(`[TIMER] setTimeout сработал для chatId=${chatId}`)
+    console.log(`[TIMER][${chatId}] setTimeout сработал`)
     // Всегда запускаем setInterval
     const interval = setInterval(() => {
-      console.log(`[TIMER] Проверка времени для chatId=${chatId}`)
+      console.log(`[TIMER][${chatId}] Проверка времени`)
       const period = getUserPeriod(chatId)
       console.log('[DEBUG] getUserPeriod вернул:', period)
       const { start, end } = period
       const nowHours = new Date().getHours()
       if (!(nowHours >= start && nowHours < end)) {
-        console.log(`[TIMER] Не время показа слова: сейчас ${nowHours}:00, разрешено ${start}:00-${end}:00 (chatId=${chatId})`)
+        console.log(`[TIMER][${chatId}] Не время показа слова: сейчас ${nowHours}:00, разрешено ${start}:00-${end}:00 (chatId=${chatId})`)
         return
       }
-      console.log(`[TIMER] Периодический запуск для chatId=${chatId}`)
-      console.log(`[TIMER] Вызываем callback для chatId=${chatId}`)
+      console.log(`[TIMER][${chatId}] Периодический запуск`)
+      console.log(`[TIMER][${chatId}] Вызываем callback`)
       callback(chatId, bot, dictionary, currentIndexRef)
     }, intervalMs)
     userTimers.set(chatId, { timeout, interval: interval })
+    logTimersState('setInterval', chatId)
 
     // Первый запуск (отложенный)
-    console.log(`[TIMER] Проверка времени для chatId=${chatId} (первый запуск)`)
+    console.log(`[TIMER][${chatId}] Проверка времени (первый запуск)`)
     const period = getUserPeriod(chatId)
     console.log('[DEBUG] getUserPeriod вернул:', period)
     const { start, end } = period
     const nowHours = new Date().getHours()
     if (!(nowHours >= start && nowHours < end)) {
-      console.log(`[TIMER] Не время показа слова: сейчас ${nowHours}:00, разрешено ${start}:00-${end}:00 (chatId=${chatId})`)
+      console.log(`[TIMER][${chatId}] Не время показа слова: сейчас ${nowHours}:00, разрешено ${start}:00-${end}:00 (chatId=${chatId})`)
       return
     }
-    console.log(`[TIMER] Первый запуск для chatId=${chatId}`)
-    console.log(`[TIMER] Вызываем callback для chatId=${chatId} (первый запуск)`)
+    console.log(`[TIMER][${chatId}] Первый запуск`)
+    console.log(`[TIMER][${chatId}] Вызываем callback (первый запуск)`)
     callback(chatId, bot, dictionary, currentIndexRef)
   }, intervalMs)
 
   userTimers.set(chatId, { timeout, interval: null })
+  logTimersState('setTimeout', chatId)
   return timeout
 }
 
@@ -70,6 +79,7 @@ function stopUserTimer(chatId) {
     if (timers.interval) clearInterval(timers.interval)
     userTimers.delete(chatId)
     console.log(`Таймер пользователя ${chatId} остановлен`)
+    logTimersState('delete', chatId)
   }
 }
 

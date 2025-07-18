@@ -13,6 +13,10 @@ const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
 const formatDate = require('./utils/formatDate.js')
 const { setUserInterval, getUserInterval, getUserIntervalMs, loadUserIntervals } = require('./utils/userIntervals.js')
 const { createOrUpdateUserTimer, stopUserTimer, getUserTimerInfo, stopAllTimers } = require('./utils/userTimers.js')
+// === СБРОС ВСЕХ ТАЙМЕРОВ ПРИ СТАРТЕ БОТА ===
+console.log('[INIT] Останавливаю все пользовательские таймеры при старте бота...')
+stopAllTimers()
+console.log('[INIT] Все пользовательские таймеры сброшены.')
 const { addLearnedWord, isWordLearned, loadLearnedWords } = require('./utils/learnedWords.js')
 const { getUserIndex, setUserIndex } = require('./utils/userProgress.js')
 // const crypto = require('crypto')
@@ -672,6 +676,7 @@ bot.on('message', async (msg) => {
     message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
     message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
     message += `🕒 Период рассылки: <b>${userPeriod.start}:00 - ${userPeriod.end}:00</b>\n\n`
+    message += `\n🆔 User ID: <b>${chatId}</b>\n\n`
 
     if (learnedWords.length > 0) {
       message += '<b>Список выученных слов:</b>\n'
@@ -703,6 +708,28 @@ bot.on('message', async (msg) => {
   if (msg.text === '🛠️ Сменить период') {
     await bot.sendMessage(msg.chat.id, 'Выберите час начала периода:', {
       reply_markup: JSON.stringify(getHourKeyboard('hour_start_'))
+    })
+    return
+  }
+  // === Обработка кнопки "Закрыть" ===
+  if (msg.text === 'Закрыть') {
+    await bot.sendMessage(msg.chat.id, 'Меню закрыто.', {
+      reply_markup: { remove_keyboard: true }
+    })
+    // После закрытия меню отправляем кнопку для открытия меню
+    await bot.sendMessage(msg.chat.id, 'Чтобы открыть меню снова, нажмите кнопку ниже:', {
+      reply_markup: {
+        keyboard: [[{ text: 'Открыть меню' }]],
+        resize_keyboard: true,
+        one_time_keyboard: true
+      }
+    })
+    return
+  }
+  // === Обработка кнопки "Открыть меню" ===
+  if (msg.text === 'Открыть меню') {
+    await bot.sendMessage(msg.chat.id, 'Меню:', {
+      reply_markup: startMenu
     })
     return
   }
