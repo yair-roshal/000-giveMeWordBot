@@ -93,3 +93,5 @@ next-env.d.ts
 # System Files
 .DS_Store
 Thumbs.db
+user_settings.json
+data/user_settings.json
