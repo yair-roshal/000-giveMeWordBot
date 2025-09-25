@@ -9,8 +9,6 @@
 0-save
 
 **/log-words.txt
-# **/mnemonicsCache.json
-# utils/mnemonicsCache.json
 
 /logs
 data/logs/
@@ -20,6 +18,8 @@ give_me_word_bot_error.log
 give_me_word_bot_out.log 
 
 **/user_settings.json
+**/mnemonicsCache.json
+utils/mnemonicsCache.json
 
 # classic ignoring files===============
 
