@@ -159,7 +159,12 @@ bot.on('callback_query', async (query) => {
     const nextIdx = getNextUnlearnedIndex(dictionary, chatId, getUserIndex(chatId) + 1)
     setUserIndex(chatId, nextIdx)
     const result = await sendingWordMessage(dictionary, nextIdx, bot, chatId)
-    userCurrentOriginal[chatId] = result.leftWords
+    if (result && result.leftWords !== undefined) {
+      userCurrentOriginal[chatId] = result.leftWords
+    } else {
+      console.error('sendingWordMessage returned invalid result:', result)
+      userCurrentOriginal[chatId] = ''
+    }
   } else if (query.data === 'interval_settings') {
     const userInterval = getUserInterval(chatId)
     const intervalText = userInterval ? `Текущий интервал: ${userInterval} минут` : 'Интервал не настроен'
@@ -181,7 +186,12 @@ bot.on('callback_query', async (query) => {
         console.log(`Отправляем слово пользователю ${chatId} в ${formattedDate}`)
         try {
           const result = await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, chatId)
-          userCurrentOriginal[chatId] = result.leftWords
+          if (result && result.leftWords !== undefined) {
+            userCurrentOriginal[chatId] = result.leftWords
+          } else {
+            console.error('sendingWordMessage returned invalid result:', result)
+            userCurrentOriginal[chatId] = ''
+          }
         } catch (err) {
           console.error('Ошибка в sendingWordMessage:', err)
         }
@@ -261,7 +271,12 @@ bot.on('callback_query', async (query) => {
     // Найти следующее невыученное слово
     setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0) + 1))
     const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
-    userCurrentOriginal[chatId] = result.leftWords
+    if (result && result.leftWords !== undefined) {
+      userCurrentOriginal[chatId] = result.leftWords
+    } else {
+      console.error('sendingWordMessage returned invalid result:', result)
+      userCurrentOriginal[chatId] = ''
+    }
     return
   } else if (query.data.startsWith('period_')) {
     const chatId = query.from.id
@@ -423,7 +438,12 @@ bot.onText(/\/перезапусти_таймеры/, async (msg) => {
       async (userId, bot, dictionary, currentIndexRef) => {
         try {
           const result = await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, userId)
-          userCurrentOriginal[userId] = result.leftWords
+          if (result && result.leftWords !== undefined) {
+            userCurrentOriginal[userId] = result.leftWords
+          } else {
+            console.error('sendingWordMessage returned invalid result:', result)
+            userCurrentOriginal[userId] = ''
+          }
         } catch (err) {
           console.error('Ошибка в sendingWordMessage:', err)
         }
@@ -507,7 +527,12 @@ bot.onText(/\/start/, async (msg) => {
     await bot.sendPhoto(chatId, photoPath, optionsMessage2)
     setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0)))
     const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
-    userCurrentOriginal[chatId] = result.leftWords
+    if (result && result.leftWords !== undefined) {
+      userCurrentOriginal[chatId] = result.leftWords
+    } else {
+      console.error('sendingWordMessage returned invalid result:', result)
+      userCurrentOriginal[chatId] = ''
+    }
   } catch (err) {
     console.error('Ошибка при отправке сообщения:', err)
     await bot.sendMessage(chatId, 'Извините, произошла ошибка при отправке слова. Пожалуйста, попробуйте позже.')
@@ -558,13 +583,25 @@ bot.onText(/\/start/, async (msg) => {
     const learnedWords = loadLearnedWords(chatId)
     const userIndex = getUserIndex(chatId)
     const userPeriod = getUserPeriod(chatId)
+    
+    // Проверяем валидность индекса и словаря
+    if (!dictionary || dictionary.length === 0) {
+      console.error(`[AUTO] Словарь пуст, пропускаем chatId=${chatId}`)
+      return
+    }
+    
+    if (userIndex < 0 || userIndex >= dictionary.length) {
+      console.log(`[AUTO] Корректируем индекс для chatId=${chatId} с ${userIndex} на 0`)
+      setUserIndex(chatId, 0)
+    }
+    
     // Формируем строку лога
     let logMsg = `\n[НАСТРОЙКИ] chatId=${chatId}\n`;
     logMsg += `🛠️ Ваши настройки:` + "\n";
     logMsg += `⏱️ Интервал: ${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}\n`;
     logMsg += `⏳ Таймер: ${timerInfo.isActive ? 'активен' : 'неактивен'}\n`;
     logMsg += `📚 Выучено слов: ${learnedWords.length}\n`;
-    logMsg += `🔢 Индекс (user_progress): ${userIndex}\n`;
+    logMsg += `🔢 Индекс (user_progress): ${getUserIndex(chatId)}\n`;
     logMsg += `🕒 Период рассылки: ${userPeriod.start}:00 - ${userPeriod.end}:00\n`;
     console.log(logMsg)
     console.log(`[AUTO] Запускаем таймер для chatId=${chatId}`)
@@ -582,7 +619,12 @@ bot.onText(/\/start/, async (msg) => {
           console.log(`[CALLBACK] Вызываем sendingWordMessage для chatId=${chatId}, index=${currentIndexRef.currentIndex}`)
           const result = await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, chatId)
           console.log(`[CALLBACK] sendingWordMessage завершился для chatId=${chatId}, result:`, result)
-          userCurrentOriginal[chatId] = result.leftWords
+          if (result && result.leftWords !== undefined) {
+            userCurrentOriginal[chatId] = result.leftWords
+          } else {
+            console.error('sendingWordMessage returned invalid result:', result)
+            userCurrentOriginal[chatId] = ''
+          }
         } catch (err) {
           console.error('Ошибка в sendingWordMessage:', err)
         }

@@ -16,7 +16,7 @@ const {
 const sendingWordMessage = async (dictionary, currentIndex, bot, chatId) => {
   if (!dictionary || !dictionary[currentIndex]) {
     console.error('Invalid currentIndex: ', currentIndex);
-    return;
+    return { leftWords: '', currentIndex: currentIndex || 0 };
   }
   
   
@@ -50,7 +50,7 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId) => {
   if (leftWords == '') {
     console.error('don`t found "-" in this string :>> =====================')
     sendingWordMessage(dictionary, currentIndex + 1, bot, chatId)
-    return
+    return { leftWords: '', currentIndex: currentIndex + 1 }
   }
 
   // console.log({ leftWords })
@@ -139,6 +139,9 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId) => {
     await bot.sendMessage(chatId, textMessage, optionsMessage)
     return { leftWords, currentIndex }
   }
+  
+  // Default return if no conditions are met
+  return { leftWords: leftWords || '', currentIndex: currentIndex || 0 }
 }
 
 module.exports = sendingWordMessage
