@@ -1,5 +1,6 @@
 const { getUserIntervalMs, setUserInterval, getUserInterval } = require('./userIntervals.js')
 const { getUserPeriod } = require('./userPeriods.js')
+const { min } = require('../constants/intervals.js')
 
 // Хранилище активных таймеров для каждого пользователя
 const userTimers = new Map()
@@ -28,10 +29,11 @@ function createOrUpdateUserTimer(chatId, bot, dictionary, currentIndexRef, callb
 
   // Получаем интервал пользователя
   const userIntervalMs = getUserIntervalMs(chatId)
+  const defaultIntervalMs = min * 60 * 1000 // Используем значение из constants/intervals.js
   if (!userIntervalMs) {
-    console.log(`[TIMER][${chatId}] Не настроен интервал, используем дефолт 120 минут`)
+    console.log(`[TIMER][${chatId}] Не настроен интервал, используем дефолт ${min} минут`)
   }
-  const intervalMs = userIntervalMs || (120 * 60 * 1000) // 120 минут в миллисекундах
+  const intervalMs = userIntervalMs || defaultIntervalMs
 
   console.log(`[TIMER][${chatId}] Создаю новый таймер с интервалом ${intervalMs / 60000} минут (отложенный старт)`)
 

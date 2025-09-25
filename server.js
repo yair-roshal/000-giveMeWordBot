@@ -86,6 +86,7 @@ process.on("SIGTERM", () => {
 const token = process.env.TELEGRAM_BOT_TOKEN
 // console.log('token :>> ', token)
 console.log('process.env.NODE_ENV', process.env.NODE_ENV)
+console.log(`[DEFAULTS] Интервал по умолчанию: ${min} мин, Период по умолчанию: ${clockStart}:00-${clockEnd}:00`)
 
 // Создаем бота с дополнительными параметрами для стабильности
 const bot = new TelegramBot(token, {
@@ -333,11 +334,11 @@ bot.on('callback_query', async (query) => {
       const userIndex = getUserIndex(chatId)
       const userPeriod = getUserPeriod(chatId)
       let message = '🛠️ <b>Ваши настройки:</b>\n\n'
-      message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}</b>\n`
+      message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
       message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
       message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
       message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
-      message += `🕒 Период рассылки: <b>${userPeriod.start}:00 - ${userPeriod.end}:00</b>\n\n`
+      message += `🕒 Период рассылки: <b>${userPeriod.start}:00-${userPeriod.end}:00</b>\n\n`
       if (learnedWords.length > 0) {
         message += '<b>Список выученных слов:</b>\n'
         learnedWords.forEach(word => {
@@ -411,11 +412,11 @@ bot.on('callback_query', async (query) => {
     const userIndex = getUserIndex(chatId)
     const userPeriod = getUserPeriod(chatId)
     let message = '🛠️ <b>Ваши настройки:</b>\n\n'
-    message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}</b>\n`
+    message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
     message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
     message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
     message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
-    message += `🕒 Период рассылки: <b>${userPeriod.start}:00 - ${userPeriod.end}:00</b>\n\n`
+    message += `🕒 Период рассылки: <b>${userPeriod.start}:00-${userPeriod.end}:00</b>\n\n`
     if (learnedWords.length > 0) {
       message += '<b>Список выученных слов:</b>\n'
       learnedWords.forEach(word => {
@@ -454,11 +455,11 @@ bot.on('callback_query', async (query) => {
     const userIndex = getUserIndex(chatId)
     const userPeriod = getUserPeriod(chatId)
     let message = '🛠️ <b>Ваши настройки:</b>\n\n'
-    message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}</b>\n`
+    message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
     message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
     message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
     message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
-    message += `🕒 Период рассылки: <b>${userPeriod.start}:00 - ${userPeriod.end}:00</b>\n\n`
+    message += `🕒 Период рассылки: <b>${userPeriod.start}:00-${userPeriod.end}:00</b>\n\n`
     if (learnedWords.length > 0) {
       message += '<b>Список выученных слов:</b>\n'
       learnedWords.forEach(word => {
@@ -719,11 +720,11 @@ bot.onText(/\/start/, async (msg) => {
     // Формируем строку лога
     let logMsg = `\n[НАСТРОЙКИ] chatId=${chatId}\n`;
     logMsg += `🛠️ Ваши настройки:` + "\n";
-    logMsg += `⏱️ Интервал: ${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}\n`;
+    logMsg += `⏱️ Интервал: ${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (дефолт из constants)'}\n`;
     logMsg += `⏳ Таймер: ${timerInfo.isActive ? 'активен' : 'неактивен'}\n`;
     logMsg += `📚 Выучено слов: ${learnedWords.length}\n`;
     logMsg += `🔢 Индекс (user_progress): ${getUserIndex(chatId)}\n`;
-    logMsg += `🕒 Период рассылки: ${userPeriod.start}:00 - ${userPeriod.end}:00\n`;
+    logMsg += `🕒 Период рассылки: ${userPeriod.start}:00-${userPeriod.end}:00 ${userPeriod.start === clockStart && userPeriod.end === clockEnd ? '(дефолт из constants)' : '(пользовательский)'}\n`;
     console.log(logMsg)
     console.log(`[AUTO] Запускаем таймер для chatId=${chatId}`)
     createOrUpdateUserTimer(
@@ -898,11 +899,11 @@ bot.on('message', async (msg) => {
     const userPeriod = getUserPeriod(chatId)
 
     let message = '🛠️ <b>Ваши настройки:</b>\n\n'
-    message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин' : min + ' мин (по умолчанию)'}</b>\n`
+    message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
     message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
     message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
     message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
-    message += `🕒 Период рассылки: <b>${userPeriod.start}:00 - ${userPeriod.end}:00</b>\n\n`
+    message += `🕒 Период рассылки: <b>${userPeriod.start}:00-${userPeriod.end}:00</b>\n\n`
     message += `\n🆔 User ID: <b>${chatId}</b>\n\n`
 
     if (learnedWords.length > 0) {

@@ -29,7 +29,7 @@ function getUserPeriod(chatId) {
   if (settings[chatId]?.period) {
     return settings[chatId].period
   } else {
-    console.log(`[PERIOD] Для chatId=${chatId} используются дефолтные значения периода: 0-24`)
+    console.log(`[PERIOD] Для chatId=${chatId} используются дефолтные значения периода: ${clockStart}-${clockEnd}`)
     return { start: clockStart, end: clockEnd }
   }
 }
