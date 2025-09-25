@@ -29,36 +29,52 @@ var currentIndex = 0
 // const fs = require("fs")
 // const path = require("path")
 
-// const pidFile = path.join(__dirname, "bot.pid")
+const pidFile = path.join(__dirname, "bot.pid")
 
-// // Проверяем, существует ли PID-файл
-// if (fs.existsSync(pidFile)) {
-//   const pid = parseInt(fs.readFileSync(pidFile, "utf8"), 10)
+// Проверяем, существует ли PID-файл
+if (fs.existsSync(pidFile)) {
+  const pid = parseInt(fs.readFileSync(pidFile, "utf8"), 10)
 
-//   try {
-//     // Проверяем, активен ли процесс
-//     process.kill(pid, 0)
-//     console.log(`Bot is already running with PID ${pid}. Exiting...`)
-//     process.exit(1) // Завершаем текущий процесс
-//   } catch (err) {
-//     // Если процесс не существует, продолжаем
-//     console.log(
-//       "Stale PID file found. Starting new bot instance...",
-//       new Date().toLocaleTimeString("en-GB")
-//     )
-//     fs.unlinkSync(pidFile) // Удаляем старый PID-файл
-//   }
-// }
+  try {
+    // Проверяем, активен ли процесс
+    process.kill(pid, 0)
+    console.log(`Bot is already running with PID ${pid}. Exiting...`)
+    process.exit(1) // Завершаем текущий процесс
+  } catch (err) {
+    // Если процесс не существует, продолжаем
+    console.log(
+      "Stale PID file found. Starting new bot instance...",
+      new Date().toLocaleTimeString("en-GB")
+    )
+    fs.unlinkSync(pidFile) // Удаляем старый PID-файл
+  }
+}
 
-// // Записываем текущий PID в файл
-// fs.writeFileSync(pidFile, process.pid.toString())
+// Записываем текущий PID в файл
+fs.writeFileSync(pidFile, process.pid.toString())
 
-// // Удаляем PID-файл при завершении процесса
-// process.on("exit", () => fs.unlinkSync(pidFile))
-// process.on("SIGINT", () => {
-//   fs.unlinkSync(pidFile)
-//   process.exit(0)
-// })
+// Удаляем PID-файл при завершении процесса
+process.on("exit", () => {
+  if (fs.existsSync(pidFile)) {
+    fs.unlinkSync(pidFile)
+  }
+})
+process.on("SIGINT", () => {
+  console.log('Получен сигнал SIGINT, очищаю PID и останавливаю таймеры...')
+  stopAllTimers()
+  if (fs.existsSync(pidFile)) {
+    fs.unlinkSync(pidFile)
+  }
+  process.exit(0)
+})
+process.on("SIGTERM", () => {
+  console.log('Получен сигнал SIGTERM, очищаю PID и останавливаю таймеры...')
+  stopAllTimers()
+  if (fs.existsSync(pidFile)) {
+    fs.unlinkSync(pidFile)
+  }
+  process.exit(0)
+})
 
 // =================================
 
@@ -70,9 +86,23 @@ var currentIndex = 0
 const token = process.env.TELEGRAM_BOT_TOKEN
 // console.log('token :>> ', token)
 console.log('process.env.NODE_ENV', process.env.NODE_ENV)
+
+// Создаем бота с дополнительными параметрами для стабильности
 const bot = new TelegramBot(token, {
-  polling: true,
-  // contentTypeFix: false,
+  polling: {
+    interval: 1000, // Интервал между запросами к Telegram API (мс)
+    autoStart: false, // Не запускаем автоматически, будем контролировать вручную
+    params: {
+      timeout: 10, // Таймаут для long polling (сек)
+    }
+  },
+  request: {
+    agentOptions: {
+      keepAlive: true,
+      family: 4,
+    },
+    timeout: 60000, // Общий таймаут для HTTP запросов (мс)
+  },
 })
 //caching dictionaries======
 // dictionaryTextToFile()
@@ -87,36 +117,112 @@ var optionsMessage = {
 }
 
 const CHAT_ID_ADMIN = process.env.CHAT_ID_ADMIN
-bot.sendMessage(CHAT_ID_ADMIN, textMessageHtml, optionsMessage)
 var dictionary
+
+// Запускаем бота с контролем ошибок
+async function startBot() {
+  try {
+    console.log('Starting bot polling...');
+    
+    // Сначала пытаемся получить информацию о боте для проверки токена
+    const botInfo = await bot.getMe();
+    console.log(`Bot info: @${botInfo.username} (${botInfo.first_name})`);
+    
+    // Очищаем webhook, если он был установлен ранее
+    try {
+      await bot.deleteWebhook();
+      console.log('Webhook cleared (if existed)');
+    } catch (webhookError) {
+      // Игнорируем ошибки очистки webhook
+      console.log('Webhook clear attempted');
+    }
+    
+    await bot.startPolling();
+    console.log('Bot polling started successfully');
+    
+    // Отправляем уведомление администратору только после успешного запуска
+    if (CHAT_ID_ADMIN) {
+      await bot.sendMessage(CHAT_ID_ADMIN, `✅ Бот запущен успешно!\n${textMessageHtml}`, optionsMessage);
+    }
+  } catch (error) {
+    console.error('Failed to start bot polling:', error);
+    
+    // Очищаем PID файл при неудачном запуске
+    if (fs.existsSync(pidFile)) {
+      fs.unlinkSync(pidFile);
+    }
+    process.exit(1);
+  }
+}
+
+// Запускаем бота
+startBot();
 
 // Добавляем обработку ошибок polling
 let reconnectAttempts = 0;
+let isReconnecting = false;
 const MAX_RECONNECT_ATTEMPTS = 5;
 const RECONNECT_DELAY = 5000; // 5 секунд
 
 bot.on('polling_error', async (error) => {
   console.error('Polling error:', error.code, error.message);
   
-  if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+  // Проверяем специфические ошибки, которые не требуют переподключения
+  if (error.code === 'ETELEGRAM' && error.message.includes('409 Conflict')) {
+    console.log('409 Conflict detected - another bot instance may be running');
+    if (isReconnecting) {
+      console.log('Already reconnecting, skipping...');
+      return;
+    }
+    isReconnecting = true;
+  }
+  
+  if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS && !isReconnecting) {
     reconnectAttempts++;
+    isReconnecting = true;
     console.log(`Attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
     
     try {
-      await bot.stopPolling();
-      await new Promise(resolve => setTimeout(resolve, RECONNECT_DELAY));
-      await bot.startPolling();
+      // Принудительно останавливаем polling
+      await bot.stopPolling({ cancel: true, reason: 'Reconnecting after error' });
+      
+      // Ждем перед переподключением
+      await new Promise(resolve => setTimeout(resolve, RECONNECT_DELAY * reconnectAttempts));
+      
+      // Запускаем polling заново
+      await bot.startPolling({ restart: true });
       console.log('Successfully reconnected to Telegram');
       reconnectAttempts = 0;
+      isReconnecting = false;
     } catch (reconnectError) {
       console.error('Failed to reconnect:', reconnectError);
+      isReconnecting = false;
+      
+      // Если не удалось переподключиться, попробуем еще раз через больший интервал
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        setTimeout(() => {
+          isReconnecting = false;
+        }, RECONNECT_DELAY * 2);
+      }
     }
-  } else {
-    console.error('Max reconnection attempts reached. Please check your internet connection and Telegram API status.');
-    // Можно добавить уведомление администратору
-    if (CHAT_ID_ADMIN) {
-      bot.sendMessage(CHAT_ID_ADMIN, '⚠️ Бот остановлен из-за проблем с подключением. Требуется ручной перезапуск.');
+  } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+    console.error('Max reconnection attempts reached. Stopping bot.');
+    isReconnecting = false;
+    
+    // Уведомляем администратора
+    try {
+      if (CHAT_ID_ADMIN) {
+        await bot.sendMessage(CHAT_ID_ADMIN, '⚠️ Бот остановлен из-за проблем с подключением. Требуется ручной перезапуск.');
+      }
+    } catch (notifyError) {
+      console.error('Failed to notify admin:', notifyError);
     }
+    
+    // Очищаем PID файл и завершаем процесс
+    if (fs.existsSync(pidFile)) {
+      fs.unlinkSync(pidFile);
+    }
+    process.exit(1);
   }
 });
 
@@ -133,18 +239,33 @@ process.on('uncaughtException', (err) => {
   }
 });
 
-// Обработка завершения работы приложения
-process.on('SIGINT', () => {
-  console.log('Получен сигнал SIGINT, останавливаем все таймеры...');
-  stopAllTimers();
+// Дополнительная обработка для graceful shutdown
+async function gracefulShutdown(signal) {
+  console.log(`Получен сигнал ${signal}, выполняю graceful shutdown...`);
+  
+  try {
+    // Останавливаем все таймеры
+    stopAllTimers();
+    
+    // Останавливаем polling
+    if (bot && typeof bot.stopPolling === 'function') {
+      await bot.stopPolling({ cancel: true, reason: `Shutdown by ${signal}` });
+      console.log('Bot polling stopped');
+    }
+    
+    // Очищаем PID файл
+    if (fs.existsSync(pidFile)) {
+      fs.unlinkSync(pidFile);
+      console.log('PID file cleaned');
+    }
+    
+    console.log('Graceful shutdown completed');
+  } catch (error) {
+    console.error('Error during graceful shutdown:', error);
+  }
+  
   process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  console.log('Получен сигнал SIGTERM, останавливаем все таймеры...');
-  stopAllTimers();
-  process.exit(0);
-});
+}
 
 // Для хранения оригинала слова и индекса для каждого пользователя
 const userCurrentOriginal = {}
