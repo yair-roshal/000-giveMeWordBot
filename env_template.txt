@@ -1,0 +1,22 @@
+# yandex translate
+PRIVATE_KEY= 
+OAUTH_TOKEN= 
+SERVICE_ACCOUNT_ID=  
+KEY_ID= 
+folder_id= 
+
+# bot
+TELEGRAM_BOT_TOKEN= 
+
+# TELEGRAM_BOT_TOKEN_dev  @Testing770Bot
+TELEGRAM_BOT_TOKEN_testing= 
+
+CHAT_ID_ADMIN= 
+
+
+OPENAI_API_KEY= 
+
+ANTHROPIC_API_KEY= 
+
+ GOOGLE_DOC_ID= 
+ NODE_ENV=dev
