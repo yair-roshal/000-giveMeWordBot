@@ -890,6 +890,21 @@ console.log('server started with interval:', interval / ms / sec, 'min')
 
 // Обработка кнопки "ℹ️ Показать настройки"
 bot.on('message', async (msg) => {
+  // Обработка кнопки "🔂 Покажи новое слово"
+  if (msg.text === '🔂 Покажи новое слово') {
+    const chatId = msg.chat.id
+    const nextIdx = getNextUnlearnedIndex(dictionary, chatId, getUserIndex(chatId) + 1)
+    setUserIndex(chatId, nextIdx)
+    const result = await sendingWordMessage(dictionary, nextIdx, bot, chatId)
+    if (result && result.leftWords !== undefined) {
+      userCurrentOriginal[chatId] = result.leftWords
+    } else {
+      console.error('sendingWordMessage returned invalid result:', result)
+      userCurrentOriginal[chatId] = ''
+    }
+    return
+  }
+  
   if (msg.text === 'ℹ️ Показать настройки') {
     const chatId = msg.chat.id
     const userInterval = getUserInterval(chatId)
