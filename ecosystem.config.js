@@ -13,7 +13,7 @@ module.exports = {
             log_date_format: 'DD-MM-YYYY HH:mm:ss',
             // log_type: 'json',
 
-            watch: true,
+            watch: false, // Отключаем watch чтобы избежать лишних перезапусков
 
             ignore_watch: [
                 './node_modules',
@@ -36,8 +36,8 @@ module.exports = {
             // Env Specific Config
             env_prod: {
                 NODE_ENV: 'prod',
-                exec_mode: 'cluster',
-                instances: 'max',
+                exec_mode: 'fork', // Используем fork вместо cluster для Telegram бота
+                instances: 1, // Только один экземпляр для избежания конфликтов
             },
             env_dev: {
                 NODE_ENV: 'dev',
