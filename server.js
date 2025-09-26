@@ -335,7 +335,7 @@ bot.on('callback_query', async (query) => {
       const userPeriod = getUserPeriod(chatId)
       let message = '🛠️ <b>Ваши настройки:</b>\n\n'
       message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
-      message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
+      message += `⏳ Статус авторассылки: <b>${timerInfo.isActive ? 'активна' : 'неактивна'}</b>\n`
       message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
       message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
       message += `🕒 Период рассылки: <b>${userPeriod.start}:00-${userPeriod.end}:00</b>\n\n`
@@ -413,7 +413,7 @@ bot.on('callback_query', async (query) => {
     const userPeriod = getUserPeriod(chatId)
     let message = '🛠️ <b>Ваши настройки:</b>\n\n'
     message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
-    message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
+    message += `⏳ Статус авторассылки: <b>${timerInfo.isActive ? 'активна' : 'неактивна'}</b>\n`
     message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
     message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
     message += `🕒 Период рассылки: <b>${userPeriod.start}:00-${userPeriod.end}:00</b>\n\n`
@@ -456,7 +456,7 @@ bot.on('callback_query', async (query) => {
     const userPeriod = getUserPeriod(chatId)
     let message = '🛠️ <b>Ваши настройки:</b>\n\n'
     message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
-    message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
+    message += `⏳ Статус авторассылки: <b>${timerInfo.isActive ? 'активна' : 'неактивна'}</b>\n`
     message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
     message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
     message += `🕒 Период рассылки: <b>${userPeriod.start}:00-${userPeriod.end}:00</b>\n\n`
@@ -502,7 +502,7 @@ bot.onText(/\/interval/, async (msg) => {
   
   if (userInterval) {
     message += `✅ Установлен интервал: ${userInterval} минут\n`
-    message += `🔄 Таймер: ${timerInfo.isActive ? 'активен' : 'неактивен'}\n\n`
+    message += `🔄 Авторассылка: ${timerInfo.isActive ? 'активна' : 'неактивна'}\n\n`
     message += 'Используйте кнопку "⚙️ Настройки интервала" для изменения'
   } else {
     message += `❌ Интервал не настроен\n`
@@ -552,6 +552,13 @@ bot.onText(/\/перезапусти_таймеры/, async (msg) => {
   }
 
   allChatIds.forEach(userId => {
+    // Если интервал не установлен, устанавливаем дефолтный
+    let userInterval = getUserInterval(userId)
+    if (!userInterval) {
+      console.log(`[RESTART] Устанавливаем дефолтный интервал ${min} мин для userId=${userId}`)
+      setUserInterval(userId, min)
+    }
+    
     createOrUpdateUserTimer(
       userId,
       bot,
@@ -632,9 +639,14 @@ bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id
   var photoPath = __dirname + '/media/logo.jpg'
 
-  // Получаем интервал пользователя
-  const userInterval = getUserInterval(chatId)
-  const intervalText = userInterval ? `${userInterval} минут` : `${min} минут (по умолчанию)`
+  // Получаем интервал пользователя, если не установлен - устанавливаем дефолтный
+  let userInterval = getUserInterval(chatId)
+  if (!userInterval) {
+    console.log(`[START] Устанавливаем дефолтный интервал ${min} мин для нового пользователя chatId=${chatId}`)
+    setUserInterval(chatId, min)
+    userInterval = min
+  }
+  const intervalText = `${userInterval} минут`
   
   var optionsMessage2 = {
     caption: `Catch the first word, the rest will be in ${intervalText}`,
@@ -700,7 +712,15 @@ bot.onText(/\/start/, async (msg) => {
   // Запускаем таймеры для всех найденных пользователей
   allChatIds.forEach(chatId => {
     // Получаем настройки пользователя
-    const userInterval = getUserInterval(chatId)
+    let userInterval = getUserInterval(chatId)
+    
+    // Если интервал не установлен, устанавливаем дефолтный
+    if (!userInterval) {
+      console.log(`[AUTO] Устанавливаем дефолтный интервал ${min} мин для chatId=${chatId}`)
+      setUserInterval(chatId, min)
+      userInterval = min
+    }
+    
     const timerInfo = getUserTimerInfo(chatId)
     const learnedWords = loadLearnedWords(chatId)
     const userIndex = getUserIndex(chatId)
@@ -720,8 +740,8 @@ bot.onText(/\/start/, async (msg) => {
     // Формируем строку лога
     let logMsg = `\n[НАСТРОЙКИ] chatId=${chatId}\n`;
     logMsg += `🛠️ Ваши настройки:` + "\n";
-    logMsg += `⏱️ Интервал: ${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (дефолт из constants)'}\n`;
-    logMsg += `⏳ Таймер: ${timerInfo.isActive ? 'активен' : 'неактивен'}\n`;
+    logMsg += `⏱️ Интервал: ${userInterval} мин (${userInterval === min ? 'дефолт из constants' : 'пользовательский'})\n`;
+    logMsg += `⏳ Авторассылка: ${timerInfo.isActive ? 'активна' : 'неактивна'}\n`;
     logMsg += `📚 Выучено слов: ${learnedWords.length}\n`;
     logMsg += `🔢 Индекс (user_progress): ${getUserIndex(chatId)}\n`;
     logMsg += `🕒 Период рассылки: ${userPeriod.start}:00-${userPeriod.end}:00 ${userPeriod.start === clockStart && userPeriod.end === clockEnd ? '(дефолт из constants)' : '(пользовательский)'}\n`;
@@ -915,7 +935,7 @@ bot.on('message', async (msg) => {
 
     let message = '🛠️ <b>Ваши настройки:</b>\n\n'
     message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
-    message += `⏳ Таймер: <b>${timerInfo.isActive ? 'активен' : 'неактивен'}</b>\n`
+    message += `⏳ Статус авторассылки: <b>${timerInfo.isActive ? 'активна' : 'неактивна'}</b>\n`
     message += `📚 Выучено слов: <b>${learnedWords.length}</b>\n`
     message += `🔢 Индекс (user_progress): <b>${userIndex}</b>\n`
     message += `🕒 Период рассылки: <b>${userPeriod.start}:00-${userPeriod.end}:00</b>\n\n`

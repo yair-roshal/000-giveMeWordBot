@@ -73,8 +73,8 @@ function createOrUpdateUserTimer(chatId, bot, dictionary, currentIndexRef, callb
     callback(chatId, bot, dictionary, currentIndexRef)
   }, intervalMs)
 
-  // Не записываем в userTimers до создания обоих таймеров (timeout и interval)
-  // userTimers.set(chatId, { timeout, interval: null }) // УДАЛЕНО
+  // Записываем таймер сразу после создания timeout
+  userTimers.set(chatId, { timeout, interval: null })
   logTimersState('setTimeout', chatId)
   return timeout
 }
@@ -125,4 +125,4 @@ module.exports = {
   getUserTimerInfo,
   stopAllTimers,
   getActiveUsers
-} 
+}

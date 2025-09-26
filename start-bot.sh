@@ -29,3 +29,4 @@ pm2 start ecosystem.config.js --env dev
 
 echo "✅ Бот запущен! Проверьте статус: pm2 status"
 echo "📝 Логи: pm2 logs give_me_word_bot"
+
