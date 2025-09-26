@@ -7,12 +7,17 @@ const { clockStart, clockEnd } = require('./constants/intervals.js')
 const { sec, ms, min, interval } = require('./constants/intervals.js')
 const { textMessageHtml } = require('./constants/texts.js')
 const sendingWordMessage = require('./utils/prepareMessage.js')
+const { sendWordMessage } = require('./utils/sendWordMessage.js')
+const { getNextUnlearnedIndex: getNextUnlearnedIndexNew } = require('./utils/getNextUnlearnedIndex.js')
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
-const { give_me_keyboard, intervalSettingsKeyboard, startMenu, periodSettingsKeyboard, getHourKeyboard } = require('./constants/menus.js')
+const { give_me_keyboard, intervalSettingsKeyboard, startMenu, periodSettingsKeyboard, getHourKeyboard, dictionarySettingsKeyboard } = require('./constants/menus.js')
 const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
+const { getDictionary } = require('./utils/getDictionary.js')
+const { getUserDictionary, setUserDictionary, removeUserDictionary, validateGoogleDocUrl } = require('./utils/userDictionaries.js')
 const formatDate = require('./utils/formatDate.js')
 const { setUserInterval, getUserInterval, getUserIntervalMs, loadUserIntervals } = require('./utils/userIntervals.js')
 const { createOrUpdateUserTimer, stopUserTimer, getUserTimerInfo, stopAllTimers } = require('./utils/userTimers.js')
+const { createTimerCallback } = require('./utils/timerCallback.js')
 // === СБРОС ВСЕХ ТАЙМЕРОВ ПРИ СТАРТЕ БОТА ===
 console.log('[INIT] Останавливаю все пользовательские таймеры при старте бота...')
 stopAllTimers()
@@ -275,6 +280,8 @@ async function gracefulShutdown(signal) {
 // Для хранения оригинала слова и индекса для каждого пользователя
 const userCurrentOriginal = {}
 const userCurrentIndex = {}
+// Для отслеживания состояний пользователей
+const userStates = {}
 
 // callback_query при нажатии кнопке новых слов ==========================================
 bot.on('callback_query', async (query) => {
@@ -282,14 +289,19 @@ bot.on('callback_query', async (query) => {
   // console.log('query ---------------:>> ', query)
 
   if (query.data === 'give_me') {
-    const nextIdx = getNextUnlearnedIndex(dictionary, chatId, getUserIndex(chatId) + 1)
-    setUserIndex(chatId, nextIdx)
-    const result = await sendingWordMessage(dictionary, nextIdx, bot, chatId)
-    if (result && result.leftWords !== undefined) {
-      userCurrentOriginal[chatId] = result.leftWords
-    } else {
-      console.error('sendingWordMessage returned invalid result:', result)
-      userCurrentOriginal[chatId] = ''
+    try {
+      const nextIdx = await getNextUnlearnedIndexNew(chatId, getUserIndex(chatId) + 1)
+      setUserIndex(chatId, nextIdx)
+      const result = await sendWordMessage(chatId, nextIdx, bot)
+      if (result && result.leftWords !== undefined) {
+        userCurrentOriginal[chatId] = result.leftWords
+      } else {
+        console.error('sendWordMessage returned invalid result:', result)
+        userCurrentOriginal[chatId] = ''
+      }
+    } catch (error) {
+      console.error('Ошибка при отправке слова через кнопку give_me:', error)
+      await bot.sendMessage(chatId, 'Произошла ошибка при загрузке слова. Попробуйте позже.')
     }
   } else if (query.data === 'start_bot') {
     // Обрабатываем нажатие кнопки "🚀 Start Bot" - выполняем логику команды /start
@@ -311,28 +323,8 @@ bot.on('callback_query', async (query) => {
     if (intervalValue) {
       setUserInterval(chatId, intervalValue)
       // Остановить и создать таймер только для текущего пользователя
-      createOrUpdateUserTimer(chatId, bot, dictionary, { currentIndex: getUserIndex(chatId) }, async (chatId, bot, dictionary, currentIndexRef) => {
-        const timestamp = Date.now()
-        const formattedDate = formatDate(timestamp)
-        console.log(`Отправляем слово пользователю ${chatId} в ${formattedDate}`)
-        try {
-          const result = await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, chatId)
-          if (result && result.leftWords !== undefined) {
-            userCurrentOriginal[chatId] = result.leftWords
-          } else {
-            console.error('sendingWordMessage returned invalid result:', result)
-            userCurrentOriginal[chatId] = ''
-          }
-        } catch (err) {
-          console.error('Ошибка в sendingWordMessage:', err)
-        }
-        if (currentIndexRef.currentIndex == dictionary.length - 1) {
-          currentIndexRef.currentIndex = 0
-        } else {
-          currentIndexRef.currentIndex++
-        }
-        setUserIndex(chatId, currentIndexRef.currentIndex)
-      })
+      const timerCallback = await createTimerCallback(userCurrentOriginal)
+      createOrUpdateUserTimer(chatId, bot, dictionary, { currentIndex: getUserIndex(chatId) }, timerCallback)
       await bot.answerCallbackQuery(query.id, {
         text: `Интервал установлен: ${intervalValue} минут`
       })
@@ -400,13 +392,18 @@ bot.on('callback_query', async (query) => {
       await bot.answerCallbackQuery(query.id, { text: 'Не удалось определить оригинал слова!' })
     }
     // Найти следующее невыученное слово
-    setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0) + 1))
-    const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
-    if (result && result.leftWords !== undefined) {
-      userCurrentOriginal[chatId] = result.leftWords
-    } else {
-      console.error('sendingWordMessage returned invalid result:', result)
-      userCurrentOriginal[chatId] = ''
+    try {
+      const nextIdx = await getNextUnlearnedIndexNew(chatId, (getUserIndex(chatId) || 0) + 1)
+      setUserIndex(chatId, nextIdx)
+      const result = await sendWordMessage(chatId, nextIdx, bot)
+      if (result && result.leftWords !== undefined) {
+        userCurrentOriginal[chatId] = result.leftWords
+      } else {
+        console.error('sendWordMessage returned invalid result:', result)
+        userCurrentOriginal[chatId] = ''
+      }
+    } catch (error) {
+      console.error('Ошибка при отправке следующего слова после mark_learned:', error)
     }
     return
   } else if (query.data.startsWith('period_')) {
@@ -482,6 +479,72 @@ bot.on('callback_query', async (query) => {
       message += 'Нет выученных слов.'
     }
     await bot.sendMessage(chatId, message, { parse_mode: 'HTML', reply_markup: startMenu })
+    return
+  } else if (query.data === 'dictionary_info') {
+    // Показать информацию о текущем словаре
+    const chatId = query.from.id
+    const userDict = getUserDictionary(chatId)
+    let message = '📚 <b>Информация о словаре</b>\n\n'
+    
+    if (userDict) {
+      message += '✅ <b>Ваш личный словарь</b>\n'
+      message += `📎 Ссылка: ${userDict.url}\n`
+      message += `📅 Добавлен: ${new Date(userDict.createdAt).toLocaleDateString('ru-RU')}\n`
+      message += `🔄 Обновлен: ${new Date(userDict.updatedAt).toLocaleDateString('ru-RU')}\n\n`
+      message += '💡 <i>Словарь загружается из вашего Google Doc при каждом запросе слова</i>'
+    } else {
+      message += '📖 <b>Словарь по умолчанию</b>\n'
+      message += '🌍 Универсальный словарь для изучения языков\n'
+      message += '🔄 Автоматически обновляется\n\n'
+      message += '💡 <i>Вы можете добавить свой персональный словарь из Google Docs</i>'
+    }
+    
+    await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
+    await bot.answerCallbackQuery(query.id)
+    return
+  } else if (query.data === 'add_custom_dictionary') {
+    // Запрос на добавление пользовательского словаря
+    const chatId = query.from.id
+    const message = `📚 <b>Добавление персонального словаря</b>
+
+🔗 Отправьте ссылку на ваш Google Docs документ или его ID.
+
+📋 <b>Формат документа:</b>
+Каждая строка должна содержать слово и перевод, разделенные тире:
+<code>hello - привет
+world - мир
+learning - изучение</code>
+
+⚙️ <b>Настройки доступа:</b>
+1. Откройте ваш Google Docs
+2. Нажмите "Настроить доступ" 
+3. Выберите "Просмотр могут все, у кого есть ссылка"
+
+📎 <b>Поддерживаемые форматы ссылок:</b>
+• Полная ссылка: docs.google.com/document/d/ID/edit
+• Только ID документа: 1BxG7...xyz123
+
+Отправьте ссылку следующим сообщением:`
+
+    await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
+    await bot.answerCallbackQuery(query.id)
+    
+    // Устанавливаем состояние ожидания ссылки
+    userStates[chatId] = 'waiting_for_dictionary_url'
+    return
+  } else if (query.data === 'remove_custom_dictionary') {
+    // Удаление пользовательского словаря
+    const chatId = query.from.id
+    const userDict = getUserDictionary(chatId)
+    
+    if (userDict) {
+      removeUserDictionary(chatId)
+      await bot.sendMessage(chatId, '✅ Ваш персональный словарь удален. Теперь используется словарь по умолчанию.')
+    } else {
+      await bot.sendMessage(chatId, 'ℹ️ У вас нет персонального словаря. Используется словарь по умолчанию.')
+    }
+    
+    await bot.answerCallbackQuery(query.id)
     return
   }
 })
@@ -560,7 +623,7 @@ bot.onText(/\/перезапусти_таймеры/, async (msg) => {
       .filter(line => line && !line.startsWith('🇮🇱') && !line.startsWith('___'))
   }
 
-  allChatIds.forEach(userId => {
+  for (const userId of allChatIds) {
     // Если интервал не установлен, устанавливаем дефолтный
     let userInterval = getUserInterval(userId)
     if (!userInterval) {
@@ -568,81 +631,35 @@ bot.onText(/\/перезапусти_таймеры/, async (msg) => {
       setUserInterval(userId, min)
     }
     
+    const timerCallback = await createTimerCallback(userCurrentOriginal)
     createOrUpdateUserTimer(
       userId,
       bot,
       dictionary,
       { currentIndex: getUserIndex(userId) },
-      async (userId, bot, dictionary, currentIndexRef) => {
-        try {
-          const result = await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, userId)
-          if (result && result.leftWords !== undefined) {
-            userCurrentOriginal[userId] = result.leftWords
-          } else {
-            console.error('sendingWordMessage returned invalid result:', result)
-            userCurrentOriginal[userId] = ''
-          }
-        } catch (err) {
-          console.error('Ошибка в sendingWordMessage:', err)
-        }
-        if (currentIndexRef.currentIndex == dictionary.length - 1) {
-          currentIndexRef.currentIndex = 0
-        } else {
-          currentIndexRef.currentIndex++
-        }
-        setUserIndex(userId, currentIndexRef.currentIndex)
-      }
+      timerCallback
     )
-  })
+  }
   await bot.sendMessage(chatId, `✅ Перезапуск завершён. Активных таймеров: ${allChatIds.size}`)
 })
 
 // Функция для обработки запуска бота (используется и для /start и для кнопки)
 async function handleStartCommand(chatId, bot) {
   console.log('Обработка запуска бота для chatId:', chatId)
-  const dictionaryText = await getWordsFromGoogleDocs()
+  const dictionaryResult = await getDictionary(chatId)
   
-  if (!dictionaryText) {
-    console.error('Не удалось получить словарь из Google Docs')
+  if (!dictionaryResult) {
+    console.error('Не удалось получить словарь')
     await bot.sendMessage(chatId, 'Извините, произошла ошибка при загрузке словаря. Пожалуйста, попробуйте позже.', {
       reply_markup: startMenu
     })
     return
   }
 
-  // Разбиваем текст на строки и фильтруем пустые
-  dictionary = dictionaryText.split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(line => line && !line.startsWith('🇮🇱') && !line.startsWith('___')) // Фильтруем заголовки и разделители
+  // Устанавливаем глобальный словарь для использования в других функциях
+  dictionary = dictionaryResult.dictionary
   
-  // Добавляем проверку валидности словаря
-  if (!Array.isArray(dictionary) || dictionary.length === 0) {
-    console.error('Получен невалидный словарь:', {
-      isArray: Array.isArray(dictionary),
-      length: dictionary?.length,
-      firstFewLines: dictionary?.slice(0, 3)
-    })
-    const chatId = msg.chat.id
-    await bot.sendMessage(chatId, 'Извините, получен невалидный словарь. Пожалуйста, попробуйте позже.', {
-      reply_markup: startMenu
-    })
-    return
-  }
-
-  // Проверяем формат каждой строки словаря
-  const invalidLines = dictionary.filter(line => {
-    const hasValidSeparator = ['-', '—', '–', '—', '−'].some(sep => line.includes(sep))
-    return !hasValidSeparator
-  })
-  
-  if (invalidLines.length > 0) {
-    console.error('Найдены строки с неверным форматом:', {
-      count: invalidLines.length,
-      examples: invalidLines.slice(0, 5)
-    })
-  }
-
-  console.log(`Словарь успешно загружен. Количество слов: ${dictionary.length}`)
+  console.log(`Словарь успешно загружен. Количество слов: ${dictionary.length} (${dictionaryResult.isCustom ? 'пользовательский' : 'по умолчанию'})`)
   
   var photoPath = __dirname + '/media/logo.jpg'
 
@@ -666,12 +683,13 @@ async function handleStartCommand(chatId, bot) {
 
   try {
     await bot.sendPhoto(chatId, photoPath, optionsMessage2)
-    setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0)))
-    const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
+    const nextIdx = await getNextUnlearnedIndexNew(chatId, (getUserIndex(chatId) || 0))
+    setUserIndex(chatId, nextIdx)
+    const result = await sendWordMessage(chatId, nextIdx, bot)
     if (result && result.leftWords !== undefined) {
       userCurrentOriginal[chatId] = result.leftWords
     } else {
-      console.error('sendingWordMessage returned invalid result:', result)
+      console.error('sendWordMessage returned invalid result:', result)
       userCurrentOriginal[chatId] = ''
     }
   } catch (err) {
@@ -717,7 +735,7 @@ async function handleStartCommand(chatId, bot) {
   console.log('[AUTO] Все найденные chatIds:', Array.from(allChatIds))
   
   // Запускаем таймеры для всех найденных пользователей
-  allChatIds.forEach(chatId => {
+  for (const chatId of allChatIds) {
     // Получаем настройки пользователя
     let userInterval = getUserInterval(chatId)
     
@@ -754,39 +772,15 @@ async function handleStartCommand(chatId, bot) {
     logMsg += `🕒 Период рассылки: ${userPeriod.start}:00-${userPeriod.end}:00 ${userPeriod.start === clockStart && userPeriod.end === clockEnd ? '(дефолт из constants)' : '(пользовательский)'}\n`;
     console.log(logMsg)
     console.log(`[AUTO] Запускаем таймер для chatId=${chatId}`)
+    const timerCallback = await createTimerCallback(userCurrentOriginal)
     createOrUpdateUserTimer(
       chatId,
       bot,
       dictionary,
       { currentIndex: getUserIndex(chatId) },
-      async (chatId, bot, dictionary, currentIndexRef) => {
-        console.log(`[CALLBACK] Начинаем отправку слова для chatId=${chatId}`)
-        const timestamp = Date.now()
-        const formattedDate = formatDate(timestamp)
-        console.log(`(auto) Отправляем слово пользователю ${chatId} в ${formattedDate}`)
-        try {
-          console.log(`[CALLBACK] Вызываем sendingWordMessage для chatId=${chatId}, index=${currentIndexRef.currentIndex}`)
-          const result = await sendingWordMessage(dictionary, currentIndexRef.currentIndex, bot, chatId)
-          console.log(`[CALLBACK] sendingWordMessage завершился для chatId=${chatId}, result:`, result)
-          if (result && result.leftWords !== undefined) {
-            userCurrentOriginal[chatId] = result.leftWords
-          } else {
-            console.error('sendingWordMessage returned invalid result:', result)
-            userCurrentOriginal[chatId] = ''
-          }
-        } catch (err) {
-          console.error('Ошибка в sendingWordMessage:', err)
-        }
-        if (currentIndexRef.currentIndex == dictionary.length - 1) {
-          currentIndexRef.currentIndex = 0
-        } else {
-          currentIndexRef.currentIndex++
-        }
-        setUserIndex(chatId, currentIndexRef.currentIndex)
-        console.log(`[CALLBACK] Завершили отправку слова для chatId=${chatId}, новый индекс: ${currentIndexRef.currentIndex}`)
-      }
+      timerCallback
     )
-  })
+  }
   console.log('[AUTO] Автоматический запуск таймеров завершён')
 }
 
@@ -884,17 +878,67 @@ console.log('server started with interval:', interval / ms / sec, 'min')
 
 // Обработка кнопки "ℹ️ Показать настройки"
 bot.on('message', async (msg) => {
+  // === Обработка добавления пользовательского словаря ===
+  if (userStates[msg.chat.id] === 'waiting_for_dictionary_url') {
+    const chatId = msg.chat.id
+    const url = msg.text.trim()
+    
+    await bot.sendMessage(chatId, '⏳ Проверяю ваш словарь...')
+    
+    try {
+      const validation = await validateGoogleDocUrl(url)
+      
+      if (validation.valid) {
+        setUserDictionary(chatId, url)
+        delete userStates[chatId]
+        
+        await bot.sendMessage(chatId, `✅ <b>Словарь успешно добавлен!</b>
+
+📚 Ваш персональный словарь загружен
+🔗 Ссылка: ${url}
+📊 Найдено строк: ${validation.content.split('\n').length}
+
+💡 Теперь бот будет использовать ваш словарь для отправки слов.`, { parse_mode: 'HTML' })
+        
+        // Показываем обновленную информацию о словаре
+        setTimeout(async () => {
+          const message = '📚 <b>Настройки словаря обновлены</b>\n\n✅ Используется ваш личный словарь'
+          await bot.sendMessage(chatId, message, {
+            parse_mode: 'HTML',
+            reply_markup: JSON.stringify(dictionarySettingsKeyboard)
+          })
+        }, 2000)
+      } else {
+        await bot.sendMessage(chatId, `❌ <b>Ошибка при добавлении словаря</b>
+
+${validation.error}
+
+📝 Попробуйте еще раз или обратитесь к инструкции.`, { parse_mode: 'HTML' })
+      }
+    } catch (error) {
+      console.error('Ошибка при валидации словаря:', error)
+      await bot.sendMessage(chatId, '❌ Произошла ошибка при проверке словаря. Попробуйте позже.')
+      delete userStates[chatId]
+    }
+    return
+  }
+
   // Обработка кнопки "🔂 Покажи новое слово"
   if (msg.text === '🔂 Покажи новое слово') {
     const chatId = msg.chat.id
-    const nextIdx = getNextUnlearnedIndex(dictionary, chatId, getUserIndex(chatId) + 1)
-    setUserIndex(chatId, nextIdx)
-    const result = await sendingWordMessage(dictionary, nextIdx, bot, chatId)
-    if (result && result.leftWords !== undefined) {
-      userCurrentOriginal[chatId] = result.leftWords
-    } else {
-      console.error('sendingWordMessage returned invalid result:', result)
-      userCurrentOriginal[chatId] = ''
+    try {
+      const nextIdx = await getNextUnlearnedIndexNew(chatId, getUserIndex(chatId) + 1)
+      setUserIndex(chatId, nextIdx)
+      const result = await sendWordMessage(chatId, nextIdx, bot)
+      if (result && result.leftWords !== undefined) {
+        userCurrentOriginal[chatId] = result.leftWords
+      } else {
+        console.error('sendWordMessage returned invalid result:', result)
+        userCurrentOriginal[chatId] = ''
+      }
+    } catch (error) {
+      console.error('Ошибка при отправке нового слова через кнопку:', error)
+      await bot.sendMessage(chatId, 'Произошла ошибка при загрузке слова. Попробуйте позже.')
     }
     return
   }
@@ -945,6 +989,27 @@ bot.on('message', async (msg) => {
   if (msg.text === '🛠️ Сменить период') {
     await bot.sendMessage(msg.chat.id, 'Выберите час начала периода:', {
       reply_markup: JSON.stringify(getHourKeyboard('hour_start_'))
+    })
+    return
+  }
+  // === Обработка кнопки "📚 Настройки словаря" ===
+  if (msg.text === '📚 Настройки словаря') {
+    const chatId = msg.chat.id
+    const userDict = getUserDictionary(chatId)
+    let message = '📚 <b>Настройки словаря</b>\n\n'
+    
+    if (userDict) {
+      message += '✅ Используется ваш личный словарь\n'
+      message += `📎 Ссылка: ${userDict.url}\n`
+      message += `📅 Добавлен: ${new Date(userDict.createdAt).toLocaleDateString('ru-RU')}`
+    } else {
+      message += '📖 Используется словарь по умолчанию\n'
+      message += 'Вы можете добавить свой личный словарь из Google Docs'
+    }
+    
+    await bot.sendMessage(chatId, message, {
+      parse_mode: 'HTML',
+      reply_markup: JSON.stringify(dictionarySettingsKeyboard)
     })
     return
   }

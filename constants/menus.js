@@ -18,6 +18,8 @@ const startMenu = {
 
     [{ text: '⚙️ Настройки интервала' }, { text: '🛠️ Сменить период' }],
 
+    [{ text: '📚 Настройки словаря' }],
+
     [{ text: 'Закрыть' }],
   ],
   resize_keyboard: true,
@@ -132,6 +134,36 @@ const intervalSettingsKeyboard = {
   ],
 }
 
+// Меню настроек словаря
+const dictionarySettingsKeyboard = {
+  inline_keyboard: [
+    [
+      {
+        text: '📖 Информация о словаре',
+        callback_data: 'dictionary_info',
+      },
+    ],
+    [
+      {
+        text: '➕ Добавить свой словарь',
+        callback_data: 'add_custom_dictionary',
+      },
+    ],
+    [
+      {
+        text: '🗑️ Удалить свой словарь',
+        callback_data: 'remove_custom_dictionary',
+      },
+    ],
+    [
+      {
+        text: '🔙 Назад',
+        callback_data: 'back_to_main',
+      },
+    ],
+  ],
+}
+
 function getHourKeyboard(prefix, min = -1) {
   const hours = []
   for (let h = min + 1; h <= 23; h++) {
@@ -185,5 +217,6 @@ module.exports = {
   keyboard,
   start_keyboard,
   intervalSettingsKeyboard,
+  dictionarySettingsKeyboard,
   getHourKeyboard,
 }
