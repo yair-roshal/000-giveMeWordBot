@@ -143,7 +143,11 @@ async function startBot() {
     
     // Отправляем уведомление администратору только после успешного запуска
     if (CHAT_ID_ADMIN) {
-      await bot.sendMessage(CHAT_ID_ADMIN, `✅ Бот запущен успешно!\n${textMessageHtml}`, optionsMessage);
+      await bot.sendMessage(CHAT_ID_ADMIN, `✅ Бот запущен успешно!\n${textMessageHtml}`, {
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+        reply_markup: JSON.stringify(require('./constants/menus.js').start_inline_keyboard)
+      });
     }
   } catch (error) {
     console.error('Failed to start bot polling:', error);
@@ -287,6 +291,11 @@ bot.on('callback_query', async (query) => {
       console.error('sendingWordMessage returned invalid result:', result)
       userCurrentOriginal[chatId] = ''
     }
+  } else if (query.data === 'start_bot') {
+    // Обрабатываем нажатие кнопки "🚀 Start Bot" - выполняем логику команды /start
+    await handleStartCommand(chatId, bot)
+    await bot.answerCallbackQuery(query.id, { text: 'Бот запущен! 🚀' })
+    return
   } else if (query.data === 'interval_settings') {
     const userInterval = getUserInterval(chatId)
     const intervalText = userInterval ? `Текущий интервал: ${userInterval} минут` : 'Интервал не настроен'
@@ -588,14 +597,13 @@ bot.onText(/\/перезапусти_таймеры/, async (msg) => {
   await bot.sendMessage(chatId, `✅ Перезапуск завершён. Активных таймеров: ${allChatIds.size}`)
 })
 
-// Показываем меню с новой кнопкой при /start
-bot.onText(/\/start/, async (msg) => {
-  console.log('Получена команда /start')
+// Функция для обработки запуска бота (используется и для /start и для кнопки)
+async function handleStartCommand(chatId, bot) {
+  console.log('Обработка запуска бота для chatId:', chatId)
   const dictionaryText = await getWordsFromGoogleDocs()
   
   if (!dictionaryText) {
     console.error('Не удалось получить словарь из Google Docs')
-    const chatId = msg.chat.id
     await bot.sendMessage(chatId, 'Извините, произошла ошибка при загрузке словаря. Пожалуйста, попробуйте позже.', {
       reply_markup: startMenu
     })
@@ -636,7 +644,6 @@ bot.onText(/\/start/, async (msg) => {
 
   console.log(`Словарь успешно загружен. Количество слов: ${dictionary.length}`)
   
-  const chatId = msg.chat.id
   var photoPath = __dirname + '/media/logo.jpg'
 
   // Получаем интервал пользователя, если не установлен - устанавливаем дефолтный
@@ -781,6 +788,13 @@ bot.onText(/\/start/, async (msg) => {
     )
   })
   console.log('[AUTO] Автоматический запуск таймеров завершён')
+}
+
+// Команда /start теперь вызывает функцию handleStartCommand
+bot.onText(/\/start/, async (msg) => {
+  const chatId = msg.chat.id
+  await handleStartCommand(chatId, bot)
+})
 
   let previousDictionaryHash = null // Для проверки изменений в словаре
 
@@ -831,46 +845,6 @@ bot.onText(/\/start/, async (msg) => {
 
   // Интервал для проверки изменений в словаре
   // setInterval(checkForDictionaryUpdates, 1 * min); // Проверяем каждые X минут
-
-  // setInterval(
-  //   async () => {
-  //     let isTimeForSending = false
-  //
-  //     let currentDate = new Date()
-  //     let nowHours = currentDate.getHours()
-  //     let nowMinutes = currentDate.getMinutes()
-  //
-  //     if (process.env.NODE_ENV === 'dev') {
-  //       isTimeForSending = true
-  //     } else if (nowHours < clockEnd && nowHours > clockStart) {
-  //       isTimeForSending = true
-  //     } else {
-  //       console.log(`it isn't time for sending messages  -   ${nowHours}:${nowMinutes}`)
-  //     }
-  //
-  //     //  await checkForDictionaryUpdates()
-  //     if (isTimeForSending) {
-  //       const timestamp = Date.now()
-  //       const formattedDate = formatDate(timestamp)
-  //
-  //       await checkForDictionaryUpdates()
-  //       console.log('______________')
-  //       console.log('formattedDate', formattedDate)
-  //
-  //       setUserIndex(chatId, getNextUnlearnedIndex(dictionary, chatId, (getUserIndex(chatId) || 0) + 1))
-  //       const result = await sendingWordMessage(dictionary, getUserIndex(chatId), bot, chatId)
-  //       userCurrentOriginal[chatId] = result.leftWords
-  //
-  //       if (getUserIndex(chatId) == dictionary.length - 1) {
-  //         setUserIndex(chatId, 0)
-  //       } else {
-  //         setUserIndex(chatId, getUserIndex(chatId) + 1)
-  //       }
-  //     }
-  //   },
-  //   interval,
-  // )
-})
 
 // sending a list of words and adding them to the dictionary ===============
 

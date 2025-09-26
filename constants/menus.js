@@ -56,8 +56,8 @@ const start_inline_keyboard = {
   inline_keyboard: [
     [
       {
-        text: 'Start',
-        callback_data: 'start',
+        text: '🚀 Start Bot',
+        callback_data: 'start_bot',
       },
     ],
   ],

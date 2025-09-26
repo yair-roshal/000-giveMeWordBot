@@ -1,26 +1,25 @@
 let link_to_bot = 'https://t.me/EnglishWordsPusherBot'
 let link_to_public = 'https://t.me/givemewords'
 
-let textMessageHtml = `<b>Hello my Friend</b> 
+let textMessageHtml = `<b>Добро пожаловать в Give Me Word Bot! 👋</b>
 
-This is a telegram bot for sending your card with translation, pronunciation, examples and link to all meanings
+🌍 <b>Изучайте любые языки без усилий!</b> Мощный бот для изучения слов с использованием ИИ технологий и персональных словарей из Google Docs.
 
-At the moment giveMeWord bot can :
+✨ <b>Уникальные возможности:</b>
+📚 Персональные словари из ваших Google Docs
+🔊 Аудио произношение слов
+🎬 Мини-видеоролики с примерами использования
+📝 Точная транскрипция и фонетика
+💡 Примеры предложений в контексте
+🧠 ИИ-мнемоника для быстрого запоминания
+⏰ Настраиваемые интервалы (1 мин - 4 часа)
+✅ Умное отслеживание прогресса
+🕒 Гибкие настройки времени обучения
 
--   send messages with the required timer,
--   the words from the dictionary are output absolutely randomly,
--   customize the interval for receiving words (1 minute to 4 hours) — via the ⚙️ button in the main menu below.
- 
-Link to this Bot : <a href="${link_to_bot}">Give Me Word Bot</a> 
+🤖 <a href="${link_to_bot}">Give Me Word Bot</a> 
+👥 Сообщество изучающих: <a href="${link_to_public}">Very Simple English</a>
+📞 Поддержка: @yair770
 
-Our Group in Telegram : <a href="${link_to_public}">Very Simple English</a>
-
-💬 If you have any questions or suggestions, email admin @yair770.
-
-⚙️ Use /interval or the ⚙️ button to check/change your interval settings
-
-🔥 To start getting words, click on start below 👇🏻 or here /start
-
- `
+🚀 Готовы освоить новый язык? Нажмите кнопку ниже! 👇`
 
 module.exports = { textMessageHtml }
