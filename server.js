@@ -381,6 +381,12 @@ bot.on('callback_query', async (query) => {
     })
     await bot.answerCallbackQuery(query.id)
     return
+  } else if (query.data === 'open_main_menu') {
+    await bot.sendMessage(chatId, 'Меню:', {
+      reply_markup: startMenu
+    })
+    await bot.answerCallbackQuery(query.id)
+    return
   } else if (query.data === 'mark_learned') {
     const original = userCurrentOriginal[chatId]
     if (original) {

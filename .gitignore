@@ -15,7 +15,8 @@ data/logs/
 
 data/cache_allWords.txt
 give_me_word_bot_error.log 
-give_me_word_bot_out.log 
+give_me_word_bot_out.log
+bot.pid 
 
 **/user_settings.json
 **/mnemonicsCache.json

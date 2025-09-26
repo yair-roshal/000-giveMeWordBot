@@ -79,6 +79,12 @@ const give_me_keyboard = {
         callback_data: 'mark_learned',
       },
     ],
+    [
+      {
+        text: '📱 Открыть меню',
+        callback_data: 'open_main_menu',
+      },
+    ],
   ],
 }
 
