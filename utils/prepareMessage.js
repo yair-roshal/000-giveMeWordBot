@@ -13,7 +13,7 @@ const {
   give_me_keyboard,
 } = require('../constants/menus.js')
 
-const sendingWordMessage = async (dictionary, currentIndex, bot, chatId) => {
+const sendingWordMessage = async (dictionary, currentIndex, bot, chatId, dictionaryName = 'Основной словарь') => {
   if (!dictionary || !dictionary[currentIndex]) {
     console.error('Invalid currentIndex: ', currentIndex);
     return { leftWords: '', currentIndex: currentIndex || 0 };
@@ -49,7 +49,7 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId) => {
 
   if (leftWords == '') {
     console.error('don`t found "-" in this string :>> =====================')
-    sendingWordMessage(dictionary, currentIndex + 1, bot, chatId)
+    sendingWordMessage(dictionary, currentIndex + 1, bot, chatId, dictionaryName)
     return { leftWords: '', currentIndex: currentIndex + 1 }
   }
 
@@ -108,6 +108,7 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId) => {
     leftWords,
     rightWords,
     currentIndex,
+    dictionaryName,
   )
     .then((res) => {
       return res

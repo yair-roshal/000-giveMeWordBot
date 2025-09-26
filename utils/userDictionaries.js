@@ -36,10 +36,23 @@ function getUserDictionary(chatId) {
 }
 
 // Установить пользовательский словарь
-function setUserDictionary(chatId, dictionaryUrl) {
+async function setUserDictionary(chatId, dictionaryUrl) {
   const dictionaries = loadUserDictionaries()
+  
+  // Получаем название документа
+  let title = 'Пользовательский словарь'
+  try {
+    const docId = extractGoogleDocId(dictionaryUrl)
+    if (docId) {
+      title = await getGoogleDocTitle(docId)
+    }
+  } catch (error) {
+    console.error(`Ошибка получения названия при добавлении словаря для ${chatId}:`, error.message)
+  }
+  
   dictionaries[chatId] = {
     url: dictionaryUrl,
+    title: title,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }
@@ -114,6 +127,37 @@ async function validateGoogleDocUrl(url) {
   }
 }
 
+// Получить название Google Doc
+async function getGoogleDocTitle(docId) {
+  const docUrl = `https://docs.google.com/document/d/${docId}/edit`
+  
+  try {
+    const response = await axios.get(docUrl, { 
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    })
+    
+    if (response.data && typeof response.data === 'string') {
+      // Ищем title в HTML
+      const titleMatch = response.data.match(/<title[^>]*>([^<]+)<\/title>/i)
+      if (titleMatch && titleMatch[1]) {
+        // Убираем " - Google Docs" из конца
+        let title = titleMatch[1].replace(/\s*-\s*Google\s+Docs$/i, '').trim()
+        if (title) {
+          return title
+        }
+      }
+    }
+    
+    return 'Пользовательский словарь'
+  } catch (error) {
+    console.error(`Ошибка получения названия документа ${docId}:`, error.message)
+    return 'Пользовательский словарь'
+  }
+}
+
 // Загрузить содержимое пользовательского словаря
 async function fetchUserDictionary(chatId) {
   const userDict = getUserDictionary(chatId)
@@ -157,5 +201,6 @@ module.exports = {
   removeUserDictionary,
   extractGoogleDocId,
   validateGoogleDocUrl,
-  fetchUserDictionary
+  fetchUserDictionary,
+  getGoogleDocTitle
 }

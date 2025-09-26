@@ -23,6 +23,7 @@ module.exports = async function prepareMessage(
   leftWords,
   rightWords,
   currentIndex,
+  dictionaryName = 'Основной словарь',
 ) {
   const mnemonic = await getMnemonic(leftWords,rightWords)
 
@@ -45,6 +46,7 @@ module.exports = async function prepareMessage(
       currentIndex,
       mnemonic,
       rightWords,
+      dictionaryName,
     )
   } else {
     return prepareMultiWordMessage(
@@ -56,6 +58,7 @@ module.exports = async function prepareMessage(
       wordLineDictionary,
       currentIndex,
       mnemonic,
+      dictionaryName,
     )
   }
 }
@@ -70,6 +73,7 @@ async function prepareSingleWordMessage(
   currentIndex,
   mnemonic,
   rightWords,
+  dictionaryName = 'Основной словарь',
 ) {
   console.log('currentIndex', currentIndex)
   console.log('dictionaryLength', dictionaryLength)
@@ -98,6 +102,7 @@ async function prepareSingleWordMessage(
     mnemonic,
     dictionaryLength,
     rightWords,
+    dictionaryName,
   )
 }
 
@@ -162,6 +167,7 @@ function formatSingleWordMessage(
   mnemonic,
   dictionaryLength,
   rightWords,
+  dictionaryName = 'Основной словарь',
 ) {
   console.log('currentIndex', currentIndex)
   console.log('dictionaryLength', dictionaryLength)
@@ -195,6 +201,7 @@ _______________________________
 <pre>${mnemonic}</pre>
 _______________________________
 
+  <b>📚 ${dictionaryName}</b>
   <b>
     ${currentIndex + 1}/(${dictionaryLength})
   </b>
@@ -212,6 +219,7 @@ function prepareMultiWordMessage(
   wordLineDictionary,
   currentIndex,
   mnemonic,
+  dictionaryName = 'Основной словарь',
 ) {
   console.log('currentIndex', currentIndex)
   console.log('dictionaryLength', dictionaryLength)
@@ -231,6 +239,7 @@ _______________________________
 <pre>${mnemonic}</pre>
 _______________________________
 
+  <b>📚 ${dictionaryName}</b>
   <b>
     ${currentIndex + 1}/(${dictionaryLength})
   </b>

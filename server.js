@@ -889,7 +889,7 @@ bot.on('message', async (msg) => {
       const validation = await validateGoogleDocUrl(url)
       
       if (validation.valid) {
-        setUserDictionary(chatId, url)
+        await setUserDictionary(chatId, url)
         delete userStates[chatId]
         
         await bot.sendMessage(chatId, `✅ <b>Словарь успешно добавлен!</b>

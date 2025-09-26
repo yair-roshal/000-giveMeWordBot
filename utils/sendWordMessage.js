@@ -15,7 +15,7 @@ async function sendWordMessage(chatId, wordIndex, bot) {
       throw new Error('Не удалось загрузить словарь')
     }
     
-    const { dictionary, isCustom } = dictionaryResult
+    const { dictionary, isCustom, dictionaryName } = dictionaryResult
     console.log(`[SEND_WORD] Используем ${isCustom ? 'пользовательский' : 'стандартный'} словарь. Слов: ${dictionary.length}`)
     
     // Проверяем валидность индекса
@@ -25,7 +25,7 @@ async function sendWordMessage(chatId, wordIndex, bot) {
     }
     
     // Отправляем слово используя актуальный словарь
-    const result = await sendingWordMessage(dictionary, wordIndex, bot, chatId)
+    const result = await sendingWordMessage(dictionary, wordIndex, bot, chatId, dictionaryName)
     
     console.log(`[SEND_WORD] Слово отправлено пользователю ${chatId}, индекс: ${wordIndex}`)
     return result

@@ -1,6 +1,6 @@
 // utils/getDictionary.js
 const getWordsFromGoogleDocs = require('./getWordsFromGoogleDocs')
-const { fetchUserDictionary } = require('./userDictionaries')
+const { fetchUserDictionary, getUserDictionary, extractGoogleDocId, getGoogleDocTitle } = require('./userDictionaries')
 
 // Функция для получения словаря (пользовательского или по умолчанию)
 async function getDictionary(chatId = null) {
@@ -63,12 +63,47 @@ async function getDictionary(chatId = null) {
     return null
   }
   
+  // Определяем имя словаря
+  let dictionaryName = 'Основной словарь'
+  if (isCustom && chatId) {
+    try {
+      // Получаем данные пользовательского словаря
+      const userDict = getUserDictionary(chatId)
+      if (userDict) {
+        // Используем кэшированное название, если есть
+        if (userDict.title) {
+          dictionaryName = userDict.title
+        } else if (userDict.url) {
+          // Если названия нет в кэше, получаем его и сохраняем
+          const docId = extractGoogleDocId(userDict.url)
+          if (docId) {
+            dictionaryName = await getGoogleDocTitle(docId)
+            // Обновляем кэш
+            const dictionaries = require('./userDictionaries').loadUserDictionaries()
+            dictionaries[chatId].title = dictionaryName
+            require('./userDictionaries').saveUserDictionaries(dictionaries)
+          } else {
+            dictionaryName = 'Пользовательский словарь'
+          }
+        } else {
+          dictionaryName = 'Пользовательский словарь'
+        }
+      } else {
+        dictionaryName = 'Пользовательский словарь'
+      }
+    } catch (error) {
+      console.error(`Ошибка при получении названия словаря для ${chatId}:`, error.message)
+      dictionaryName = 'Пользовательский словарь'
+    }
+  }
+  
   console.log(`Словарь успешно обработан. Количество слов: ${validLines.length} (${isCustom ? 'пользовательский' : 'по умолчанию'})`)
   
   return {
     dictionary: validLines,
     isCustom,
-    totalWords: validLines.length
+    totalWords: validLines.length,
+    dictionaryName
   }
 }
 
