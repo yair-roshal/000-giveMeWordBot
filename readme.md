@@ -1,5 +1,7 @@
 # giveMeWord
 
+
+
 ## Telegram bot for sending your card with translation, pronunciation, examples and link to all meanings
 
 # At the moment giveMeWord bot can :
