@@ -542,14 +542,19 @@ learning - изучение</code>
     // Удаление пользовательского словаря
     const chatId = query.from.id
     const userDict = getUserDictionary(chatId)
-    
+
     if (userDict) {
       removeUserDictionary(chatId)
+
+      // Сбрасываем индекс на 0, так как словарь обновился
+      setUserIndex(chatId, 0)
+      console.log(`[DICTIONARY_UPDATE] Индекс пользователя ${chatId} сброшен на 0 после удаления словаря`)
+
       await bot.sendMessage(chatId, '✅ Ваш персональный словарь удален. Теперь используется словарь по умолчанию.')
     } else {
       await bot.sendMessage(chatId, 'ℹ️ У вас нет персонального словаря. Используется словарь по умолчанию.')
     }
-    
+
     await bot.answerCallbackQuery(query.id)
     return
   }
@@ -893,11 +898,15 @@ bot.on('message', async (msg) => {
     
     try {
       const validation = await validateGoogleDocUrl(url)
-      
+
       if (validation.valid) {
         await setUserDictionary(chatId, url)
         delete userStates[chatId]
-        
+
+        // Сбрасываем индекс на 0, так как словарь обновился
+        setUserIndex(chatId, 0)
+        console.log(`[DICTIONARY_UPDATE] Индекс пользователя ${chatId} сброшен на 0 после добавления нового словаря`)
+
         await bot.sendMessage(chatId, `✅ <b>Словарь успешно добавлен!</b>
 
 📚 Ваш персональный словарь загружен
