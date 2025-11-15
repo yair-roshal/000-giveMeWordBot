@@ -97,3 +97,5 @@ Thumbs.db
 user_settings.json
 data/user_settings.json
 data/learned_words_*.json
+
+.claude

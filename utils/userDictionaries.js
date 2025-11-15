@@ -38,21 +38,38 @@ function getUserDictionary(chatId) {
 // Установить пользовательский словарь
 async function setUserDictionary(chatId, dictionaryUrl) {
   const dictionaries = loadUserDictionaries()
-  
+
   // Получаем название документа
   let title = 'Пользовательский словарь'
+  let wordCount = 0
+
   try {
     const docId = extractGoogleDocId(dictionaryUrl)
     if (docId) {
       title = await getGoogleDocTitle(docId)
+
+      // Получаем содержимое для подсчета слов
+      const exportUrl = `https://docs.google.com/document/d/${docId}/export?format=txt`
+      const response = await axios.get(exportUrl, { timeout: 15000 })
+      if (response.data && typeof response.data === 'string') {
+        const lines = response.data.split(/\r?\n/)
+          .map(line => line.trim())
+          .filter(line => line && !line.startsWith('🇮🇱') && !line.startsWith('___'))
+          .filter(line => {
+            const hasValidSeparator = ['-', '—', '–', '—', '−'].some(sep => line.includes(sep))
+            return hasValidSeparator
+          })
+        wordCount = lines.length
+      }
     }
   } catch (error) {
-    console.error(`Ошибка получения названия при добавлении словаря для ${chatId}:`, error.message)
+    console.error(`Ошибка получения данных при добавлении словаря для ${chatId}:`, error.message)
   }
-  
+
   dictionaries[chatId] = {
     url: dictionaryUrl,
     title: title,
+    wordCount: wordCount,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }
@@ -193,6 +210,17 @@ async function fetchUserDictionary(chatId) {
   }
 }
 
+// Обновить количество слов в словаре пользователя
+function updateUserDictionaryWordCount(chatId, newWordCount) {
+  const dictionaries = loadUserDictionaries()
+  if (dictionaries[chatId]) {
+    dictionaries[chatId].wordCount = newWordCount
+    dictionaries[chatId].updatedAt = new Date().toISOString()
+    return saveUserDictionaries(dictionaries)
+  }
+  return false
+}
+
 module.exports = {
   loadUserDictionaries,
   saveUserDictionaries,
@@ -202,5 +230,6 @@ module.exports = {
   extractGoogleDocId,
   validateGoogleDocUrl,
   fetchUserDictionary,
-  getGoogleDocTitle
+  getGoogleDocTitle,
+  updateUserDictionaryWordCount
 }

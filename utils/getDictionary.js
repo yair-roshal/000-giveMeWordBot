@@ -1,12 +1,13 @@
 // utils/getDictionary.js
 const getWordsFromGoogleDocs = require('./getWordsFromGoogleDocs')
-const { fetchUserDictionary, getUserDictionary, extractGoogleDocId, getGoogleDocTitle } = require('./userDictionaries')
+const { fetchUserDictionary, getUserDictionary, extractGoogleDocId, getGoogleDocTitle, updateUserDictionaryWordCount } = require('./userDictionaries')
+const { setUserIndex, getUserIndex } = require('./userProgress')
 
 // Функция для получения словаря (пользовательского или по умолчанию)
 async function getDictionary(chatId = null) {
   let dictionaryText = null
   let isCustom = false
-  
+
   // Сначала пробуем загрузить пользовательский словарь
   if (chatId) {
     try {
@@ -98,7 +99,36 @@ async function getDictionary(chatId = null) {
   }
   
   console.log(`Словарь успешно обработан. Количество слов: ${validLines.length} (${isCustom ? 'пользовательский' : 'по умолчанию'})`)
-  
+
+  // Проверка изменений в словаре для пользовательских словарей
+  if (isCustom && chatId) {
+    const userDict = getUserDictionary(chatId)
+    if (userDict) {
+      const previousWordCount = userDict.wordCount || 0
+      const currentWordCount = validLines.length
+
+      // Если количество слов увеличилось (добавлены новые слова)
+      if (currentWordCount > previousWordCount) {
+        const newWordsAdded = currentWordCount - previousWordCount
+        console.log(`[DICTIONARY_UPDATE] Обнаружены новые слова в словаре пользователя ${chatId}`)
+        console.log(`[DICTIONARY_UPDATE] Было слов: ${previousWordCount}, стало: ${currentWordCount}, добавлено: ${newWordsAdded}`)
+        console.log(`[DICTIONARY_UPDATE] Сбрасываем индекс пользователя ${chatId} с ${getUserIndex(chatId)} на 0`)
+
+        // Сбрасываем индекс пользователя на 0
+        setUserIndex(chatId, 0)
+
+        // Обновляем сохраненное количество слов
+        updateUserDictionaryWordCount(chatId, currentWordCount)
+
+        console.log(`[DICTIONARY_UPDATE] Индекс успешно сброшен на 0, словарь обновлен`)
+      } else if (currentWordCount !== previousWordCount) {
+        // Если количество изменилось (уменьшилось или стало другим), обновляем счетчик
+        console.log(`[DICTIONARY_UPDATE] Количество слов изменилось для пользователя ${chatId}: ${previousWordCount} -> ${currentWordCount}`)
+        updateUserDictionaryWordCount(chatId, currentWordCount)
+      }
+    }
+  }
+
   return {
     dictionary: validLines,
     isCustom,
