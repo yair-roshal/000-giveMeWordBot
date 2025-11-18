@@ -1,4 +1,4 @@
-const { getUserIntervalMs, setUserInterval, getUserInterval } = require('./userIntervals.js')
+const { getUserIntervalMs, getUserInterval } = require('./userIntervals.js')
 const { getUserPeriod } = require('./userPeriods.js')
 const { min } = require('../constants/intervals.js')
 
@@ -14,10 +14,73 @@ function logTimersState(action, chatId) {
   console.log(`[TIMER][${chatId}] [${action}] Активных таймеров: ${userTimers.size}. Список chatId:`, allChatIds)
 }
 
+// Функция для расчета времени до следующей отправки
+function calculateNextSendTime(chatId, intervalMs) {
+  const period = getUserPeriod(chatId)
+  const { start, end } = period
+  const now = new Date()
+  const currentHour = now.getHours()
+  const currentMinute = now.getMinutes()
+  const currentSecond = now.getSeconds()
+
+  console.log(`[TIMER][${chatId}] Текущее время: ${currentHour}:${currentMinute}:${currentSecond}`)
+  console.log(`[TIMER][${chatId}] Период рассылки: ${start}:00-${end}:00`)
+  console.log(`[TIMER][${chatId}] Интервал: ${intervalMs / 60000} минут`)
+
+  // Рассчитываем все времена отправки в течение дня, начиная с start
+  const intervalMinutes = intervalMs / 60000
+  const sendTimes = []
+  let currentSendMinute = start * 60 // Начинаем с начала периода в минутах от полуночи
+  const endMinute = end * 60
+
+  while (currentSendMinute < endMinute) {
+    const hour = Math.floor(currentSendMinute / 60)
+    const minute = currentSendMinute % 60
+    sendTimes.push({ hour, minute })
+    currentSendMinute += intervalMinutes
+  }
+
+  console.log(`[TIMER][${chatId}] Времена отправки сегодня:`, sendTimes.map(t => `${t.hour}:${String(t.minute).padStart(2, '0')}`).join(', '))
+
+  // Текущее время в минутах от полуночи
+  const nowMinutes = currentHour * 60 + currentMinute
+
+  // Находим следующее время отправки
+  let nextSendTime = null
+  for (const time of sendTimes) {
+    const sendTimeMinutes = time.hour * 60 + time.minute
+    if (sendTimeMinutes > nowMinutes) {
+      nextSendTime = time
+      break
+    }
+  }
+
+  // Если не нашли время сегодня, берем первое время завтра
+  if (!nextSendTime) {
+    nextSendTime = sendTimes[0]
+    // Рассчитываем время до завтра
+    const tomorrow = new Date(now)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    tomorrow.setHours(nextSendTime.hour, nextSendTime.minute, 0, 0)
+    const msUntilNext = tomorrow.getTime() - now.getTime()
+    console.log(`[TIMER][${chatId}] Следующая отправка завтра в ${nextSendTime.hour}:${String(nextSendTime.minute).padStart(2, '0')} (через ${Math.round(msUntilNext / 60000)} минут)`)
+    return msUntilNext
+  }
+
+  // Рассчитываем время до следующей отправки сегодня
+  const nextSendDate = new Date(now)
+  nextSendDate.setHours(nextSendTime.hour, nextSendTime.minute, 0, 0)
+  const msUntilNext = nextSendDate.getTime() - now.getTime()
+
+  console.log(`[TIMER][${chatId}] Следующая отправка сегодня в ${nextSendTime.hour}:${String(nextSendTime.minute).padStart(2, '0')} (через ${Math.round(msUntilNext / 60000)} минут)`)
+  return msUntilNext
+}
+
 // Функция для создания или обновления таймера пользователя
 function createOrUpdateUserTimer(chatId, bot, dictionary, currentIndexRef, callback) {
   chatId = normalizeChatId(chatId)
   console.log(`[TIMER][${chatId}] createOrUpdateUserTimer вызван`)
+
   if (userTimers.has(chatId)) {
     const timers = userTimers.get(chatId)
     console.log(`[TIMER][${chatId}] Останавливаю старый таймер`)
@@ -35,48 +98,37 @@ function createOrUpdateUserTimer(chatId, bot, dictionary, currentIndexRef, callb
   }
   const intervalMs = userIntervalMs || defaultIntervalMs
 
-  console.log(`[TIMER][${chatId}] Создаю новый таймер с интервалом ${intervalMs / 60000} минут (отложенный старт)`)
+  console.log(`[TIMER][${chatId}] Создаю новый таймер с интервалом ${intervalMs / 60000} минут`)
 
-  // Первый запуск только через userIntervalMs
-  const timeout = setTimeout(() => {
-    console.log(`[TIMER][${chatId}] setTimeout сработал`)
-    // Всегда запускаем setInterval
-    const interval = setInterval(() => {
-      console.log(`[TIMER][${chatId}] Проверка времени`)
+  // Функция для планирования следующей отправки
+  const scheduleNext = () => {
+    const msUntilNext = calculateNextSendTime(chatId, intervalMs)
+
+    const timeout = setTimeout(() => {
+      console.log(`[TIMER][${chatId}] Время отправки наступило`)
+
+      // Проверяем, что мы в нужном периоде
       const period = getUserPeriod(chatId)
-      console.log('[DEBUG] getUserPeriod вернул:', period)
       const { start, end } = period
       const nowHours = new Date().getHours()
-      if (!(nowHours >= start && nowHours < end)) {
-        console.log(`[TIMER][${chatId}] Не время показа слова: сейчас ${nowHours}:00, разрешено ${start}:00-${end}:00 (chatId=${chatId})`)
-        return
+
+      if (nowHours >= start && nowHours < end) {
+        console.log(`[TIMER][${chatId}] Отправляем сообщение`)
+        callback(chatId, bot, dictionary, currentIndexRef)
+      } else {
+        console.log(`[TIMER][${chatId}] Пропускаем отправку - вне периода`)
       }
-      console.log(`[TIMER][${chatId}] Периодический запуск`)
-      console.log(`[TIMER][${chatId}] Вызываем callback`)
-      callback(chatId, bot, dictionary, currentIndexRef)
-    }, intervalMs)
-    userTimers.set(chatId, { timeout, interval })
-    logTimersState('setInterval', chatId)
 
-    // Первый запуск (отложенный)
-    console.log(`[TIMER][${chatId}] Проверка времени (первый запуск)`)
-    const period = getUserPeriod(chatId)
-    console.log('[DEBUG] getUserPeriod вернул:', period)
-    const { start, end } = period
-    const nowHours = new Date().getHours()
-    if (!(nowHours >= start && nowHours < end)) {
-      console.log(`[TIMER][${chatId}] Не время показа слова: сейчас ${nowHours}:00, разрешено ${start}:00-${end}:00 (chatId=${chatId})`)
-      return
-    }
-    console.log(`[TIMER][${chatId}] Первый запуск`)
-    console.log(`[TIMER][${chatId}] Вызываем callback (первый запуск)`)
-    callback(chatId, bot, dictionary, currentIndexRef)
-  }, intervalMs)
+      // Планируем следующую отправку
+      scheduleNext()
+    }, msUntilNext)
 
-  // Записываем таймер сразу после создания timeout
-  userTimers.set(chatId, { timeout, interval: null })
-  logTimersState('setTimeout', chatId)
-  return timeout
+    userTimers.set(chatId, { timeout, interval: null })
+    logTimersState('setTimeout', chatId)
+  }
+
+  // Запускаем планирование
+  scheduleNext()
 }
 
 // Функция для остановки таймера пользователя

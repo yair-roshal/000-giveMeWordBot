@@ -694,25 +694,12 @@ async function handleStartCommand(chatId, bot) {
 
   try {
     await bot.sendPhoto(chatId, photoPath, optionsMessage2)
-    const nextIdx = await getNextUnlearnedIndexNew(chatId, (getUserIndex(chatId) || 0))
-    setUserIndex(chatId, nextIdx)
-    const result = await sendWordMessage(chatId, nextIdx, bot)
-    if (result && result.leftWords !== undefined) {
-      userCurrentOriginal[chatId] = result.leftWords
-    } else {
-      console.error('sendWordMessage returned invalid result:', result)
-      userCurrentOriginal[chatId] = ''
-    }
+    // Убрали отправку первого слова при старте - слова будут приходить только по расписанию
+    console.log(`[START] Бот запущен для chatId=${chatId}. Слова будут отправляться по расписанию.`)
   } catch (err) {
     console.error('Ошибка при отправке сообщения:', err)
-    await bot.sendMessage(chatId, 'Извините, произошла ошибка при отправке слова. Пожалуйста, попробуйте позже.')
+    await bot.sendMessage(chatId, 'Извините, произошла ошибка. Пожалуйста, попробуйте позже.')
     return
-  }
-
-  if (getUserIndex(chatId) == dictionary.length - 1) {
-    setUserIndex(chatId, 0)
-  } else {
-    setUserIndex(chatId, getUserIndex(chatId) + 1)
   }
 
   // Запускаем таймеры ПОСЛЕ загрузки словаря
