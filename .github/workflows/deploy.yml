@@ -29,11 +29,11 @@ jobs:
 
             echo "Restarting application..."
             if command -v pm2 &> /dev/null; then
-              pm2 restart bot || pm2 start server.js --name bot
+              pm2 restart give_me_word_server || pm2 start server.js --name give_me_word_server
               pm2 save
             else
               pkill -f "node server.js" || true
-              nohup node server.js > bot.log 2>&1 &
+              nohup node server.js > give_me_word_server.log 2>&1 &
             fi
 
             echo "Deployment completed successfully!"
