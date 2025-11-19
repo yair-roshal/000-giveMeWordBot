@@ -319,7 +319,7 @@ bot.on('callback_query', async (query) => {
   } else if (query.data.startsWith('interval_')) {
     // Обработка выбора интервала
     const intervalValue = parseInt(query.data.replace('interval_', ''))
-    
+
     if (intervalValue) {
       setUserInterval(chatId, intervalValue)
       // Остановить и создать таймер только для текущего пользователя
@@ -334,6 +334,11 @@ bot.on('callback_query', async (query) => {
       const learnedWords = loadLearnedWords(chatId)
       const userIndex = getUserIndex(chatId)
       const userPeriod = getUserPeriod(chatId)
+
+      // Загружаем словарь для пользователя
+      const dictionaryResult = await getDictionary(chatId)
+      const userDictionary = dictionaryResult ? dictionaryResult.dictionary : []
+
       let message = '🛠️ <b>Ваши настройки:</b>\n\n'
       message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
       message += `⏳ Статус авторассылки: <b>${timerInfo.isActive ? 'активна' : 'неактивна'}</b>\n`
@@ -343,7 +348,7 @@ bot.on('callback_query', async (query) => {
       if (learnedWords.length > 0) {
         message += '<b>Список выученных слов:</b>\n'
         learnedWords.forEach(word => {
-          const idx = dictionary.findIndex(line => {
+          const idx = userDictionary.findIndex(line => {
             const original = line.split(/[-—–−]/)[0].trim()
             return original === word
           })
@@ -423,6 +428,11 @@ bot.on('callback_query', async (query) => {
     const learnedWords = loadLearnedWords(chatId)
     const userIndex = getUserIndex(chatId)
     const userPeriod = getUserPeriod(chatId)
+
+    // Загружаем словарь для пользователя
+    const dictionaryResult = await getDictionary(chatId)
+    const userDictionary = dictionaryResult ? dictionaryResult.dictionary : []
+
     let message = '🛠️ <b>Ваши настройки:</b>\n\n'
     message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
     message += `⏳ Статус авторассылки: <b>${timerInfo.isActive ? 'активна' : 'неактивна'}</b>\n`
@@ -432,7 +442,7 @@ bot.on('callback_query', async (query) => {
     if (learnedWords.length > 0) {
       message += '<b>Список выученных слов:</b>\n'
       learnedWords.forEach(word => {
-        const idx = dictionary.findIndex(line => {
+        const idx = userDictionary.findIndex(line => {
           const original = line.split(/[-—–−]/)[0].trim()
           return original === word
         })
@@ -466,6 +476,11 @@ bot.on('callback_query', async (query) => {
     const learnedWords = loadLearnedWords(chatId)
     const userIndex = getUserIndex(chatId)
     const userPeriod = getUserPeriod(chatId)
+
+    // Загружаем словарь для пользователя
+    const dictionaryResult = await getDictionary(chatId)
+    const userDictionary = dictionaryResult ? dictionaryResult.dictionary : []
+
     let message = '🛠️ <b>Ваши настройки:</b>\n\n'
     message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
     message += `⏳ Статус авторассылки: <b>${timerInfo.isActive ? 'активна' : 'неактивна'}</b>\n`
@@ -475,7 +490,7 @@ bot.on('callback_query', async (query) => {
     if (learnedWords.length > 0) {
       message += '<b>Список выученных слов:</b>\n'
       learnedWords.forEach(word => {
-        const idx = dictionary.findIndex(line => {
+        const idx = userDictionary.findIndex(line => {
           const original = line.split(/[-—–−]/)[0].trim()
           return original === word
         })
@@ -953,6 +968,10 @@ ${validation.error}
     const userIndex = getUserIndex(chatId)
     const userPeriod = getUserPeriod(chatId)
 
+    // Загружаем словарь для пользователя
+    const dictionaryResult = await getDictionary(chatId)
+    const userDictionary = dictionaryResult ? dictionaryResult.dictionary : []
+
     let message = '🛠️ <b>Ваши настройки:</b>\n\n'
     message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
     message += `⏳ Статус авторассылки: <b>${timerInfo.isActive ? 'активна' : 'неактивна'}</b>\n`
@@ -965,7 +984,7 @@ ${validation.error}
       message += '<b>Список выученных слов:</b>\n'
       learnedWords.forEach(word => {
         // Поиск индекса слова в словаре
-        const idx = dictionary.findIndex(line => {
+        const idx = userDictionary.findIndex(line => {
           const original = line.split(/[-—–−]/)[0].trim()
           return original === word
         })
