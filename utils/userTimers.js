@@ -30,14 +30,24 @@ function calculateNextSendTime(chatId, intervalMs) {
   // Рассчитываем все времена отправки в течение дня, начиная с start
   const intervalMinutes = intervalMs / 60000
   const sendTimes = []
-  let currentSendMinute = start * 60 // Начинаем с начала периода в минутах от полуночи
-  const endMinute = end * 60
 
-  while (currentSendMinute < endMinute) {
-    const hour = Math.floor(currentSendMinute / 60)
-    const minute = currentSendMinute % 60
-    sendTimes.push({ hour, minute })
-    currentSendMinute += intervalMinutes
+  // Если интервал кратен 60 минутам (часам), отправляем строго в начале каждого часа
+  if (intervalMinutes >= 60 && intervalMinutes % 60 === 0) {
+    const intervalHours = intervalMinutes / 60
+    for (let hour = start; hour < end; hour += intervalHours) {
+      sendTimes.push({ hour, minute: 0 })
+    }
+  } else {
+    // Для интервалов меньше часа или не кратных часу, начинаем с start:00
+    let currentSendMinute = start * 60 // Начинаем с начала периода в минутах от полуночи
+    const endMinute = end * 60
+
+    while (currentSendMinute < endMinute) {
+      const hour = Math.floor(currentSendMinute / 60)
+      const minute = currentSendMinute % 60
+      sendTimes.push({ hour, minute })
+      currentSendMinute += intervalMinutes
+    }
   }
 
   console.log(`[TIMER][${chatId}] Времена отправки сегодня:`, sendTimes.map(t => `${t.hour}:${String(t.minute).padStart(2, '0')}`).join(', '))
