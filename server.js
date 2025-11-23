@@ -698,7 +698,7 @@ async function handleStartCommand(chatId, bot) {
   const intervalText = `${userInterval} минут`
   
   var optionsMessage2 = {
-    caption: `Catch the first word, the rest will be in ${intervalText}`,
+    caption: `Words will be sent every ${intervalText}`,
     reply_markup: JSON.stringify(give_me_keyboard),
     contentType: 'image/jpeg', // явно указываем тип контента для фото
   }
