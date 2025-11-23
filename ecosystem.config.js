@@ -38,9 +38,11 @@ module.exports = {
                 NODE_ENV: 'prod',
                 exec_mode: 'fork', // Используем fork вместо cluster для Telegram бота
                 instances: 1, // Только один экземпляр для избежания конфликтов
+                TZ: 'Asia/Jerusalem', // Временная зона Израиля
             },
             env_dev: {
                 NODE_ENV: 'dev',
+                TZ: 'Asia/Jerusalem', // Временная зона Израиля
             },
         },
     ],
