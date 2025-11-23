@@ -34,8 +34,11 @@ function calculateNextSendTime(chatId, intervalMs) {
   // Если интервал кратен 60 минутам (часам), отправляем строго в начале каждого часа
   if (intervalMinutes >= 60 && intervalMinutes % 60 === 0) {
     const intervalHours = intervalMinutes / 60
-    for (let hour = start; hour < end; hour += intervalHours) {
-      sendTimes.push({ hour, minute: 0 })
+    for (let hour = start; hour <= end; hour += intervalHours) {
+      // Включаем час 'end', если он попадает в расписание
+      if (hour <= end) {
+        sendTimes.push({ hour, minute: 0 })
+      }
     }
   } else {
     // Для интервалов меньше часа или не кратных часу, начинаем с start:00
@@ -122,7 +125,7 @@ function createOrUpdateUserTimer(chatId, bot, dictionary, currentIndexRef, callb
       const { start, end } = period
       const nowHours = new Date().getHours()
 
-      if (nowHours >= start && nowHours < end) {
+      if (nowHours >= start && nowHours <= end) {
         console.log(`[TIMER][${chatId}] Отправляем сообщение`)
         callback(chatId, bot, dictionary, currentIndexRef)
       } else {
