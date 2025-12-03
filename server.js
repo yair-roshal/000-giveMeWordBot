@@ -344,7 +344,7 @@ const userStates = {}
 // callback_query при нажатии кнопке новых слов ==========================================
 bot.on('callback_query', async (query) => {
   const chatId = query.from.id
-  // console.log('query ---------------:>> ', query)
+  console.log(`[CALLBACK_QUERY] chatId: ${chatId}, data: ${query.data}`)
 
   if (query.data === 'give_me') {
     try {
@@ -934,6 +934,7 @@ ${validation.error}
   // Обработка кнопки "🔂 Покажи новое слово"
   if (msg.text === '🔂 Покажи новое слово') {
     const chatId = msg.chat.id
+    console.log(`[BUTTON_CLICK] chatId: ${chatId}, button: "🔂 Покажи новое слово"`)
     try {
       const nextIdx = await getNextUnlearnedIndexNew(chatId, getUserIndex(chatId) + 1)
       setUserIndex(chatId, nextIdx)
