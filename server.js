@@ -18,6 +18,26 @@ const formatDate = require('./utils/formatDate.js')
 const { setUserInterval, getUserInterval, getUserIntervalMs, loadUserIntervals } = require('./utils/userIntervals.js')
 const { createOrUpdateUserTimer, stopUserTimer, getUserTimerInfo, stopAllTimers } = require('./utils/userTimers.js')
 const { createTimerCallback } = require('./utils/timerCallback.js')
+
+// === ВЫВОД ИНФОРМАЦИИ О ТЕКУЩЕМ КОММИТЕ ===
+try {
+  const { execSync } = require('child_process')
+  const gitHash = execSync('git rev-parse --short HEAD').toString().trim()
+  const gitMessage = execSync('git log -1 --pretty=%B').toString().trim()
+  const gitDate = execSync('git log -1 --pretty=%cd --date=format:"%Y-%m-%d %H:%M:%S"').toString().trim()
+  console.log('\n' + '='.repeat(80))
+  console.log('🚀 BOT STARTING')
+  console.log('='.repeat(80))
+  console.log(`📝 Commit: ${gitHash}`)
+  console.log(`💬 Message: ${gitMessage}`)
+  console.log(`📅 Date: ${gitDate}`)
+  console.log('='.repeat(80) + '\n')
+} catch (err) {
+  console.log('\n' + '='.repeat(80))
+  console.log('🚀 BOT STARTING (git info unavailable)')
+  console.log('='.repeat(80) + '\n')
+}
+
 // === СБРОС ВСЕХ ТАЙМЕРОВ ПРИ СТАРТЕ БОТА ===
 console.log('[INIT] Останавливаю все пользовательские таймеры при старте бота...')
 stopAllTimers()
