@@ -125,6 +125,70 @@ var optionsMessage = {
 const CHAT_ID_ADMIN = process.env.CHAT_ID_ADMIN
 var dictionary
 
+// Функция для автозапуска таймеров всех пользователей при старте бота
+async function startAllUserTimers() {
+  console.log('[INIT] Начинаем автоматический запуск таймеров для всех пользователей')
+  
+  // Загружаем словарь по умолчанию
+  const dictionaryText = await getWordsFromGoogleDocs()
+  if (!dictionaryText) {
+    console.error('[INIT] Не удалось загрузить словарь. Таймеры не запущены.')
+    return
+  }
+  dictionary = dictionaryText.split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line && !line.startsWith('🇮🇱') && !line.startsWith('___'))
+  
+  console.log(`[INIT] Словарь загружен. Количество слов: ${dictionary.length}`)
+  
+  const userIntervals = loadUserIntervals()
+  const userPeriods = loadUserPeriods()
+  const { loadUserProgress } = require('./utils/userProgress.js')
+  const userProgress = loadUserProgress()
+  
+  // Получаем список всех пользователей
+  const allChatIds = new Set()
+  if (userIntervals && typeof userIntervals === 'object') {
+    Object.keys(userIntervals).forEach(id => allChatIds.add(id))
+  }
+  if (userPeriods && typeof userPeriods === 'object') {
+    Object.keys(userPeriods).forEach(id => allChatIds.add(id))
+  }
+  if (userProgress && typeof userProgress === 'object') {
+    Object.keys(userProgress).forEach(id => allChatIds.add(id))
+  }
+  
+  console.log(`[INIT] Найдено пользователей: ${allChatIds.size}`)
+  
+  // Запускаем таймеры для всех пользователей
+  for (const userId of allChatIds) {
+    let userInterval = getUserInterval(userId)
+    if (!userInterval) {
+      console.log(`[INIT] Устанавливаем дефолтный интервал ${min} мин для userId=${userId}`)
+      setUserInterval(userId, min)
+      userInterval = min
+    }
+    
+    const userIndex = getUserIndex(userId)
+    if (userIndex < 0 || userIndex >= dictionary.length) {
+      console.log(`[INIT] Корректируем индекс для userId=${userId} с ${userIndex} на 0`)
+      setUserIndex(userId, 0)
+    }
+    
+    const timerCallback = await createTimerCallback(userCurrentOriginal)
+    createOrUpdateUserTimer(
+      userId,
+      bot,
+      dictionary,
+      { currentIndex: getUserIndex(userId) },
+      timerCallback
+    )
+    console.log(`[INIT] Таймер запущен для userId=${userId}`)
+  }
+  
+  console.log(`[INIT] Автозапуск таймеров завершён. Активных таймеров: ${allChatIds.size}`)
+}
+
 // Запускаем бота с контролем ошибок
 async function startBot() {
   try {
@@ -145,6 +209,9 @@ async function startBot() {
     
     await bot.startPolling();
     console.log('Bot polling started successfully');
+    
+    // Автозапуск таймеров для всех существующих пользователей
+    await startAllUserTimers();
   } catch (error) {
     console.error('Failed to start bot polling:', error);
     
@@ -708,84 +775,17 @@ async function handleStartCommand(chatId, bot) {
     return
   }
 
-  // Запускаем таймеры ПОСЛЕ загрузки словаря
-  console.log('[AUTO] Начинаем автоматический запуск таймеров после загрузки словаря')
-  const userIntervals = loadUserIntervals()
-  console.log('[AUTO] userIntervals:', userIntervals)
-  
-  // Получаем список всех пользователей из разных файлов
-  const allChatIds = new Set()
-  
-  // Из user_intervals.json
-  if (userIntervals && typeof userIntervals === 'object') {
-    Object.keys(userIntervals).forEach(chatId => allChatIds.add(chatId))
-  }
-  
-  // Из user_periods.json
-  const userPeriods = loadUserPeriods()
-  console.log('[AUTO] userPeriods:', userPeriods)
-  if (userPeriods && typeof userPeriods === 'object') {
-    Object.keys(userPeriods).forEach(chatId => allChatIds.add(chatId))
-  }
-  
-  // Из user_progress.json
-  const { loadUserProgress } = require('./utils/userProgress.js')
-  const userProgress = loadUserProgress()
-  console.log('[AUTO] userProgress:', userProgress)
-  if (userProgress && typeof userProgress === 'object') {
-    Object.keys(userProgress).forEach(chatId => allChatIds.add(chatId))
-  }
-  
-  console.log('[AUTO] Все найденные chatIds:', Array.from(allChatIds))
-  
-  // Запускаем таймеры для всех найденных пользователей
-  for (const chatId of allChatIds) {
-    // Получаем настройки пользователя
-    let userInterval = getUserInterval(chatId)
-    
-    // Если интервал не установлен, устанавливаем дефолтный
-    if (!userInterval) {
-      console.log(`[AUTO] Устанавливаем дефолтный интервал ${min} мин для chatId=${chatId}`)
-      setUserInterval(chatId, min)
-      userInterval = min
-    }
-    
-    const timerInfo = getUserTimerInfo(chatId)
-    const learnedWords = loadLearnedWords(chatId)
-    const userIndex = getUserIndex(chatId)
-    const userPeriod = getUserPeriod(chatId)
-    
-    // Проверяем валидность индекса и словаря
-    if (!dictionary || dictionary.length === 0) {
-      console.error(`[AUTO] Словарь пуст, пропускаем chatId=${chatId}`)
-      return
-    }
-    
-    if (userIndex < 0 || userIndex >= dictionary.length) {
-      console.log(`[AUTO] Корректируем индекс для chatId=${chatId} с ${userIndex} на 0`)
-      setUserIndex(chatId, 0)
-    }
-    
-    // Формируем строку лога
-    let logMsg = `\n[НАСТРОЙКИ] chatId=${chatId}\n`;
-    logMsg += `🛠️ Ваши настройки:` + "\n";
-    logMsg += `⏱️ Интервал: ${userInterval} мин (${userInterval === min ? 'дефолт из constants' : 'пользовательский'})\n`;
-    logMsg += `⏳ Авторассылка: ${timerInfo.isActive ? 'активна' : 'неактивна'}\n`;
-    logMsg += `📚 Выучено слов: ${learnedWords.length}\n`;
-    logMsg += `🔢 Индекс (user_progress): ${getUserIndex(chatId)}\n`;
-    logMsg += `🕒 Период рассылки: ${userPeriod.start}:00-${userPeriod.end}:00 ${userPeriod.start === clockStart && userPeriod.end === clockEnd ? '(дефолт из constants)' : '(пользовательский)'}\n`;
-    console.log(logMsg)
-    console.log(`[AUTO] Запускаем таймер для chatId=${chatId}`)
-    const timerCallback = await createTimerCallback(userCurrentOriginal)
-    createOrUpdateUserTimer(
-      chatId,
-      bot,
-      dictionary,
-      { currentIndex: getUserIndex(chatId) },
-      timerCallback
-    )
-  }
-  console.log('[AUTO] Автоматический запуск таймеров завершён')
+  // Запускаем таймер только для текущего пользователя
+  console.log(`[START] Запускаем таймер для текущего пользователя chatId=${chatId}`)
+  const timerCallback = await createTimerCallback(userCurrentOriginal)
+  createOrUpdateUserTimer(
+    chatId,
+    bot,
+    dictionary,
+    { currentIndex: getUserIndex(chatId) },
+    timerCallback
+  )
+  console.log(`[START] Таймер для пользователя ${chatId} запущен`)
 }
 
 // Команда /start теперь вызывает функцию handleStartCommand
