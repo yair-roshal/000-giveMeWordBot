@@ -145,14 +145,6 @@ async function startBot() {
     
     await bot.startPolling();
     console.log('Bot polling started successfully');
-    
-    // Отправляем уведомление администратору только после успешного запуска
-    if (CHAT_ID_ADMIN) {
-      await bot.sendMessage(CHAT_ID_ADMIN, `✅ Бот запущен успешно!`, {
-        parse_mode: 'HTML',
-        disable_web_page_preview: true
-      });
-    }
   } catch (error) {
     console.error('Failed to start bot polling:', error);
     
