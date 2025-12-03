@@ -2,6 +2,7 @@
 const getWordsFromGoogleDocs = require('./getWordsFromGoogleDocs')
 const { fetchUserDictionary, getUserDictionary, extractGoogleDocId, getGoogleDocTitle, updateUserDictionaryWordCount } = require('./userDictionaries')
 const { setUserIndex, getUserIndex } = require('./userProgress')
+const logger = require('./logger')
 
 // Функция для получения словаря (пользовательского или по умолчанию)
 async function getDictionary(chatId = null) {
@@ -93,12 +94,12 @@ async function getDictionary(chatId = null) {
         dictionaryName = 'Пользовательский словарь'
       }
     } catch (error) {
-      console.error(`Ошибка при получении названия словаря для ${chatId}:`, error.message)
+      logger.error(`Ошибка при получении названия словаря для ${chatId}:`, error.message)
       dictionaryName = 'Пользовательский словарь'
     }
   }
   
-  console.log(`Словарь успешно обработан. Количество слов: ${validLines.length} (${isCustom ? 'пользовательский' : 'по умолчанию'})`)
+  logger.log(`Словарь успешно обработан. Количество слов: ${validLines.length} (${isCustom ? 'пользовательский' : 'по умолчанию'})`)
 
   // Проверка изменений в словаре для пользовательских словарей
   if (isCustom && chatId) {

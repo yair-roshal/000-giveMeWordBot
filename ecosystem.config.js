@@ -8,9 +8,9 @@ module.exports = {
             out_file: './give_me_word_bot_out.log',
             error_file: './give_me_word_bot_error.log',
             // merge_logs: true,
-            time: true,
+            time: false,
 
-            log_date_format: 'DD-MM-YYYY HH:mm:ss',
+            log_date_format: 'YYYY-MM-DD_HH:mm:ss',
             // log_type: 'json',
 
             watch: false, // Отключаем watch чтобы избежать лишних перезапусков
