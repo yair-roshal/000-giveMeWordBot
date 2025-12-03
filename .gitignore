@@ -21,6 +21,14 @@ bot.pid
 **/user_settings.json
 **/mnemonicsCache.json
 utils/mnemonicsCache.json
+**/user_dictionaries.json
+**/user_progress.json
+**/user_periods.json
+**/user_intervals.json
+data/user_dictionaries.json
+data/user_progress.json
+data/user_periods.json
+data/user_intervals.json
 
 # classic ignoring files===============
 

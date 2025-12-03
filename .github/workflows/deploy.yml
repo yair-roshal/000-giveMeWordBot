@@ -21,8 +21,23 @@ jobs:
             echo "Starting deployment..."
             cd ${{ secrets.PROJECT_PATH }}
 
+            echo "Checking for local changes..."
+            git status
+
+            echo "Resetting any tracked file changes (keeping untracked user data)..."
+            git reset --hard HEAD
+
+            echo "Cleaning untracked files (except data folder)..."
+            git clean -fd -e data/
+
             echo "Pulling latest changes..."
             git pull origin master
+
+            echo "Creating data files from examples if needed..."
+            [ ! -f data/user_dictionaries.json ] && cp data/user_dictionaries.json.example data/user_dictionaries.json || true
+            [ ! -f data/user_progress.json ] && cp data/user_progress.json.example data/user_progress.json || true
+            [ ! -f data/user_periods.json ] && cp data/user_periods.json.example data/user_periods.json || true
+            [ ! -f data/user_intervals.json ] && cp data/user_intervals.json.example data/user_intervals.json || true
 
             echo "Installing dependencies..."
             npm install --production
