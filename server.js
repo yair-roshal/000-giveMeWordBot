@@ -230,12 +230,12 @@ async function startBot() {
     // Устанавливаем команды бота в меню
     try {
       await bot.setMyCommands([
-        { command: 'start', description: 'Start showing words' },
-        { command: 'add_dict', description: 'Add your vocabulary' },
-        { command: 'choose_dict', description: 'Select a classic dictionary' },
-        { command: 'clean_dict', description: 'Delete the dictionary' },
-        { command: 'timer_show', description: 'Set time periodicity of word show' },
-        { command: 'period_day_showing', description: 'Set time of day to show words' },
+        { command: 'start', description: 'Начать показ слов' },
+        { command: 'add_dict', description: 'Добавить свой словарь' },
+        { command: 'choose_dict', description: 'Выбрать классический словарь' },
+        { command: 'clean_dict', description: 'Удалить словарь' },
+        { command: 'timer_show', description: 'Настроить интервал показа слов' },
+        { command: 'period_day_showing', description: 'Настроить время показа слов' },
       ]);
       console.log('Bot commands menu set successfully');
     } catch (cmdError) {
