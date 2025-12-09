@@ -227,6 +227,21 @@ async function startBot() {
       console.log('Webhook clear attempted');
     }
     
+    // Устанавливаем команды бота в меню
+    try {
+      await bot.setMyCommands([
+        { command: 'start', description: 'Start showing words' },
+        { command: 'add_dict', description: 'Add your vocabulary' },
+        { command: 'choose_dict', description: 'Select a classic dictionary' },
+        { command: 'clean_dict', description: 'Delete the dictionary' },
+        { command: 'timer_show', description: 'Set time periodicity of word show' },
+        { command: 'period_day_showing', description: 'Set time of day to show words' },
+      ]);
+      console.log('Bot commands menu set successfully');
+    } catch (cmdError) {
+      console.error('Failed to set bot commands:', cmdError);
+    }
+    
     await bot.startPolling();
     console.log('Bot polling started successfully');
     
@@ -812,6 +827,75 @@ async function handleStartCommand(chatId, bot) {
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id
   await handleStartCommand(chatId, bot)
+})
+
+// Команда /add_dict - Добавить свой словарь
+bot.onText(/\/add_dict/, async (msg) => {
+  const chatId = msg.chat.id
+  const message = `📚 <b>Добавление персонального словаря</b>
+
+🔗 Отправьте ссылку на ваш Google Docs документ или его ID.
+
+📋 <b>Формат документа:</b>
+Каждая строка должна содержать слово и перевод, разделенные тире:
+<code>hello - привет
+world - мир
+learning - изучение</code>
+
+⚙️ <b>Настройки доступа:</b>
+1. Откройте ваш Google Docs
+2. Нажмите "Настроить доступ" 
+3. Выберите "Просмотр могут все, у кого есть ссылка"
+
+📎 <b>Поддерживаемые форматы ссылок:</b>
+• Полная ссылка: docs.google.com/document/d/ID/edit
+• Только ID документа: 1BxG7...xyz123
+
+Отправьте ссылку следующим сообщением:`
+
+  await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
+  userStates[chatId] = 'waiting_for_dictionary_url'
+})
+
+// Команда /choose_dict - Выбрать классический словарь
+bot.onText(/\/choose_dict/, async (msg) => {
+  const chatId = msg.chat.id
+  await bot.sendMessage(chatId, '📚 Настройки словаря', {
+    reply_markup: JSON.stringify(dictionarySettingsKeyboard)
+  })
+})
+
+// Команда /clean_dict - Удалить словарь
+bot.onText(/\/clean_dict/, async (msg) => {
+  const chatId = msg.chat.id
+  const userDict = getUserDictionary(chatId)
+
+  if (userDict) {
+    removeUserDictionary(chatId)
+    setUserIndex(chatId, 0)
+    console.log(`[DICTIONARY_UPDATE] Индекс пользователя ${chatId} сброшен на 0 после удаления словаря`)
+    await bot.sendMessage(chatId, '✅ Ваш персональный словарь удален. Теперь используется словарь по умолчанию.')
+  } else {
+    await bot.sendMessage(chatId, 'ℹ️ У вас нет персонального словаря. Используется словарь по умолчанию.')
+  }
+})
+
+// Команда /timer_show - Настроить интервал отправки слов
+bot.onText(/\/timer_show/, async (msg) => {
+  const chatId = msg.chat.id
+  const userInterval = getUserInterval(chatId)
+  const intervalText = userInterval ? `Текущий интервал: ${userInterval} минут` : 'Интервал не настроен'
+  await bot.sendMessage(chatId, intervalText, {
+    reply_markup: JSON.stringify(intervalSettingsKeyboard)
+  })
+})
+
+// Команда /period_day_showing - Настроить период показа слов в течение дня
+bot.onText(/\/period_day_showing/, async (msg) => {
+  const chatId = msg.chat.id
+  await bot.sendMessage(chatId, 'Выберите час начала периода:', {
+    reply_markup: JSON.stringify(getHourKeyboard('hour_start_'))
+  })
 })
 
   let previousDictionaryHash = null // Для проверки изменений в словаре
