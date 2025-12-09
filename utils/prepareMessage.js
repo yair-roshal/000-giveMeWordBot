@@ -34,6 +34,7 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId, diction
 
   let firstWord = ''
   let leftWords = ''
+  let rightWords = ''
   let arrayEnglishWords = []
 
   const symbolsArray = ['-', '—', '–', '—', '−']

@@ -93,42 +93,32 @@ const intervalSettingsKeyboard = {
   inline_keyboard: [
     [
       {
-        text: '1 минута',
-        callback_data: 'interval_1',
-      },
-      {
-        text: '5 минут',
-        callback_data: 'interval_5',
-      },
-    ],
-    [
-      {
-        text: '10 минут',
-        callback_data: 'interval_10',
-      },
-      {
-        text: '15 минут',
-        callback_data: 'interval_15',
-      },
-    ],
-    [
-      {
-        text: '30 минут',
-        callback_data: 'interval_30',
-      },
-      {
         text: '1 час',
         callback_data: 'interval_60',
       },
-    ],
-    [
       {
         text: '2 часа',
         callback_data: 'interval_120',
       },
+    ],
+    [
+      {
+        text: '3 часа',
+        callback_data: 'interval_180',
+      },
       {
         text: '4 часа',
         callback_data: 'interval_240',
+      },
+    ],
+    [
+      {
+        text: '5 часов',
+        callback_data: 'interval_300',
+      },
+      {
+        text: '6 часов',
+        callback_data: 'interval_360',
       },
     ],
     [
