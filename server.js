@@ -665,6 +665,17 @@ learning - изучение</code>
 
     await bot.answerCallbackQuery(query.id)
     return
+  } else if (query.data === 'reset_index') {
+    // Обнуление индекса
+    const chatId = query.from.id
+    const currentIndex = getUserIndex(chatId)
+    
+    setUserIndex(chatId, 0)
+    console.log(`[INDEX_RESET] Индекс пользователя ${chatId} обнулен с ${currentIndex} на 0`)
+    
+    await bot.sendMessage(chatId, `✅ Индекс обнулен!\n\n📊 Предыдущий индекс: <b>${currentIndex}</b>\n📊 Новый индекс: <b>0</b>\n\n💡 Теперь показ слов начнется с начала словаря.`, { parse_mode: 'HTML' })
+    await bot.answerCallbackQuery(query.id, { text: 'Индекс сброшен на 0!' })
+    return
   }
 })
 

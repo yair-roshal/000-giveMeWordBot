@@ -153,6 +153,12 @@ const dictionarySettingsKeyboard = {
     ],
     [
       {
+        text: '🔄 Обнулить индекс',
+        callback_data: 'reset_index',
+      },
+    ],
+    [
+      {
         text: '🔙 Назад',
         callback_data: 'back_to_main',
       },
