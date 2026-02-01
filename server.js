@@ -20,15 +20,16 @@ const { createOrUpdateUserTimer, stopUserTimer, getUserTimerInfo, stopAllTimers 
 const { createTimerCallback } = require('./utils/timerCallback.js')
 
 // === ВЫВОД ИНФОРМАЦИИ О ТЕКУЩЕМ КОММИТЕ ===
+let GIT_COMMIT_HASH = 'unknown'
 try {
   const { execSync } = require('child_process')
-  const gitHash = execSync('git rev-parse --short HEAD').toString().trim()
+  GIT_COMMIT_HASH = execSync('git rev-parse --short HEAD').toString().trim()
   const gitMessage = execSync('git log -1 --pretty=%B').toString().trim()
   const gitDate = execSync('git log -1 --pretty=%cd --date=format:"%Y-%m-%d %H:%M:%S"').toString().trim()
   console.log('\n' + '='.repeat(80))
   console.log('🚀 BOT STARTING')
   console.log('='.repeat(80))
-  console.log(`📝 Commit: ${gitHash}`)
+  console.log(`📝 Commit: ${GIT_COMMIT_HASH}`)
   console.log(`💬 Message: ${gitMessage}`)
   console.log(`📅 Date: ${gitDate}`)
   console.log('='.repeat(80) + '\n')
@@ -1184,6 +1185,8 @@ ${validation.error}
     } else {
       message += 'Нет выученных слов.'
     }
+
+    message += `\n\n<i>Версия: ${GIT_COMMIT_HASH}</i>`
 
     await bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
     return;
