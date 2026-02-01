@@ -26,6 +26,8 @@ utils/mnemonicsCache.json
 **/user_periods.json
 **/user_intervals.json
 data/user_dictionaries.json
+data/user_dictionaries.json.backup
+data/user_dictionaries.json.corrupt.*
 data/user_progress.json
 data/user_periods.json
 data/user_intervals.json

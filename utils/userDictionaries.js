@@ -5,12 +5,98 @@ const axios = require('axios')
 
 const USER_DICTIONARIES_FILE = path.join(__dirname, '../data/user_dictionaries.json')
 
+// Инициализация файла словарей при первом запуске
+function initUserDictionariesFile() {
+  try {
+    const dataDir = path.join(__dirname, '../data')
+    const backupFile = USER_DICTIONARIES_FILE + '.backup'
+
+    // Создаём папку data, если её нет
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true })
+      console.log('[INIT] Создана папка data')
+    }
+
+    // Создаём файл словарей, если его нет
+    if (!fs.existsSync(USER_DICTIONARIES_FILE)) {
+      // Пробуем восстановить из бэкапа
+      if (fs.existsSync(backupFile)) {
+        const backupContent = fs.readFileSync(backupFile, 'utf8').trim()
+        try {
+          JSON.parse(backupContent)
+          fs.writeFileSync(USER_DICTIONARIES_FILE, backupContent, 'utf8')
+          console.log('[INIT] Файл user_dictionaries.json восстановлен из backup')
+          return
+        } catch (e) {
+          console.log('[INIT] Backup содержит невалидный JSON')
+        }
+      }
+      fs.writeFileSync(USER_DICTIONARIES_FILE, '{}', 'utf8')
+      console.log('[INIT] Создан файл user_dictionaries.json')
+    } else {
+      // Проверяем, что файл не пустой и содержит валидный JSON
+      const content = fs.readFileSync(USER_DICTIONARIES_FILE, 'utf8').trim()
+      if (!content || content === '' || content === '{}') {
+        // Файл пустой, пробуем восстановить из бэкапа
+        if (fs.existsSync(backupFile)) {
+          const backupContent = fs.readFileSync(backupFile, 'utf8').trim()
+          try {
+            const parsed = JSON.parse(backupContent)
+            if (Object.keys(parsed).length > 0) {
+              fs.writeFileSync(USER_DICTIONARIES_FILE, backupContent, 'utf8')
+              console.log(`[INIT] Восстановлено ${Object.keys(parsed).length} пользователей из backup`)
+              return
+            }
+          } catch (e) {
+            console.log('[INIT] Backup содержит невалидный JSON')
+          }
+        }
+        if (!content || content === '') {
+          fs.writeFileSync(USER_DICTIONARIES_FILE, '{}', 'utf8')
+          console.log('[INIT] Файл user_dictionaries.json был пустым, инициализирован')
+        }
+      } else {
+        try {
+          const parsed = JSON.parse(content)
+          console.log(`[INIT] Файл user_dictionaries.json загружен, пользователей: ${Object.keys(parsed).length}`)
+        } catch (e) {
+          console.error('[INIT] Файл user_dictionaries.json содержит невалидный JSON')
+          // Пробуем восстановить из бэкапа
+          if (fs.existsSync(backupFile)) {
+            const backupContent = fs.readFileSync(backupFile, 'utf8').trim()
+            try {
+              JSON.parse(backupContent)
+              fs.writeFileSync(USER_DICTIONARIES_FILE, backupContent, 'utf8')
+              console.log('[INIT] Восстановлено из backup после ошибки JSON')
+              return
+            } catch (e2) {
+              console.log('[INIT] Backup тоже невалидный')
+            }
+          }
+          // Сохраняем бэкап повреждённого файла и сбрасываем
+          const corruptBackup = USER_DICTIONARIES_FILE + '.corrupt.' + Date.now()
+          fs.writeFileSync(corruptBackup, content, 'utf8')
+          fs.writeFileSync(USER_DICTIONARIES_FILE, '{}', 'utf8')
+          console.log('[INIT] Сброс после невалидного JSON')
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[INIT] Ошибка при инициализации файла словарей:', error)
+  }
+}
+
+// Инициализируем файл при загрузке модуля
+initUserDictionariesFile()
+
 // Функция для загрузки пользовательских словарей
 function loadUserDictionaries() {
   try {
     if (fs.existsSync(USER_DICTIONARIES_FILE)) {
       const data = fs.readFileSync(USER_DICTIONARIES_FILE, 'utf8')
-      return JSON.parse(data)
+      const parsed = JSON.parse(data)
+      console.log(`[LOAD] Загружено словарей пользователей: ${Object.keys(parsed).length}`)
+      return parsed
     }
   } catch (error) {
     console.error('Ошибка при загрузке пользовательских словарей:', error)
@@ -21,7 +107,19 @@ function loadUserDictionaries() {
 // Функция для сохранения пользовательских словарей
 function saveUserDictionaries(dictionaries) {
   try {
-    fs.writeFileSync(USER_DICTIONARIES_FILE, JSON.stringify(dictionaries, null, 2), 'utf8')
+    const jsonData = JSON.stringify(dictionaries, null, 2)
+
+    // Создаём резервную копию перед записью (если файл существует и не пустой)
+    if (fs.existsSync(USER_DICTIONARIES_FILE)) {
+      const existingContent = fs.readFileSync(USER_DICTIONARIES_FILE, 'utf8').trim()
+      if (existingContent && existingContent !== '{}') {
+        const backupFile = USER_DICTIONARIES_FILE + '.backup'
+        fs.writeFileSync(backupFile, existingContent, 'utf8')
+      }
+    }
+
+    fs.writeFileSync(USER_DICTIONARIES_FILE, jsonData, 'utf8')
+    console.log(`[SAVE] Сохранено словарей пользователей: ${Object.keys(dictionaries).length}`)
     return true
   } catch (error) {
     console.error('Ошибка при сохранении пользовательских словарей:', error)
