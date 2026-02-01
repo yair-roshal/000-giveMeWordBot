@@ -385,9 +385,10 @@ bot.on('callback_query', async (query) => {
   if (query.data === 'give_me') {
     try {
       const currentIdx = getUserIndex(chatId) || 0
-      console.log(`[GIVE_ME][DEBUG] chatId=${chatId}: currentIdx=${currentIdx}`)
+      console.log(`[GIVE_ME][DEBUG] chatId=${chatId}: currentIdx (следующий для показа)=${currentIdx}`)
 
-      const nextIdx = await getNextUnlearnedIndexNew(chatId, currentIdx + 1)
+      // currentIdx теперь означает "следующий индекс для показа", поэтому ищем с него, а не с +1
+      const nextIdx = await getNextUnlearnedIndexNew(chatId, currentIdx)
       console.log(`[GIVE_ME][DEBUG] chatId=${chatId}: nextIdx=${nextIdx}`)
 
       // Проверяем, не изменился ли индекс во время поиска
@@ -396,7 +397,8 @@ bot.on('callback_query', async (query) => {
         console.log(`[GIVE_ME][WARNING] chatId=${chatId}: индекс изменился во время поиска! Был ${currentIdx}, стал ${indexAfterSearch}`)
       }
 
-      setUserIndex(chatId, nextIdx)
+      // Сохраняем следующий индекс для показа (текущий + 1)
+      setUserIndex(chatId, nextIdx + 1)
       const result = await sendWordMessage(chatId, nextIdx, bot)
       if (result && result.leftWords !== undefined) {
         userCurrentOriginal[chatId] = result.leftWords
@@ -509,8 +511,9 @@ bot.on('callback_query', async (query) => {
     }
     // Найти следующее невыученное слово
     try {
-      const nextIdx = await getNextUnlearnedIndexNew(chatId, (getUserIndex(chatId) || 0) + 1)
-      setUserIndex(chatId, nextIdx)
+      const currentIdx = getUserIndex(chatId) || 0
+      const nextIdx = await getNextUnlearnedIndexNew(chatId, currentIdx)
+      setUserIndex(chatId, nextIdx + 1)
       const result = await sendWordMessage(chatId, nextIdx, bot)
       if (result && result.leftWords !== undefined) {
         userCurrentOriginal[chatId] = result.leftWords
@@ -1147,8 +1150,9 @@ ${validation.error}
     const chatId = msg.chat.id
     console.log(`[BUTTON_CLICK] chatId: ${chatId}, button: "🔂 Покажи новое слово"`)
     try {
-      const nextIdx = await getNextUnlearnedIndexNew(chatId, getUserIndex(chatId) + 1)
-      setUserIndex(chatId, nextIdx)
+      const currentIdx = getUserIndex(chatId) || 0
+      const nextIdx = await getNextUnlearnedIndexNew(chatId, currentIdx)
+      setUserIndex(chatId, nextIdx + 1)
       const result = await sendWordMessage(chatId, nextIdx, bot)
       if (result && result.leftWords !== undefined) {
         userCurrentOriginal[chatId] = result.leftWords

@@ -12,13 +12,12 @@ async function createTimerCallback(userCurrentOriginal) {
     console.log(`[TIMER] Отправляем слово пользователю ${chatId} в ${formattedDate}`)
     
     try {
-      // Получаем текущий индекс и увеличиваем его
+      // currentIdx теперь означает "следующий индекс для показа"
       const currentIdx = getUserIndex(chatId) || 0
-      const startSearchIdx = currentIdx + 1
-      console.log(`[TIMER][DEBUG] chatId=${chatId}: currentIdx=${currentIdx}, startSearchIdx=${startSearchIdx}`)
+      console.log(`[TIMER][DEBUG] chatId=${chatId}: currentIdx (следующий для показа)=${currentIdx}`)
 
-      // Получаем следующий невыученный индекс
-      const nextIdx = await getNextUnlearnedIndex(chatId, startSearchIdx)
+      // Получаем следующий невыученный индекс, начиная с currentIdx (без +1)
+      const nextIdx = await getNextUnlearnedIndex(chatId, currentIdx)
       console.log(`[TIMER][DEBUG] chatId=${chatId}: getNextUnlearnedIndex вернул nextIdx=${nextIdx}`)
 
       // Проверяем, не изменился ли индекс во время поиска (из-за сброса в getDictionary)
@@ -27,10 +26,10 @@ async function createTimerCallback(userCurrentOriginal) {
         console.log(`[TIMER][WARNING] chatId=${chatId}: индекс изменился во время поиска! Был ${currentIdx}, стал ${indexAfterSearch}`)
       }
 
-      // ВАЖНО: Сохраняем индекс ПЕРЕД отправкой сообщения,
+      // ВАЖНО: Сохраняем следующий индекс (nextIdx + 1) ПЕРЕД отправкой сообщения,
       // чтобы избежать race condition при параллельных запросах
-      setUserIndex(chatId, nextIdx)
-      console.log(`[TIMER] Установлен новый индекс: ${nextIdx} для chatId=${chatId}`)
+      setUserIndex(chatId, nextIdx + 1)
+      console.log(`[TIMER] Установлен следующий индекс: ${nextIdx + 1} для chatId=${chatId}`)
 
       console.log(`[TIMER] Вызываем sendWordMessage для chatId=${chatId}, index=${nextIdx}`)
       const result = await sendWordMessage(chatId, nextIdx, bot)
