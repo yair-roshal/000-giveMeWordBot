@@ -28,12 +28,14 @@ async function getNextUnlearnedIndex(chatId, fromIndex = 0) {
       let original = line
       
       // Извлекаем оригинальное слово из строки
-      const symbolsArray = ['-', '—', '–', '—', '−']
-      symbolsArray.forEach((symbol) => {
+      // Используем первый найденный разделитель, не перезаписываем при нахождении других
+      const symbolsArray = ['-', '—', '–', '−']
+      for (const symbol of symbolsArray) {
         if (line && line.indexOf(symbol) !== -1) {
           original = line.split(symbol)[0].trim()
+          break // Важно: останавливаемся на первом найденном разделителе
         }
-      })
+      }
       
       // Проверяем, выучено ли это слово
       if (!isWordLearned(chatId, original)) {

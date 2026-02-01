@@ -37,16 +37,17 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId, diction
   let rightWords = ''
   let arrayEnglishWords = []
 
-  const symbolsArray = ['-', '—', '–', '—', '−']
+  const symbolsArray = ['-', '—', '–', '−']
 
-  symbolsArray.forEach((symbol) => {
+  // Используем первый найденный разделитель
+  for (const symbol of symbolsArray) {
     if (wordLineDictionary && wordLineDictionary.indexOf(symbol) !== -1) {
       leftWords = wordLineDictionary.split(symbol)[0].trim()
       rightWords = wordLineDictionary.split(symbol)[1].trim()
       firstWord = leftWords.split(' ')[0]
-      return
+      break // Важно: останавливаемся на первом найденном разделителе
     }
-  })
+  }
 
   if (leftWords == '') {
     console.error('don`t found "-" in this string :>> =====================')

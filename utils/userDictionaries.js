@@ -327,13 +327,28 @@ async function fetchUserDictionary(chatId) {
 
 // Обновить количество слов в словаре пользователя
 function updateUserDictionaryWordCount(chatId, newWordCount) {
-  const dictionaries = loadUserDictionaries()
-  if (dictionaries[chatId]) {
-    dictionaries[chatId].wordCount = newWordCount
-    dictionaries[chatId].updatedAt = new Date().toISOString()
-    return saveUserDictionaries(dictionaries)
+  const allDictionaries = loadUserDictionaries()
+  if (!allDictionaries[chatId]) {
+    return false
   }
-  return false
+
+  const userData = allDictionaries[chatId]
+
+  // Проверяем формат данных
+  if (Array.isArray(userData.dictionaries)) {
+    // Новый формат - обновляем активный словарь в массиве
+    const activeIndex = userData.activeIndex ?? -1
+    if (activeIndex >= 0 && activeIndex < userData.dictionaries.length) {
+      userData.dictionaries[activeIndex].wordCount = newWordCount
+      userData.dictionaries[activeIndex].updatedAt = new Date().toISOString()
+    }
+  } else {
+    // Старый формат - обновляем напрямую
+    userData.wordCount = newWordCount
+    userData.updatedAt = new Date().toISOString()
+  }
+
+  return saveUserDictionaries(allDictionaries)
 }
 
 // Создать inline-клавиатуру для выбора словаря

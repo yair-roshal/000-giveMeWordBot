@@ -115,11 +115,12 @@ async function getDictionary(chatId = null) {
         console.log(`[DICTIONARY_UPDATE] Было слов: ${previousWordCount}, стало: ${currentWordCount}, добавлено: ${newWordsAdded}`)
         console.log(`[DICTIONARY_UPDATE] Сбрасываем индекс пользователя ${chatId} с ${getUserIndex(chatId)} на 0`)
 
-        // Сбрасываем индекс пользователя на 0
-        setUserIndex(chatId, 0)
-
-        // Обновляем сохраненное количество слов
+        // ВАЖНО: Сначала обновляем wordCount, чтобы избежать повторного сброса
+        // при следующем вызове getDictionary
         updateUserDictionaryWordCount(chatId, currentWordCount)
+
+        // Затем сбрасываем индекс пользователя на 0
+        setUserIndex(chatId, 0)
 
         console.log(`[DICTIONARY_UPDATE] Индекс успешно сброшен на 0, словарь обновлен`)
       } else if (currentWordCount !== previousWordCount) {

@@ -384,7 +384,18 @@ bot.on('callback_query', async (query) => {
 
   if (query.data === 'give_me') {
     try {
-      const nextIdx = await getNextUnlearnedIndexNew(chatId, getUserIndex(chatId) + 1)
+      const currentIdx = getUserIndex(chatId) || 0
+      console.log(`[GIVE_ME][DEBUG] chatId=${chatId}: currentIdx=${currentIdx}`)
+
+      const nextIdx = await getNextUnlearnedIndexNew(chatId, currentIdx + 1)
+      console.log(`[GIVE_ME][DEBUG] chatId=${chatId}: nextIdx=${nextIdx}`)
+
+      // Проверяем, не изменился ли индекс во время поиска
+      const indexAfterSearch = getUserIndex(chatId)
+      if (indexAfterSearch !== currentIdx) {
+        console.log(`[GIVE_ME][WARNING] chatId=${chatId}: индекс изменился во время поиска! Был ${currentIdx}, стал ${indexAfterSearch}`)
+      }
+
       setUserIndex(chatId, nextIdx)
       const result = await sendWordMessage(chatId, nextIdx, bot)
       if (result && result.leftWords !== undefined) {
