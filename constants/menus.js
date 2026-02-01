@@ -141,13 +141,19 @@ const dictionarySettingsKeyboard = {
     ],
     [
       {
-        text: '➕ Добавить свой словарь',
+        text: '📚 Выбрать словарь',
+        callback_data: 'show_dictionary_list',
+      },
+    ],
+    [
+      {
+        text: '➕ Добавить новый словарь',
         callback_data: 'add_custom_dictionary',
       },
     ],
     [
       {
-        text: '🗑️ Удалить свой словарь',
+        text: '🗑️ Удалить текущий словарь',
         callback_data: 'remove_custom_dictionary',
       },
     ],

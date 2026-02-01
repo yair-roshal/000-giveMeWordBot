@@ -13,7 +13,7 @@ const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
 const { give_me_keyboard, intervalSettingsKeyboard, startMenu, periodSettingsKeyboard, getHourKeyboard, dictionarySettingsKeyboard } = require('./constants/menus.js')
 const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
 const { getDictionary } = require('./utils/getDictionary.js')
-const { getUserDictionary, setUserDictionary, removeUserDictionary, validateGoogleDocUrl } = require('./utils/userDictionaries.js')
+const { getUserDictionary, getUserDictionaryList, setUserDictionary, selectUserDictionary, removeUserDictionary, removeUserDictionaryByIndex, deactivateUserDictionary, validateGoogleDocUrl, getDictionarySelectionKeyboard } = require('./utils/userDictionaries.js')
 const formatDate = require('./utils/formatDate.js')
 const { setUserInterval, getUserInterval, getUserIntervalMs, loadUserIntervals } = require('./utils/userIntervals.js')
 const { createOrUpdateUserTimer, stopUserTimer, getUserTimerInfo, stopAllTimers } = require('./utils/userTimers.js')
@@ -598,20 +598,32 @@ bot.on('callback_query', async (query) => {
     // Показать информацию о текущем словаре
     const chatId = query.from.id
     const userDict = getUserDictionary(chatId)
+    const userData = getUserDictionaryList(chatId)
     let message = '📚 <b>Информация о словаре</b>\n\n'
     
     if (userDict) {
-      message += '✅ <b>Ваш личный словарь</b>\n'
+      message += '✅ <b>Активный словарь:</b>\n'
+      message += `📖 Название: <b>${userDict.title}</b>\n`
+      message += `📊 Слов: <b>${userDict.wordCount || 'н/д'}</b>\n`
       message += `📎 Ссылка: ${userDict.url}\n`
-      message += `📅 Добавлен: ${new Date(userDict.createdAt).toLocaleDateString('ru-RU')}\n`
-      message += `🔄 Обновлен: ${new Date(userDict.updatedAt).toLocaleDateString('ru-RU')}\n\n`
-      message += '💡 <i>Словарь загружается из вашего Google Doc при каждом запросе слова</i>'
+      message += `📅 Добавлен: ${new Date(userDict.createdAt).toLocaleDateString('ru-RU')}\n\n`
     } else {
-      message += '📖 <b>Словарь по умолчанию</b>\n'
-      message += '🌍 Универсальный словарь для изучения языков\n'
-      message += '🔄 Автоматически обновляется\n\n'
-      message += '💡 <i>Вы можете добавить свой персональный словарь из Google Docs</i>'
+      message += '📖 <b>Активный: Словарь по умолчанию</b>\n'
+      message += '🌍 Универсальный словарь для изучения языков\n\n'
     }
+    
+    // Показываем список всех сохраненных словарей
+    if (userData.dictionaries.length > 0) {
+      message += `📚 <b>Сохранённые словари (${userData.dictionaries.length}):</b>\n`
+      userData.dictionaries.forEach((dict, idx) => {
+        const isActive = idx === userData.activeIndex
+        const emoji = isActive ? '✅' : '📖'
+        message += `${emoji} ${dict.title} (${dict.wordCount || '?'} слов)\n`
+      })
+      message += '\n'
+    }
+    
+    message += '💡 <i>Используйте "Выбрать словарь" для переключения между словарями</i>'
     
     await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
     await bot.answerCallbackQuery(query.id)
@@ -675,6 +687,78 @@ learning - изучение</code>
     
     await bot.sendMessage(chatId, `✅ Индекс обнулен!\n\n📊 Предыдущий индекс: <b>${currentIndex}</b>\n📊 Новый индекс: <b>0</b>\n\n💡 Теперь показ слов начнется с начала словаря.`, { parse_mode: 'HTML' })
     await bot.answerCallbackQuery(query.id, { text: 'Индекс сброшен на 0!' })
+    return
+  } else if (query.data === 'show_dictionary_list') {
+    // Показать список сохраненных словарей для выбора
+    const chatId = query.from.id
+    const keyboard = getDictionarySelectionKeyboard(chatId)
+    const userData = getUserDictionaryList(chatId)
+    
+    let message = '📚 <b>Выберите словарь</b>\n\n'
+    if (userData.dictionaries.length > 0) {
+      message += `📖 Сохранено словарей: <b>${userData.dictionaries.length}</b>\n`
+      message += '✅ - активный словарь\n\n'
+      message += '💡 <i>Нажмите на словарь, чтобы переключиться</i>'
+    } else {
+      message += 'У вас пока нет сохраненных словарей.\n\n'
+      message += '💡 <i>Добавьте свой первый словарь из Google Docs</i>'
+    }
+    
+    await bot.sendMessage(chatId, message, {
+      parse_mode: 'HTML',
+      reply_markup: JSON.stringify(keyboard)
+    })
+    await bot.answerCallbackQuery(query.id)
+    return
+  } else if (query.data.startsWith('select_dict_')) {
+    const chatId = query.from.id
+    const indexStr = query.data.replace('select_dict_', '')
+    
+    if (indexStr === 'default') {
+      // Выбрать словарь по умолчанию
+      deactivateUserDictionary(chatId)
+      setUserIndex(chatId, 0)
+      console.log(`[DICTIONARY_SWITCH] Пользователь ${chatId} переключился на словарь по умолчанию`)
+      
+      await bot.answerCallbackQuery(query.id, { text: 'Выбран словарь по умолчанию' })
+      await bot.sendMessage(chatId, '✅ Теперь используется <b>словарь по умолчанию</b>\n\n📊 Индекс сброшен на 0', { parse_mode: 'HTML' })
+    } else {
+      const index = parseInt(indexStr, 10)
+      const userData = getUserDictionaryList(chatId)
+      
+      if (index >= 0 && index < userData.dictionaries.length) {
+        const selectedDict = userData.dictionaries[index]
+        selectUserDictionary(chatId, index)
+        setUserIndex(chatId, 0)
+        console.log(`[DICTIONARY_SWITCH] Пользователь ${chatId} переключился на словарь "${selectedDict.title}" (index: ${index})`)
+        
+        await bot.answerCallbackQuery(query.id, { text: `Выбран: ${selectedDict.title}` })
+        await bot.sendMessage(chatId, `✅ Выбран словарь: <b>${selectedDict.title}</b>\n📊 Слов: ${selectedDict.wordCount || 'н/д'}\n\n📊 Индекс сброшен на 0`, { parse_mode: 'HTML' })
+      } else {
+        await bot.answerCallbackQuery(query.id, { text: 'Словарь не найден' })
+      }
+    }
+    return
+  } else if (query.data.startsWith('delete_dict_')) {
+    const chatId = query.from.id
+    const index = parseInt(query.data.replace('delete_dict_', ''), 10)
+    const userData = getUserDictionaryList(chatId)
+    
+    if (index >= 0 && index < userData.dictionaries.length) {
+      const deletedDict = userData.dictionaries[index]
+      removeUserDictionaryByIndex(chatId, index)
+      
+      // Если удалили активный словарь, сбрасываем индекс
+      if (index === userData.activeIndex) {
+        setUserIndex(chatId, 0)
+      }
+      
+      console.log(`[DICTIONARY_DELETE] Пользователь ${chatId} удалил словарь "${deletedDict.title}" (index: ${index})`)
+      await bot.answerCallbackQuery(query.id, { text: 'Словарь удален' })
+      await bot.sendMessage(chatId, `🗑️ Словарь "<b>${deletedDict.title}</b>" удален из списка`, { parse_mode: 'HTML' })
+    } else {
+      await bot.answerCallbackQuery(query.id, { text: 'Словарь не найден' })
+    }
     return
   }
 })
@@ -1124,16 +1208,21 @@ ${validation.error}
   if (msg.text === '📚 Настройки словаря') {
     const chatId = msg.chat.id
     const userDict = getUserDictionary(chatId)
+    const userData = getUserDictionaryList(chatId)
     let message = '📚 <b>Настройки словаря</b>\n\n'
     
     if (userDict) {
-      message += '✅ Используется ваш личный словарь\n'
-      message += `📎 Ссылка: ${userDict.url}\n`
-      message += `📅 Добавлен: ${new Date(userDict.createdAt).toLocaleDateString('ru-RU')}`
+      message += `✅ Активный: <b>${userDict.title}</b>\n`
+      message += `📊 Слов: ${userDict.wordCount || 'н/д'}\n`
     } else {
-      message += '📖 Используется словарь по умолчанию\n'
-      message += 'Вы можете добавить свой личный словарь из Google Docs'
+      message += '📖 Активный: <b>Словарь по умолчанию</b>\n'
     }
+    
+    if (userData.dictionaries.length > 0) {
+      message += `\n📚 Сохранённых словарей: <b>${userData.dictionaries.length}</b>`
+    }
+    
+    message += '\n\n💡 Выберите действие:'
     
     await bot.sendMessage(chatId, message, {
       parse_mode: 'HTML',

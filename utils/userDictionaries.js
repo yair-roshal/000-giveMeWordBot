@@ -29,22 +29,58 @@ function saveUserDictionaries(dictionaries) {
   }
 }
 
-// Получить словарь пользователя
-function getUserDictionary(chatId) {
-  const dictionaries = loadUserDictionaries()
-  return dictionaries[chatId] || null
+// Миграция старого формата (один словарь) в новый (список словарей)
+function migrateUserData(userData) {
+  if (!userData) return { dictionaries: [], activeIndex: -1 }
+  
+  // Если уже новый формат
+  if (Array.isArray(userData.dictionaries)) {
+    return userData
+  }
+  
+  // Старый формат - один словарь напрямую
+  if (userData.url) {
+    return {
+      dictionaries: [userData],
+      activeIndex: 0
+    }
+  }
+  
+  return { dictionaries: [], activeIndex: -1 }
 }
 
-// Установить пользовательский словарь
-async function setUserDictionary(chatId, dictionaryUrl) {
+// Получить активный словарь пользователя
+function getUserDictionary(chatId) {
   const dictionaries = loadUserDictionaries()
+  const userData = migrateUserData(dictionaries[chatId])
+  
+  if (userData.activeIndex >= 0 && userData.activeIndex < userData.dictionaries.length) {
+    return userData.dictionaries[userData.activeIndex]
+  }
+  return null
+}
+
+// Получить список всех словарей пользователя
+function getUserDictionaryList(chatId) {
+  const dictionaries = loadUserDictionaries()
+  const userData = migrateUserData(dictionaries[chatId])
+  return {
+    dictionaries: userData.dictionaries || [],
+    activeIndex: userData.activeIndex ?? -1
+  }
+}
+
+// Установить пользовательский словарь (добавляет в список или обновляет существующий)
+async function setUserDictionary(chatId, dictionaryUrl) {
+  const allDictionaries = loadUserDictionaries()
+  const userData = migrateUserData(allDictionaries[chatId])
 
   // Получаем название документа
   let title = 'Пользовательский словарь'
   let wordCount = 0
+  const docId = extractGoogleDocId(dictionaryUrl)
 
   try {
-    const docId = extractGoogleDocId(dictionaryUrl)
     if (docId) {
       title = await getGoogleDocTitle(docId)
 
@@ -66,24 +102,103 @@ async function setUserDictionary(chatId, dictionaryUrl) {
     console.error(`Ошибка получения данных при добавлении словаря для ${chatId}:`, error.message)
   }
 
-  dictionaries[chatId] = {
+  const newDict = {
     url: dictionaryUrl,
+    docId: docId,
     title: title,
     wordCount: wordCount,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }
-  return saveUserDictionaries(dictionaries)
+
+  // Проверяем, есть ли уже такой словарь (по docId)
+  const existingIndex = userData.dictionaries.findIndex(d => d.docId === docId || d.url === dictionaryUrl)
+  
+  if (existingIndex >= 0) {
+    // Обновляем существующий словарь
+    userData.dictionaries[existingIndex] = {
+      ...userData.dictionaries[existingIndex],
+      ...newDict,
+      createdAt: userData.dictionaries[existingIndex].createdAt // сохраняем оригинальную дату создания
+    }
+    userData.activeIndex = existingIndex
+  } else {
+    // Добавляем новый словарь
+    userData.dictionaries.push(newDict)
+    userData.activeIndex = userData.dictionaries.length - 1
+  }
+
+  allDictionaries[chatId] = userData
+  return saveUserDictionaries(allDictionaries)
 }
 
-// Удалить пользовательский словарь (вернуться к умолчанию)
+// Выбрать словарь из списка по индексу
+function selectUserDictionary(chatId, index) {
+  const allDictionaries = loadUserDictionaries()
+  const userData = migrateUserData(allDictionaries[chatId])
+  
+  if (index >= 0 && index < userData.dictionaries.length) {
+    userData.activeIndex = index
+    allDictionaries[chatId] = userData
+    return saveUserDictionaries(allDictionaries)
+  }
+  return false
+}
+
+// Удалить текущий активный словарь
 function removeUserDictionary(chatId) {
-  const dictionaries = loadUserDictionaries()
-  if (dictionaries[chatId]) {
-    delete dictionaries[chatId]
-    return saveUserDictionaries(dictionaries)
+  const allDictionaries = loadUserDictionaries()
+  const userData = migrateUserData(allDictionaries[chatId])
+  
+  if (userData.activeIndex >= 0 && userData.activeIndex < userData.dictionaries.length) {
+    userData.dictionaries.splice(userData.activeIndex, 1)
+    
+    // Корректируем activeIndex после удаления
+    if (userData.dictionaries.length === 0) {
+      userData.activeIndex = -1
+    } else if (userData.activeIndex >= userData.dictionaries.length) {
+      userData.activeIndex = userData.dictionaries.length - 1
+    }
+    
+    allDictionaries[chatId] = userData
+    return saveUserDictionaries(allDictionaries)
   }
   return true
+}
+
+// Удалить словарь по индексу
+function removeUserDictionaryByIndex(chatId, index) {
+  const allDictionaries = loadUserDictionaries()
+  const userData = migrateUserData(allDictionaries[chatId])
+  
+  if (index >= 0 && index < userData.dictionaries.length) {
+    userData.dictionaries.splice(index, 1)
+    
+    // Корректируем activeIndex
+    if (userData.dictionaries.length === 0) {
+      userData.activeIndex = -1
+    } else if (userData.activeIndex === index) {
+      // Если удалили активный словарь, выбираем предыдущий или первый
+      userData.activeIndex = Math.max(0, index - 1)
+    } else if (userData.activeIndex > index) {
+      // Если удалили словарь до активного, сдвигаем индекс
+      userData.activeIndex--
+    }
+    
+    allDictionaries[chatId] = userData
+    return saveUserDictionaries(allDictionaries)
+  }
+  return false
+}
+
+// Вернуться к словарю по умолчанию (деактивировать пользовательский)
+function deactivateUserDictionary(chatId) {
+  const allDictionaries = loadUserDictionaries()
+  const userData = migrateUserData(allDictionaries[chatId])
+  
+  userData.activeIndex = -1
+  allDictionaries[chatId] = userData
+  return saveUserDictionaries(allDictionaries)
 }
 
 // Извлечь ID документа из Google Docs URL
@@ -221,15 +336,59 @@ function updateUserDictionaryWordCount(chatId, newWordCount) {
   return false
 }
 
+// Создать inline-клавиатуру для выбора словаря
+function getDictionarySelectionKeyboard(chatId) {
+  const userData = getUserDictionaryList(chatId)
+  const keyboard = []
+  
+  userData.dictionaries.forEach((dict, index) => {
+    const isActive = index === userData.activeIndex
+    const emoji = isActive ? '✅ ' : '📖 '
+    const shortTitle = dict.title.length > 25 ? dict.title.substring(0, 22) + '...' : dict.title
+    const wordsInfo = dict.wordCount ? ` (${dict.wordCount})` : ''
+    
+    keyboard.push([{
+      text: `${emoji}${shortTitle}${wordsInfo}`,
+      callback_data: `select_dict_${index}`
+    }])
+  })
+  
+  // Кнопка для использования словаря по умолчанию
+  const isDefault = userData.activeIndex === -1
+  keyboard.push([{
+    text: `${isDefault ? '✅ ' : '📖 '}Словарь по умолчанию`,
+    callback_data: 'select_dict_default'
+  }])
+  
+  // Кнопка добавления нового словаря
+  keyboard.push([{
+    text: '➕ Добавить новый словарь',
+    callback_data: 'add_custom_dictionary'
+  }])
+  
+  // Кнопка назад
+  keyboard.push([{
+    text: '🔙 Назад',
+    callback_data: 'back_to_main'
+  }])
+  
+  return { inline_keyboard: keyboard }
+}
+
 module.exports = {
   loadUserDictionaries,
   saveUserDictionaries,
   getUserDictionary,
+  getUserDictionaryList,
   setUserDictionary,
+  selectUserDictionary,
   removeUserDictionary,
+  removeUserDictionaryByIndex,
+  deactivateUserDictionary,
   extractGoogleDocId,
   validateGoogleDocUrl,
   fetchUserDictionary,
   getGoogleDocTitle,
-  updateUserDictionaryWordCount
+  updateUserDictionaryWordCount,
+  getDictionarySelectionKeyboard
 }
