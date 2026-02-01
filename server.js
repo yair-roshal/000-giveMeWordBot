@@ -1230,6 +1230,67 @@ ${validation.error}
     })
     return
   }
+  // === Обработка кнопки "👥 Все пользователи" (только для админа) ===
+  if (msg.text === '👥 Все пользователи') {
+    const chatId = msg.chat.id
+    
+    if (String(chatId) !== String(CHAT_ID_ADMIN)) {
+      await bot.sendMessage(chatId, '⛔ Эта функция доступна только администратору.')
+      return
+    }
+    
+    const { loadUserSettings } = require('./utils/userIntervals.js')
+    const userSettings = loadUserSettings()
+    const userIds = Object.keys(userSettings)
+    
+    if (userIds.length === 0) {
+      await bot.sendMessage(chatId, '📭 Пользователей пока нет.')
+      return
+    }
+    
+    let message = `👥 <b>Все пользователи бота (${userIds.length}):</b>\n\n`
+    
+    for (const userId of userIds) {
+      const user = userSettings[userId]
+      const interval = user.interval || 'не установлен'
+      const progress = user.progress || 0
+      const period = user.period ? `${user.period.start}:00-${user.period.end}:00` : 'по умолчанию'
+      
+      message += `🆔 <code>${userId}</code>\n`
+      message += `   ⏱️ Интервал: ${interval} мин\n`
+      message += `   🔢 Прогресс: ${progress}\n`
+      message += `   🕒 Период: ${period}\n\n`
+    }
+    
+    // Telegram limit 4096 символов, разбиваем на части если нужно
+    if (message.length > 4000) {
+      const chunks = []
+      let chunk = `👥 <b>Все пользователи бота (${userIds.length}):</b>\n\n`
+      
+      for (const userId of userIds) {
+        const user = userSettings[userId]
+        const interval = user.interval || 'не установлен'
+        const progress = user.progress || 0
+        const period = user.period ? `${user.period.start}:00-${user.period.end}:00` : 'по умолчанию'
+        
+        const userInfo = `🆔 <code>${userId}</code>\n   ⏱️ Интервал: ${interval} мин\n   🔢 Прогресс: ${progress}\n   🕒 Период: ${period}\n\n`
+        
+        if (chunk.length + userInfo.length > 4000) {
+          chunks.push(chunk)
+          chunk = ''
+        }
+        chunk += userInfo
+      }
+      if (chunk) chunks.push(chunk)
+      
+      for (const part of chunks) {
+        await bot.sendMessage(chatId, part, { parse_mode: 'HTML' })
+      }
+    } else {
+      await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
+    }
+    return
+  }
   // === Обработка кнопки "Закрыть" ===
   if (msg.text === 'Закрыть') {
     await bot.sendMessage(msg.chat.id, 'Меню закрыто.', {
