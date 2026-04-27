@@ -198,7 +198,7 @@ ${examplesLine}
 
 _______________________________
 <b>🧠 Mnemonic:</b>
-<pre>${mnemonic}</pre>
+${mnemonic}
 _______________________________
 
   <b>📚 ${dictionaryName}</b>
@@ -236,7 +236,7 @@ function prepareMultiWordMessage(
 
 _______________________________
 <b>🧠 Mnemonic:</b>
-<pre>${mnemonic}</pre>
+${mnemonic}
 _______________________________
 
   <b>📚 ${dictionaryName}</b>
