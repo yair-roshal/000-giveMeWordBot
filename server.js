@@ -872,6 +872,23 @@ bot.onText(/\/перезапусти_таймеры/, async (msg) => {
   await bot.sendMessage(chatId, `✅ Перезапуск завершён. Активных таймеров: ${allChatIds.size}`)
 })
 
+// === КОМАНДА ДЛЯ ОЧИСТКИ КЭША МНЕМОНИК (только для админа) ===
+bot.onText(/\/clearcache/, async (msg) => {
+  const chatId = msg.chat.id
+  if (String(chatId) !== String(CHAT_ID_ADMIN)) {
+    await bot.sendMessage(chatId, '⛔ Только администратор может использовать эту команду.')
+    return
+  }
+  try {
+    const cachePath = path.join(__dirname, 'utils/mnemonicsCache.json')
+    fs.writeFileSync(cachePath, '{}', 'utf-8')
+    await bot.sendMessage(chatId, '✅ Кэш мнемоник очищен.')
+  } catch (err) {
+    console.error('Ошибка при очистке кэша:', err)
+    await bot.sendMessage(chatId, '❌ Ошибка при очистке кэша: ' + err.message)
+  }
+})
+
 // Функция для обработки запуска бота (используется и для /start и для кнопки)
 async function handleStartCommand(chatId, bot) {
   console.log('Обработка запуска бота для chatId:', chatId)
@@ -1306,6 +1323,23 @@ ${validation.error}
       }
     } else {
       await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
+    }
+    return
+  }
+  // === Обработка кнопки "🗑️ Очистить кэш" (только для админа) ===
+  if (msg.text === '🗑️ Очистить кэш') {
+    const chatId = msg.chat.id
+    if (String(chatId) !== String(CHAT_ID_ADMIN)) {
+      await bot.sendMessage(chatId, '⛔ Эта функция доступна только администратору.')
+      return
+    }
+    try {
+      const cachePath = path.join(__dirname, 'utils/mnemonicsCache.json')
+      fs.writeFileSync(cachePath, '{}', 'utf-8')
+      await bot.sendMessage(chatId, '✅ Кэш мнемоник очищен.')
+    } catch (err) {
+      console.error('Ошибка при очистке кэша:', err)
+      await bot.sendMessage(chatId, '❌ Ошибка при очистке кэша: ' + err.message)
     }
     return
   }
