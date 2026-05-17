@@ -1,5 +1,6 @@
 const axios = require('axios')
-// const chatIdAdmin = process.env.CHAT_ID_ADMIN
+const chatIdAdmin = process.env.CHAT_ID_ADMIN
+const NEWS_CHANNEL = process.env.NEWS_CHANNEL || '@originalBotNewsAI'
 const prepareMessage = require('./sendingMessage.js')
 const formatDate = require('./formatDate.js')
 // const langdetect = require('langdetect')
@@ -135,11 +136,28 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId, diction
 
   // console.log("textMessage(prepare_was_good) :>> ", !!textMessage)
 
+  const isAdminRecipient = chatIdAdmin && String(chatId) === String(chatIdAdmin)
+  const forwardOptions = { parse_mode: 'HTML', disable_web_page_preview: true }
+
   if (!response_dictionary_api) {
     await bot.sendMessage(chatId, textMessage, optionsMessageWithoutPreview)
+    if (isAdminRecipient) {
+      try {
+        await bot.sendMessage(NEWS_CHANNEL, textMessage, forwardOptions)
+      } catch (err) {
+        console.log('Forward to news channel failed:', err.message)
+      }
+    }
     return { leftWords, currentIndex }
   } else if (textMessage) {
     await bot.sendMessage(chatId, textMessage, optionsMessage)
+    if (isAdminRecipient) {
+      try {
+        await bot.sendMessage(NEWS_CHANNEL, textMessage, forwardOptions)
+      } catch (err) {
+        console.log('Forward to news channel failed:', err.message)
+      }
+    }
     return { leftWords, currentIndex }
   }
   
