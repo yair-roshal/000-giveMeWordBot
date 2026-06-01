@@ -5,6 +5,9 @@ const { mnemonicFallbacks } = require('../constants/texts.js')
 const openaiApiKey = process.env.OPENAI_API_KEY
 const cacheFilePath = path.join(__dirname, 'mnemonicsCache.json')
 
+// Модель OpenAI для генерации мнемоник. Меняй здесь одним местом.
+const OPENAI_MODEL = 'gpt-4o'
+
 // ───────────────────────── Настройки устойчивости ─────────────────────────
 // Жёстко прописаны в коде — подкрути числа здесь, если понадобится.
 const MAX_ATTEMPTS = 3 // всего попыток
@@ -243,7 +246,7 @@ async function callOpenAI(systemPrompt, userContent) {
         Authorization: `Bearer ${openaiApiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: OPENAI_MODEL,
         max_tokens: 1200,
         messages: [
           { role: 'system', content: systemPrompt },
