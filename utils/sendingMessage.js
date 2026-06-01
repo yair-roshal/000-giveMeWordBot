@@ -185,9 +185,9 @@ function formatSingleWordMessage(
 
   return `<b>${isEnglishLanguage ? '(en)' : '(he)'}   ${rightWords}</b>
   
-<b>${phoneticLine}${wordLineDictionary} </b>
+<b><tg-spoiler>${phoneticLine}${wordLineDictionary} </tg-spoiler></b>
 
-${examplesLine}
+<tg-spoiler>${examplesLine}</tg-spoiler>
 
 <a href="${audioLine}">   </a>
 
@@ -230,7 +230,7 @@ function prepareMultiWordMessage(
 
   return `<b>${isEnglishLanguage ? '(en)' : '(he)'} : ${rightWords}</b>
   
-<b>${wordLineDictionary}</b>
+<b><tg-spoiler>${wordLineDictionary}</tg-spoiler></b>
 
 <a href="${linkToTranslate}">Translate with Google</a>
 
