@@ -13,6 +13,7 @@ const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
 const { give_me_keyboard, intervalSettingsKeyboard, startMenu, periodSettingsKeyboard, getHourKeyboard, dictionarySettingsKeyboard } = require('./constants/menus.js')
 const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
 const { getDictionary } = require('./utils/getDictionary.js')
+const { getMnemonicServiceState } = require('./utils/getMnemonic.js')
 const { getUserDictionary, getUserDictionaryList, setUserDictionary, selectUserDictionary, removeUserDictionary, removeUserDictionaryByIndex, deactivateUserDictionary, validateGoogleDocUrl, getDictionarySelectionKeyboard } = require('./utils/userDictionaries.js')
 const formatDate = require('./utils/formatDate.js')
 const { setUserInterval, getUserInterval, getUserIntervalMs, loadUserIntervals } = require('./utils/userIntervals.js')
@@ -886,6 +887,34 @@ bot.onText(/\/clearcache/, async (msg) => {
   } catch (err) {
     console.error('Ошибка при очистке кэша:', err)
     await bot.sendMessage(chatId, '❌ Ошибка при очистке кэша: ' + err.message)
+  }
+})
+
+// Health-check состояния сервиса мнемоники (только для администратора)
+bot.onText(/\/mnemonic_status/, async (msg) => {
+  const chatId = msg.chat.id
+  if (String(chatId) !== String(CHAT_ID_ADMIN)) {
+    await bot.sendMessage(chatId, '⛔ Только администратор может использовать эту команду.')
+    return
+  }
+  try {
+    const s = getMnemonicServiceState()
+    const fmt = (ts) => (ts ? new Date(ts).toISOString() : '—')
+    const statusIcon = s.inCooldown ? '🧊 cooldown' : '🟢 normal'
+    const remaining = s.inCooldown
+      ? `${Math.round(s.cooldownRemainingMs / 1000)} сек (до ${fmt(s.cooldownUntil)})`
+      : '—'
+    const message =
+      `🧠 <b>Состояние мнемоника-сервиса</b>\n\n` +
+      `Статус: <b>${statusIcon}</b>\n` +
+      `Cooldown осталось: ${remaining}\n` +
+      `Последний тип ошибки: <code>${s.lastErrorType}</code>\n` +
+      `Последняя ошибка: ${fmt(s.lastErrorAt)}\n` +
+      `Последний успех: ${fmt(s.lastSuccessAt)}`
+    await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
+  } catch (err) {
+    console.error('Ошибка при получении состояния мнемоника:', err)
+    await bot.sendMessage(chatId, '❌ Ошибка: ' + err.message)
   }
 })
 
