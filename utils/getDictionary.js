@@ -2,6 +2,7 @@
 const getWordsFromGoogleDocs = require('./getWordsFromGoogleDocs')
 const { fetchUserDictionary, getUserDictionary, extractGoogleDocId, getGoogleDocTitle, updateUserDictionaryWordCount } = require('./userDictionaries')
 const { setUserIndex, getUserIndex } = require('./userProgress')
+const { DASH_REGEX } = require('./dashes')
 const logger = require('./logger')
 
 // Функция для получения словаря (пользовательского или по умолчанию)
@@ -56,8 +57,7 @@ async function getDictionary(chatId = null) {
   
   // Проверяем формат строк словаря
   const validLines = processedDictionary.filter(line => {
-    const hasValidSeparator = ['-', '—', '–', '—', '−'].some(sep => line.includes(sep))
-    return hasValidSeparator
+    return DASH_REGEX.test(line)
   })
   
   if (validLines.length === 0) {

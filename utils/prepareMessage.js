@@ -5,6 +5,7 @@ const prepareMessage = require('./sendingMessage.js')
 const formatDate = require('./formatDate.js')
 // const langdetect = require('langdetect')
 const logAlerts = require('./logAlerts.js')
+const { splitByDash } = require('./dashes.js')
 
 const {
   // startMenu,
@@ -38,16 +39,13 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId, diction
   let rightWords = ''
   let arrayEnglishWords = []
 
-  const symbolsArray = ['-', '—', '–', '−']
-
-  // Используем первый найденный разделитель
-  for (const symbol of symbolsArray) {
-    if (wordLineDictionary && wordLineDictionary.indexOf(symbol) !== -1) {
-      leftWords = wordLineDictionary.split(symbol)[0].trim()
-      rightWords = wordLineDictionary.split(symbol)[1].trim()
-      firstWord = leftWords.split(' ')[0]
-      break // Важно: останавливаемся на первом найденном разделителе
-    }
+  // Разбиваем по первому разделителю, окружённому пробелом, чтобы не
+  // спутать его с дефисом внутри слова (например «well-being»).
+  const parts = splitByDash(wordLineDictionary)
+  if (parts && parts.left && parts.right) {
+    leftWords = parts.left
+    rightWords = parts.right
+    firstWord = leftWords.split(' ')[0]
   }
 
   if (leftWords == '') {
