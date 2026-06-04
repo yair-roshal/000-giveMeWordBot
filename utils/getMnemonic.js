@@ -2,6 +2,8 @@ const fs = require('fs')
 const path = require('path')
 const { mnemonicFallbacks } = require('../constants/texts.js')
 
+// ✅ АКТИВНЫЙ ИИ проекта: OpenAI. Генерация мнемоник идёт отсюда.
+// (Вариант с Anthropic Claude в utils/getMnemonic_cloude_not_work_server.js НЕ используется.)
 const openaiApiKey = process.env.OPENAI_API_KEY
 const cacheFilePath = path.join(__dirname, 'mnemonicsCache.json')
 

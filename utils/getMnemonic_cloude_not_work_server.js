@@ -1,3 +1,6 @@
+// ⚠️ НЕ ИСПОЛЬЗУЕТСЯ: этот ИИ (Anthropic Claude) не подключён в проекте.
+// На сервере вариант с Claude не заработал, поэтому файл оставлен как черновик.
+// Рабочая генерация мнемоник идёт через OpenAI в utils/getMnemonic.js.
 const anthropicApiKey = process.env.ANTHROPIC_API_KEY
 
 async function getMnemonic(word) {
@@ -30,6 +33,7 @@ async function getMnemonic(word) {
 `
 
   try {
+    // ⚠️ НЕ ИСПОЛЬЗУЕТСЯ: вызов Claude API. Не работает на сервере. Активный ИИ — OpenAI (см. utils/getMnemonic.js).
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
