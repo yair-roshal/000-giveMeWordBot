@@ -3,10 +3,12 @@ module.exports = {
         {
             name: 'give_me_word_bot',
             script: './server.js',
+            exec_mode: 'fork', // Используем fork вместо cluster для Telegram бота
+            instances: 1, // Только один экземпляр для избежания конфликтов
             max_memory_restart: '300M',
-            // Logging
-            out_file: './give_me_word_bot_out.log',
-            error_file: './give_me_word_bot_error.log',
+            // Logging (все логи складываем в отдельную папку logs/, она в .gitignore)
+            out_file: './logs/give_me_word_bot_out.log',
+            error_file: './logs/give_me_word_bot_error.log',
             // merge_logs: true,
             time: false,
 
@@ -36,8 +38,6 @@ module.exports = {
             // Env Specific Config
             env_prod: {
                 NODE_ENV: 'prod',
-                exec_mode: 'fork', // Используем fork вместо cluster для Telegram бота
-                instances: 1, // Только один экземпляр для избежания конфликтов
                 TZ: 'Asia/Jerusalem', // Временная зона Израиля
             },
             env_dev: {

@@ -266,55 +266,37 @@ startBot();
 // Добавляем обработку ошибок polling
 let reconnectAttempts = 0;
 let isReconnecting = false;
+let lastPollingErrorLog = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 const RECONNECT_DELAY = 5000; // 5 секунд
+const POLLING_ERROR_LOG_INTERVAL = 60000; // не чаще раза в минуту, чтобы не раздувать логи
 
 bot.on('polling_error', async (error) => {
-  console.error('Polling error:', error.code, error.message);
-  
-  // Проверяем специфические ошибки, которые не требуют переподключения
-  if (error.code === 'ETELEGRAM' && error.message.includes('409 Conflict')) {
-    console.log('409 Conflict detected - another bot instance may be running');
-    if (isReconnecting) {
-      console.log('Already reconnecting, skipping...');
+  const is409 = error.code === 'ETELEGRAM' && error.message.includes('409 Conflict');
+
+  // Троттлим логирование: 409 может сыпаться каждую секунду и раздувает логи до сотен МБ
+  const now = Date.now();
+  if (now - lastPollingErrorLog > POLLING_ERROR_LOG_INTERVAL) {
+    console.error('Polling error:', error.code, error.message);
+    if (is409) {
+      console.log('409 Conflict: вероятно запущен второй экземпляр бота с тем же токеном');
+    }
+    lastPollingErrorLog = now;
+  }
+
+  // Уже идёт переподключение — не запускаем параллельное
+  if (isReconnecting) return;
+
+  // Достигнут лимит попыток
+  if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+    // При 409 процесс не убиваем: конфликт исчезнет сам, когда уйдёт второй инстанс.
+    // Сбрасываем счётчик и продолжаем периодически пытаться переподключиться.
+    if (is409) {
+      reconnectAttempts = 0;
       return;
     }
-    isReconnecting = true;
-  }
-  
-  if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS && !isReconnecting) {
-    reconnectAttempts++;
-    isReconnecting = true;
-    console.log(`Attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
-    
-    try {
-      // Принудительно останавливаем polling
-      await bot.stopPolling({ cancel: true, reason: 'Reconnecting after error' });
-      
-      // Ждем перед переподключением
-      await new Promise(resolve => setTimeout(resolve, RECONNECT_DELAY * reconnectAttempts));
-      
-      // Запускаем polling заново
-      await bot.startPolling({ restart: true });
-      console.log('Successfully reconnected to Telegram');
-      reconnectAttempts = 0;
-      isReconnecting = false;
-    } catch (reconnectError) {
-      console.error('Failed to reconnect:', reconnectError);
-      isReconnecting = false;
-      
-      // Если не удалось переподключиться, попробуем еще раз через больший интервал
-      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-        setTimeout(() => {
-          isReconnecting = false;
-        }, RECONNECT_DELAY * 2);
-      }
-    }
-  } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+
     console.error('Max reconnection attempts reached. Stopping bot.');
-    isReconnecting = false;
-    
-    // Уведомляем администратора
     try {
       if (CHAT_ID_ADMIN) {
         await bot.sendMessage(CHAT_ID_ADMIN, '⚠️ Бот остановлен из-за проблем с подключением. Требуется ручной перезапуск.');
@@ -322,12 +304,29 @@ bot.on('polling_error', async (error) => {
     } catch (notifyError) {
       console.error('Failed to notify admin:', notifyError);
     }
-    
-    // Очищаем PID файл и завершаем процесс
     if (fs.existsSync(pidFile)) {
       fs.unlinkSync(pidFile);
     }
     process.exit(1);
+    return;
+  }
+
+  // Контролируемое переподключение с нарастающей задержкой.
+  // Ключевой фикс: isReconnecting ВСЕГДА сбрасывается в finally,
+  // иначе после первого 409 бот навсегда залипал в "Already reconnecting".
+  isReconnecting = true;
+  reconnectAttempts++;
+  console.log(`Attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
+  try {
+    await bot.stopPolling({ cancel: true, reason: 'Reconnecting after error' });
+    await new Promise(resolve => setTimeout(resolve, RECONNECT_DELAY * reconnectAttempts));
+    await bot.startPolling({ restart: true });
+    console.log('Successfully reconnected to Telegram');
+    reconnectAttempts = 0;
+  } catch (reconnectError) {
+    console.error('Failed to reconnect:', reconnectError);
+  } finally {
+    isReconnecting = false;
   }
 });
 
