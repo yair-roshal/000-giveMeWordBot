@@ -804,11 +804,11 @@ bot.onText(/\/interval/, async (msg) => {
   if (userInterval) {
     message += `✅ Установлен интервал: ${userInterval} минут\n`
     message += `🔄 Авторассылка: ${timerInfo.isActive ? 'активна' : 'неактивна'}\n\n`
-    message += 'Используйте кнопку "⚙️ Настройки интервала" для изменения'
+    message += 'Используйте кнопку "⚙️ Интервал показа слов" для изменения'
   } else {
     message += `❌ Интервал не настроен\n`
     message += `📝 Используется интервал по умолчанию: ${min} минут\n\n`
-    message += 'Используйте кнопку "⚙️ Настройки интервала" для настройки'
+    message += 'Используйте кнопку "⚙️ Интервал показа слов" для настройки'
   }
   
   await bot.sendMessage(chatId, message)
@@ -1220,10 +1220,6 @@ ${validation.error}
     const userIndex = getUserIndex(chatId)
     const userPeriod = getUserPeriod(chatId)
 
-    // Загружаем словарь для пользователя
-    const dictionaryResult = await getDictionary(chatId)
-    const userDictionary = dictionaryResult ? dictionaryResult.dictionary : []
-
     let message = '🛠️ <b>Ваши настройки:</b>\n\n'
     message += `⏱️ Интервал: <b>${userInterval ? userInterval + ' мин (пользовательский)' : min + ' мин (по умолчанию)'}</b>\n`
     message += `⏳ Статус авторассылки: <b>${timerInfo.isActive ? 'активна' : 'неактивна'}</b>\n`
@@ -1232,8 +1228,24 @@ ${validation.error}
     message += `🕒 Период рассылки: <b>${userPeriod.start}:00-${userPeriod.end}:00</b>\n\n`
     message += `\n🆔 User ID: <b>${chatId}</b>\n\n`
 
+    message += '💡 <i>Список выученных слов — кнопка «📚 Выученные слова»</i>'
+
+    message += `\n\n<i>Версия: ${GIT_COMMIT_HASH}</i>`
+
+    await bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+    return;
+  }
+  // === Обработка кнопки "📚 Выученные слова" ===
+  if (msg.text === '📚 Выученные слова') {
+    const chatId = msg.chat.id
+    const learnedWords = loadLearnedWords(chatId)
+
+    // Загружаем словарь для пользователя (нужен для поиска индекса слова)
+    const dictionaryResult = await getDictionary(chatId)
+    const userDictionary = dictionaryResult ? dictionaryResult.dictionary : []
+
+    let message = `📚 <b>Выученные слова:</b> ${learnedWords.length}\n\n`
     if (learnedWords.length > 0) {
-      message += '<b>Список выученных слов:</b>\n'
       learnedWords.forEach(word => {
         // Поиск индекса слова в словаре
         const idx = userDictionary.findIndex(line => {
@@ -1246,13 +1258,11 @@ ${validation.error}
       message += 'Нет выученных слов.'
     }
 
-    message += `\n\n<i>Версия: ${GIT_COMMIT_HASH}</i>`
-
-    await bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
-    return;
+    await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
+    return
   }
-  // Добавлено: обработка кнопки "⚙️ Настройки интервала"
-  if (msg.text === '⚙️ Настройки интервала') {
+  // Добавлено: обработка кнопки "⚙️ Интервал показа слов"
+  if (msg.text === '⚙️ Интервал показа слов') {
     const chatId = msg.chat.id
     const userInterval = getUserInterval(chatId)
     const intervalText = userInterval ? `Текущий интервал: ${userInterval} минут` : 'Интервал не настроен'
@@ -1261,7 +1271,7 @@ ${validation.error}
     })
     return
   }
-  if (msg.text === '🛠️ Сменить период') {
+  if (msg.text === '🛠️ Сменить время показа') {
     await bot.sendMessage(msg.chat.id, 'Выберите час начала периода:', {
       reply_markup: JSON.stringify(getHourKeyboard('hour_start_'))
     })
@@ -1354,8 +1364,8 @@ ${validation.error}
     }
     return
   }
-  // === Обработка кнопки "🗑️ Очистить кэш" (только для админа) ===
-  if (msg.text === '🗑️ Очистить кэш') {
+  // === Обработка кнопки "🗑️ Очистить кэш мнемоник" (только для админа) ===
+  if (msg.text === '🗑️ Очистить кэш мнемоник') {
     const chatId = msg.chat.id
     if (String(chatId) !== String(CHAT_ID_ADMIN)) {
       await bot.sendMessage(chatId, '⛔ Эта функция доступна только администратору.')
