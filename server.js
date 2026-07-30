@@ -14,7 +14,7 @@ const { give_me_keyboard, intervalSettingsKeyboard, startMenu, periodSettingsKey
 const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
 const { getDictionary } = require('./utils/getDictionary.js')
 const { getMnemonicServiceState } = require('./utils/getMnemonic.js')
-const { getUserDictionary, getUserDictionaryList, setUserDictionary, selectUserDictionary, removeUserDictionary, removeUserDictionaryByIndex, deactivateUserDictionary, validateGoogleDocUrl, getDictionarySelectionKeyboard } = require('./utils/userDictionaries.js')
+const { getUserDictionary, getUserDictionaryList, getSelectedDictionaries, toggleDictionarySelection, toggleDefaultSelection, setUserDictionary, selectUserDictionary, removeUserDictionary, removeUserDictionaryByIndex, deactivateUserDictionary, validateGoogleDocUrl, getDictionarySelectionKeyboard } = require('./utils/userDictionaries.js')
 const formatDate = require('./utils/formatDate.js')
 const { setUserInterval, getUserInterval, getUserIntervalMs, loadUserIntervals } = require('./utils/userIntervals.js')
 const { createOrUpdateUserTimer, stopUserTimer, getUserTimerInfo, stopAllTimers } = require('./utils/userTimers.js')
@@ -612,33 +612,40 @@ bot.on('callback_query', async (query) => {
   } else if (query.data === 'dictionary_info') {
     // Показать информацию о текущем словаре
     const chatId = query.from.id
-    const userDict = getUserDictionary(chatId)
     const userData = getUserDictionaryList(chatId)
-    let message = '📚 <b>Информация о словаре</b>\n\n'
-    
-    if (userDict) {
-      message += '✅ <b>Активный словарь:</b>\n'
-      message += `📖 Название: <b>${userDict.title}</b>\n`
-      message += `📊 Слов: <b>${userDict.wordCount || 'н/д'}</b>\n`
-      message += `📎 Ссылка: ${userDict.url}\n`
-      message += `📅 Добавлен: ${new Date(userDict.createdAt).toLocaleDateString('ru-RU')}\n\n`
-    } else {
-      message += '📖 <b>Активный: Словарь по умолчанию</b>\n'
-      message += '🌍 Универсальный словарь для изучения языков\n\n'
+    const selected = userData.selectedIndices || []
+    let message = '📚 <b>Информация о словарях</b>\n\n'
+
+    // Активный набор словарей (то, из чего сейчас берутся слова)
+    message += '✅ <b>Активный набор:</b>\n'
+    let activeCount = 0
+    if (userData.includeDefault) {
+      message += '📖 Словарь по умолчанию\n'
+      activeCount++
     }
-    
-    // Показываем список всех сохраненных словарей
+    selected.forEach(idx => {
+      const dict = userData.dictionaries[idx]
+      if (dict) {
+        message += `📚 ${dict.title} (${dict.wordCount || '?'} слов)\n`
+        activeCount++
+      }
+    })
+    if (activeCount === 0) {
+      message += '📖 Словарь по умолчанию (набор пуст)\n'
+    }
+    message += '\n'
+
+    // Показываем список всех сохраненных личных словарей
     if (userData.dictionaries.length > 0) {
-      message += `📚 <b>Сохранённые словари (${userData.dictionaries.length}):</b>\n`
+      message += `📚 <b>Сохранённые личные словари (${userData.dictionaries.length}):</b>\n`
       userData.dictionaries.forEach((dict, idx) => {
-        const isActive = idx === userData.activeIndex
-        const emoji = isActive ? '✅' : '📖'
+        const emoji = selected.includes(idx) ? '☑️' : '⬜️'
         message += `${emoji} ${dict.title} (${dict.wordCount || '?'} слов)\n`
       })
       message += '\n'
     }
-    
-    message += '💡 <i>Используйте "Выбрать словарь" для переключения между словарями</i>'
+
+    message += '💡 <i>Используйте "Выбрать словарь", чтобы отметить чекбоксами нужные словари</i>'
     
     await bot.sendMessage(chatId, message, { parse_mode: 'HTML' })
     await bot.answerCallbackQuery(query.id)
@@ -709,15 +716,15 @@ learning - изучение</code>
     const keyboard = getDictionarySelectionKeyboard(chatId)
     const userData = getUserDictionaryList(chatId)
     
-    let message = '📚 <b>Выберите словарь</b>\n\n'
+    let message = '📚 <b>Выберите словари</b>\n\n'
+    message += '☑️ - выбран, ⬜️ - не выбран\n\n'
+    message += 'Отметьте один или несколько словарей — слова будут браться из всех отмеченных.\n\n'
     if (userData.dictionaries.length > 0) {
-      message += `📖 Сохранено словарей: <b>${userData.dictionaries.length}</b>\n`
-      message += '✅ - активный словарь\n\n'
-      message += '💡 <i>Нажмите на словарь, чтобы переключиться</i>'
+      message += `📖 Сохранено личных словарей: <b>${userData.dictionaries.length}</b>\n\n`
     } else {
-      message += 'У вас пока нет сохраненных словарей.\n\n'
-      message += '💡 <i>Добавьте свой первый словарь из Google Docs</i>'
+      message += 'У вас пока нет личных словарей — можно добавить свой из Google Docs.\n\n'
     }
+    message += '💡 <i>После выбора нажмите «Применить выбор»</i>'
     
     await bot.sendMessage(chatId, message, {
       parse_mode: 'HTML',
@@ -725,34 +732,72 @@ learning - изучение</code>
     })
     await bot.answerCallbackQuery(query.id)
     return
-  } else if (query.data.startsWith('select_dict_')) {
+  } else if (query.data === 'toggle_dict_default') {
+    // Вкл/выкл словарь по умолчанию (чекбокс)
     const chatId = query.from.id
-    const indexStr = query.data.replace('select_dict_', '')
-    
-    if (indexStr === 'default') {
-      // Выбрать словарь по умолчанию
-      deactivateUserDictionary(chatId)
-      setUserIndex(chatId, 0)
-      console.log(`[DICTIONARY_SWITCH] Пользователь ${chatId} переключился на словарь по умолчанию`)
-      
-      await bot.answerCallbackQuery(query.id, { text: 'Выбран словарь по умолчанию' })
-      await bot.sendMessage(chatId, '✅ Теперь используется <b>словарь по умолчанию</b>\n\n📊 Индекс сброшен на 0', { parse_mode: 'HTML' })
-    } else {
-      const index = parseInt(indexStr, 10)
-      const userData = getUserDictionaryList(chatId)
-      
-      if (index >= 0 && index < userData.dictionaries.length) {
-        const selectedDict = userData.dictionaries[index]
-        selectUserDictionary(chatId, index)
-        setUserIndex(chatId, 0)
-        console.log(`[DICTIONARY_SWITCH] Пользователь ${chatId} переключился на словарь "${selectedDict.title}" (index: ${index})`)
-        
-        await bot.answerCallbackQuery(query.id, { text: `Выбран: ${selectedDict.title}` })
-        await bot.sendMessage(chatId, `✅ Выбран словарь: <b>${selectedDict.title}</b>\n📊 Слов: ${selectedDict.wordCount || 'н/д'}\n\n📊 Индекс сброшен на 0`, { parse_mode: 'HTML' })
-      } else {
-        await bot.answerCallbackQuery(query.id, { text: 'Словарь не найден' })
-      }
+    toggleDefaultSelection(chatId)
+
+    // Обновляем клавиатуру на месте, чтобы отобразить новое состояние чекбоксов
+    const keyboard = getDictionarySelectionKeyboard(chatId)
+    try {
+      await bot.editMessageReplyMarkup(keyboard, {
+        chat_id: query.message.chat.id,
+        message_id: query.message.message_id
+      })
+    } catch (e) {
+      // Игнорируем ошибку "message is not modified"
     }
+    await bot.answerCallbackQuery(query.id)
+    return
+  } else if (/^toggle_dict_\d+$/.test(query.data)) {
+    // Вкл/выкл личный словарь (чекбокс)
+    const chatId = query.from.id
+    const index = parseInt(query.data.replace('toggle_dict_', ''), 10)
+    toggleDictionarySelection(chatId, index)
+
+    const keyboard = getDictionarySelectionKeyboard(chatId)
+    try {
+      await bot.editMessageReplyMarkup(keyboard, {
+        chat_id: query.message.chat.id,
+        message_id: query.message.message_id
+      })
+    } catch (e) {
+      // Игнорируем ошибку "message is not modified"
+    }
+    await bot.answerCallbackQuery(query.id)
+    return
+  } else if (query.data === 'apply_dict_selection') {
+    // Применить выбранный набор словарей
+    const chatId = query.from.id
+    const { dictionaries: selected, includeDefault } = getSelectedDictionaries(chatId)
+
+    if (selected.length === 0 && !includeDefault) {
+      await bot.answerCallbackQuery(query.id, {
+        text: 'Выберите хотя бы один словарь',
+        show_alert: true
+      })
+      return
+    }
+
+    // Сбрасываем индекс, так как объединённый набор слов изменился
+    setUserIndex(chatId, 0)
+
+    const parts = []
+    if (selected.length > 0) {
+      parts.push(...selected.map(d => `📚 ${d.title} (${d.wordCount || '?'})`))
+    }
+    if (includeDefault) {
+      parts.push('📖 Словарь по умолчанию')
+    }
+
+    console.log(`[DICTIONARY_SWITCH] Пользователь ${chatId} применил набор: ${parts.join(', ')}`)
+
+    await bot.answerCallbackQuery(query.id, { text: 'Выбор применён' })
+    await bot.sendMessage(
+      chatId,
+      `✅ <b>Активный набор словарей:</b>\n${parts.join('\n')}\n\n📊 Индекс сброшен на 0`,
+      { parse_mode: 'HTML' }
+    )
     return
   } else if (query.data.startsWith('delete_dict_')) {
     const chatId = query.from.id
@@ -1280,21 +1325,33 @@ ${validation.error}
   // === Обработка кнопки "📚 Настройки словаря" ===
   if (msg.text === '📚 Настройки словаря') {
     const chatId = msg.chat.id
-    const userDict = getUserDictionary(chatId)
     const userData = getUserDictionaryList(chatId)
+    const selected = userData.selectedIndices || []
     let message = '📚 <b>Настройки словаря</b>\n\n'
-    
-    if (userDict) {
-      message += `✅ Активный: <b>${userDict.title}</b>\n`
-      message += `📊 Слов: ${userDict.wordCount || 'н/д'}\n`
+
+    // Активный набор словарей
+    const activeNames = []
+    if (userData.includeDefault) {
+      activeNames.push('Словарь по умолчанию')
+    }
+    selected.forEach(idx => {
+      const dict = userData.dictionaries[idx]
+      if (dict) activeNames.push(dict.title)
+    })
+
+    if (activeNames.length > 0) {
+      message += `✅ Активный набор (${activeNames.length}):\n`
+      activeNames.forEach(name => {
+        message += `• <b>${name}</b>\n`
+      })
     } else {
       message += '📖 Активный: <b>Словарь по умолчанию</b>\n'
     }
-    
+
     if (userData.dictionaries.length > 0) {
-      message += `\n📚 Сохранённых словарей: <b>${userData.dictionaries.length}</b>`
+      message += `\n📚 Сохранённых личных словарей: <b>${userData.dictionaries.length}</b>`
     }
-    
+
     message += '\n\n💡 Выберите действие:'
     
     await bot.sendMessage(chatId, message, {

@@ -127,24 +127,58 @@ function saveUserDictionaries(dictionaries) {
   }
 }
 
-// Миграция старого формата (один словарь) в новый (список словарей)
+// Миграция старого формата в новый.
+// Новый формат поддерживает множественный выбор:
+//   dictionaries: [...],           // список личных словарей
+//   selectedIndices: [0, 2],       // индексы выбранных личных словарей (чекбоксы)
+//   includeDefault: true,          // включён ли словарь по умолчанию
+//   activeIndex: number            // сохраняется для обратной совместимости
 function migrateUserData(userData) {
-  if (!userData) return { dictionaries: [], activeIndex: -1 }
-  
-  // Если уже новый формат
-  if (Array.isArray(userData.dictionaries)) {
-    return userData
+  if (!userData) {
+    return { dictionaries: [], activeIndex: -1, selectedIndices: [], includeDefault: true }
   }
-  
-  // Старый формат - один словарь напрямую
-  if (userData.url) {
-    return {
+
+  let migrated
+
+  // Уже новый формат со списком словарей
+  if (Array.isArray(userData.dictionaries)) {
+    migrated = { ...userData }
+  } else if (userData.url) {
+    // Старый формат - один словарь напрямую
+    migrated = {
       dictionaries: [userData],
       activeIndex: 0
     }
+  } else {
+    migrated = { dictionaries: [], activeIndex: -1 }
   }
-  
-  return { dictionaries: [], activeIndex: -1 }
+
+  const activeIndex = migrated.activeIndex ?? -1
+
+  // Если поле множественного выбора ещё не задано - выводим его из activeIndex
+  if (!Array.isArray(migrated.selectedIndices)) {
+    if (activeIndex >= 0 && activeIndex < migrated.dictionaries.length) {
+      // Раньше был выбран один личный словарь
+      migrated.selectedIndices = [activeIndex]
+      migrated.includeDefault =
+        typeof migrated.includeDefault === 'boolean' ? migrated.includeDefault : false
+    } else {
+      // Раньше использовался словарь по умолчанию
+      migrated.selectedIndices = []
+      migrated.includeDefault =
+        typeof migrated.includeDefault === 'boolean' ? migrated.includeDefault : true
+    }
+  } else {
+    // Чистим индексы, вышедшие за границы (например, после удаления словаря)
+    migrated.selectedIndices = migrated.selectedIndices.filter(
+      i => Number.isInteger(i) && i >= 0 && i < migrated.dictionaries.length
+    )
+    if (typeof migrated.includeDefault !== 'boolean') {
+      migrated.includeDefault = migrated.selectedIndices.length === 0
+    }
+  }
+
+  return migrated
 }
 
 // Получить активный словарь пользователя
@@ -164,8 +198,57 @@ function getUserDictionaryList(chatId) {
   const userData = migrateUserData(dictionaries[chatId])
   return {
     dictionaries: userData.dictionaries || [],
-    activeIndex: userData.activeIndex ?? -1
+    activeIndex: userData.activeIndex ?? -1,
+    selectedIndices: userData.selectedIndices || [],
+    includeDefault: userData.includeDefault !== false
   }
+}
+
+// Получить список выбранных словарей (для формирования итогового набора слов)
+function getSelectedDictionaries(chatId) {
+  const dictionaries = loadUserDictionaries()
+  const userData = migrateUserData(dictionaries[chatId])
+
+  const selected = (userData.selectedIndices || [])
+    .filter(i => i >= 0 && i < userData.dictionaries.length)
+    .map(i => userData.dictionaries[i])
+
+  return {
+    dictionaries: selected,
+    includeDefault: userData.includeDefault !== false
+  }
+}
+
+// Переключить (вкл/выкл) выбор личного словаря по индексу
+function toggleDictionarySelection(chatId, index) {
+  const allDictionaries = loadUserDictionaries()
+  const userData = migrateUserData(allDictionaries[chatId])
+
+  if (index < 0 || index >= userData.dictionaries.length) {
+    return false
+  }
+
+  const pos = userData.selectedIndices.indexOf(index)
+  if (pos >= 0) {
+    userData.selectedIndices.splice(pos, 1)
+  } else {
+    userData.selectedIndices.push(index)
+    userData.selectedIndices.sort((a, b) => a - b)
+  }
+
+  allDictionaries[chatId] = userData
+  return saveUserDictionaries(allDictionaries)
+}
+
+// Переключить (вкл/выкл) словарь по умолчанию
+function toggleDefaultSelection(chatId) {
+  const allDictionaries = loadUserDictionaries()
+  const userData = migrateUserData(allDictionaries[chatId])
+
+  userData.includeDefault = !(userData.includeDefault !== false)
+
+  allDictionaries[chatId] = userData
+  return saveUserDictionaries(allDictionaries)
 }
 
 // Установить пользовательский словарь (добавляет в список или обновляет существующий)
@@ -212,6 +295,7 @@ async function setUserDictionary(chatId, dictionaryUrl) {
   // Проверяем, есть ли уже такой словарь (по docId)
   const existingIndex = userData.dictionaries.findIndex(d => d.docId === docId || d.url === dictionaryUrl)
   
+  let targetIndex
   if (existingIndex >= 0) {
     // Обновляем существующий словарь
     userData.dictionaries[existingIndex] = {
@@ -219,11 +303,23 @@ async function setUserDictionary(chatId, dictionaryUrl) {
       ...newDict,
       createdAt: userData.dictionaries[existingIndex].createdAt // сохраняем оригинальную дату создания
     }
-    userData.activeIndex = existingIndex
+    targetIndex = existingIndex
   } else {
     // Добавляем новый словарь
     userData.dictionaries.push(newDict)
-    userData.activeIndex = userData.dictionaries.length - 1
+    targetIndex = userData.dictionaries.length - 1
+  }
+
+  // Сохраняем activeIndex для обратной совместимости
+  userData.activeIndex = targetIndex
+
+  // Автоматически отмечаем добавленный словарь как выбранный (чекбокс)
+  if (!Array.isArray(userData.selectedIndices)) {
+    userData.selectedIndices = []
+  }
+  if (!userData.selectedIndices.includes(targetIndex)) {
+    userData.selectedIndices.push(targetIndex)
+    userData.selectedIndices.sort((a, b) => a - b)
   }
 
   allDictionaries[chatId] = userData
@@ -249,19 +345,30 @@ function removeUserDictionary(chatId) {
   const userData = migrateUserData(allDictionaries[chatId])
   
   if (userData.activeIndex >= 0 && userData.activeIndex < userData.dictionaries.length) {
-    userData.dictionaries.splice(userData.activeIndex, 1)
-    
+    const removedIndex = userData.activeIndex
+    userData.dictionaries.splice(removedIndex, 1)
+
     // Корректируем activeIndex после удаления
     if (userData.dictionaries.length === 0) {
       userData.activeIndex = -1
     } else if (userData.activeIndex >= userData.dictionaries.length) {
       userData.activeIndex = userData.dictionaries.length - 1
     }
-    
+
+    userData.selectedIndices = adjustSelectedAfterRemoval(userData.selectedIndices, removedIndex)
+
     allDictionaries[chatId] = userData
     return saveUserDictionaries(allDictionaries)
   }
   return true
+}
+
+// Пересчёт выбранных индексов после удаления словаря по индексу removedIndex
+function adjustSelectedAfterRemoval(selectedIndices, removedIndex) {
+  if (!Array.isArray(selectedIndices)) return []
+  return selectedIndices
+    .filter(i => i !== removedIndex)
+    .map(i => (i > removedIndex ? i - 1 : i))
 }
 
 // Удалить словарь по индексу
@@ -271,7 +378,7 @@ function removeUserDictionaryByIndex(chatId, index) {
   
   if (index >= 0 && index < userData.dictionaries.length) {
     userData.dictionaries.splice(index, 1)
-    
+
     // Корректируем activeIndex
     if (userData.dictionaries.length === 0) {
       userData.activeIndex = -1
@@ -282,7 +389,9 @@ function removeUserDictionaryByIndex(chatId, index) {
       // Если удалили словарь до активного, сдвигаем индекс
       userData.activeIndex--
     }
-    
+
+    userData.selectedIndices = adjustSelectedAfterRemoval(userData.selectedIndices, index)
+
     allDictionaries[chatId] = userData
     return saveUserDictionaries(allDictionaries)
   }
@@ -388,39 +497,62 @@ async function getGoogleDocTitle(docId) {
   }
 }
 
-// Загрузить содержимое пользовательского словаря
-async function fetchUserDictionary(chatId) {
-  const userDict = getUserDictionary(chatId)
-  if (!userDict) {
-    return null
-  }
-  
-  const docId = extractGoogleDocId(userDict.url)
+// Загрузить содержимое одного словаря по его url/docId
+async function fetchDictionaryText(dictionary) {
+  const docId = extractGoogleDocId(dictionary.url)
   if (!docId) {
-    console.error(`Неверный ID документа для пользователя ${chatId}:`, userDict.url)
+    console.error(`Неверный ID документа для словаря "${dictionary.title}":`, dictionary.url)
     return null
   }
-  
+
   const exportUrl = `https://docs.google.com/document/d/${docId}/export?format=txt`
-  
+
   try {
-    const response = await axios.get(exportUrl, { 
+    const response = await axios.get(exportUrl, {
       timeout: 15000,
       validateStatus: function (status) {
         return status >= 200 && status < 400
       }
     })
-    
+
     if (response.data && typeof response.data === 'string' && response.data.trim().length > 0) {
       return response.data
     }
-    
-    console.error(`Пустой или неверный контент словаря для пользователя ${chatId}`)
+
+    console.error(`Пустой или неверный контент словаря "${dictionary.title}"`)
     return null
   } catch (error) {
-    console.error(`Ошибка загрузки пользовательского словаря для ${chatId}:`, error.message)
+    console.error(`Ошибка загрузки словаря "${dictionary.title}":`, error.message)
     return null
   }
+}
+
+// Загрузить содержимое всех выбранных пользователем личных словарей.
+// Возвращает массив { title, text } (только успешно загруженные).
+async function fetchSelectedDictionaries(chatId) {
+  const { dictionaries } = getSelectedDictionaries(chatId)
+  if (!dictionaries.length) {
+    return []
+  }
+
+  const results = await Promise.all(
+    dictionaries.map(async dict => {
+      const text = await fetchDictionaryText(dict)
+      return text ? { title: dict.title, text } : null
+    })
+  )
+
+  return results.filter(Boolean)
+}
+
+// Загрузить содержимое пользовательского словаря (обратная совместимость -
+// возвращает объединённый текст всех выбранных личных словарей)
+async function fetchUserDictionary(chatId) {
+  const loaded = await fetchSelectedDictionaries(chatId)
+  if (!loaded.length) {
+    return null
+  }
+  return loaded.map(d => d.text).join('\n')
 }
 
 // Обновить количество слов в словаре пользователя
@@ -449,42 +581,51 @@ function updateUserDictionaryWordCount(chatId, newWordCount) {
   return saveUserDictionaries(allDictionaries)
 }
 
-// Создать inline-клавиатуру для выбора словаря
+// Создать inline-клавиатуру для выбора словарей (чекбоксами).
+// Можно отметить несколько личных словарей и/или словарь по умолчанию -
+// слова будут браться из всех отмеченных.
 function getDictionarySelectionKeyboard(chatId) {
   const userData = getUserDictionaryList(chatId)
+  const selected = userData.selectedIndices || []
   const keyboard = []
-  
+
+  // Словарь по умолчанию (тоже с чекбоксом)
+  keyboard.push([{
+    text: `${userData.includeDefault ? '☑️' : '⬜️'} 📖 Словарь по умолчанию`,
+    callback_data: 'toggle_dict_default'
+  }])
+
+  // Личные словари пользователя
   userData.dictionaries.forEach((dict, index) => {
-    const isActive = index === userData.activeIndex
-    const emoji = isActive ? '✅ ' : '📖 '
-    const shortTitle = dict.title.length > 25 ? dict.title.substring(0, 22) + '...' : dict.title
+    const isChecked = selected.includes(index)
+    const checkbox = isChecked ? '☑️' : '⬜️'
+    const shortTitle = dict.title.length > 22 ? dict.title.substring(0, 19) + '...' : dict.title
     const wordsInfo = dict.wordCount ? ` (${dict.wordCount})` : ''
-    
+
     keyboard.push([{
-      text: `${emoji}${shortTitle}${wordsInfo}`,
-      callback_data: `select_dict_${index}`
+      text: `${checkbox} 📚 ${shortTitle}${wordsInfo}`,
+      callback_data: `toggle_dict_${index}`
     }])
   })
-  
-  // Кнопка для использования словаря по умолчанию
-  const isDefault = userData.activeIndex === -1
+
+  // Кнопка применения выбора
   keyboard.push([{
-    text: `${isDefault ? '✅ ' : '📖 '}Словарь по умолчанию`,
-    callback_data: 'select_dict_default'
+    text: '💾 Применить выбор',
+    callback_data: 'apply_dict_selection'
   }])
-  
+
   // Кнопка добавления нового словаря
   keyboard.push([{
     text: '➕ Добавить новый словарь',
     callback_data: 'add_custom_dictionary'
   }])
-  
+
   // Кнопка назад
   keyboard.push([{
     text: '🔙 Назад',
     callback_data: 'back_to_main'
   }])
-  
+
   return { inline_keyboard: keyboard }
 }
 
@@ -493,6 +634,9 @@ module.exports = {
   saveUserDictionaries,
   getUserDictionary,
   getUserDictionaryList,
+  getSelectedDictionaries,
+  toggleDictionarySelection,
+  toggleDefaultSelection,
   setUserDictionary,
   selectUserDictionary,
   removeUserDictionary,
@@ -501,6 +645,7 @@ module.exports = {
   extractGoogleDocId,
   validateGoogleDocUrl,
   fetchUserDictionary,
+  fetchSelectedDictionaries,
   getGoogleDocTitle,
   updateUserDictionaryWordCount,
   getDictionarySelectionKeyboard
