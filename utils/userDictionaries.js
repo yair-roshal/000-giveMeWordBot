@@ -178,6 +178,11 @@ function migrateUserData(userData) {
     }
   }
 
+  // Режим порядка слов (по умолчанию - последовательный)
+  if (!['sequential', 'interleave', 'shuffle'].includes(migrated.wordOrder)) {
+    migrated.wordOrder = 'sequential'
+  }
+
   return migrated
 }
 
@@ -247,6 +252,30 @@ function toggleDefaultSelection(chatId) {
 
   userData.includeDefault = !(userData.includeDefault !== false)
 
+  allDictionaries[chatId] = userData
+  return saveUserDictionaries(allDictionaries)
+}
+
+// Допустимые режимы порядка слов при нескольких выбранных словарях
+const WORD_ORDER_MODES = ['sequential', 'interleave', 'shuffle']
+const DEFAULT_WORD_ORDER = 'sequential'
+
+// Получить режим порядка слов пользователя
+function getWordOrder(chatId) {
+  const dictionaries = loadUserDictionaries()
+  const userData = migrateUserData(dictionaries[chatId])
+  const mode = userData.wordOrder
+  return WORD_ORDER_MODES.includes(mode) ? mode : DEFAULT_WORD_ORDER
+}
+
+// Установить режим порядка слов
+function setWordOrder(chatId, mode) {
+  if (!WORD_ORDER_MODES.includes(mode)) {
+    return false
+  }
+  const allDictionaries = loadUserDictionaries()
+  const userData = migrateUserData(allDictionaries[chatId])
+  userData.wordOrder = mode
   allDictionaries[chatId] = userData
   return saveUserDictionaries(allDictionaries)
 }
@@ -637,6 +666,9 @@ module.exports = {
   getSelectedDictionaries,
   toggleDictionarySelection,
   toggleDefaultSelection,
+  getWordOrder,
+  setWordOrder,
+  WORD_ORDER_MODES,
   setUserDictionary,
   selectUserDictionary,
   removeUserDictionary,

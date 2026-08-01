@@ -10,11 +10,11 @@ const sendingWordMessage = require('./utils/prepareMessage.js')
 const { sendWordMessage } = require('./utils/sendWordMessage.js')
 const { getNextUnlearnedIndex: getNextUnlearnedIndexNew } = require('./utils/getNextUnlearnedIndex.js')
 const dictionaryTextToFile = require('./utils/dictionaryTextToFile.js')
-const { give_me_keyboard, intervalSettingsKeyboard, startMenu, periodSettingsKeyboard, getHourKeyboard, dictionarySettingsKeyboard } = require('./constants/menus.js')
+const { give_me_keyboard, intervalSettingsKeyboard, startMenu, periodSettingsKeyboard, getHourKeyboard, dictionarySettingsKeyboard, getWordOrderKeyboard } = require('./constants/menus.js')
 const getWordsFromGoogleDocs = require('./utils/getWordsFromGoogleDocs.js')
 const { getDictionary } = require('./utils/getDictionary.js')
 const { getMnemonicServiceState } = require('./utils/getMnemonic.js')
-const { getUserDictionary, getUserDictionaryList, getSelectedDictionaries, toggleDictionarySelection, toggleDefaultSelection, setUserDictionary, selectUserDictionary, removeUserDictionary, removeUserDictionaryByIndex, deactivateUserDictionary, validateGoogleDocUrl, getDictionarySelectionKeyboard } = require('./utils/userDictionaries.js')
+const { getUserDictionary, getUserDictionaryList, getSelectedDictionaries, toggleDictionarySelection, toggleDefaultSelection, getWordOrder, setWordOrder, setUserDictionary, selectUserDictionary, removeUserDictionary, removeUserDictionaryByIndex, deactivateUserDictionary, validateGoogleDocUrl, getDictionarySelectionKeyboard } = require('./utils/userDictionaries.js')
 const formatDate = require('./utils/formatDate.js')
 const { setUserInterval, getUserInterval, getUserIntervalMs, loadUserIntervals } = require('./utils/userIntervals.js')
 const { createOrUpdateUserTimer, stopUserTimer, getUserTimerInfo, stopAllTimers } = require('./utils/userTimers.js')
@@ -799,6 +799,57 @@ learning - изучение</code>
       { parse_mode: 'HTML' }
     )
     return
+  } else if (query.data === 'word_order_settings') {
+    // Показать меню выбора порядка слов
+    const chatId = query.from.id
+    const currentMode = getWordOrder(chatId)
+
+    const message = `🔀 <b>Порядок слов</b>\n\n` +
+      `Определяет, в каком порядке выдаются слова, когда выбрано <b>несколько</b> словарей:\n\n` +
+      `▫️ <b>По порядку</b> — сначала весь первый словарь, потом следующий\n` +
+      `▫️ <b>Чередование</b> — по одному слову из каждого словаря по кругу\n` +
+      `▫️ <b>Случайно</b> — слова перемешаны\n\n` +
+      `💡 <i>При смене режим индекс сбрасывается на 0</i>`
+
+    await bot.sendMessage(chatId, message, {
+      parse_mode: 'HTML',
+      reply_markup: JSON.stringify(getWordOrderKeyboard(currentMode))
+    })
+    await bot.answerCallbackQuery(query.id)
+    return
+  } else if (query.data.startsWith('set_order_')) {
+    // Установить порядок слов
+    const chatId = query.from.id
+    const mode = query.data.replace('set_order_', '')
+    const labels = { sequential: 'По порядку', interleave: 'Чередование', shuffle: 'Случайно' }
+
+    if (!labels[mode]) {
+      await bot.answerCallbackQuery(query.id, { text: 'Неизвестный режим' })
+      return
+    }
+
+    setWordOrder(chatId, mode)
+    // Порядок изменился — сбрасываем индекс, чтобы прогресс не указывал на другое слово
+    setUserIndex(chatId, 0)
+    console.log(`[WORD_ORDER] Пользователь ${chatId} выбрал порядок слов: ${mode}`)
+
+    // Обновляем клавиатуру на месте, чтобы переместить радио-отметку
+    try {
+      await bot.editMessageReplyMarkup(getWordOrderKeyboard(mode), {
+        chat_id: query.message.chat.id,
+        message_id: query.message.message_id
+      })
+    } catch (e) {
+      // Игнорируем "message is not modified"
+    }
+
+    await bot.answerCallbackQuery(query.id, { text: `Порядок: ${labels[mode]}` })
+    await bot.sendMessage(
+      chatId,
+      `✅ Порядок слов: <b>${labels[mode]}</b>\n\n📊 Индекс сброшен на 0`,
+      { parse_mode: 'HTML' }
+    )
+    return
   } else if (query.data.startsWith('delete_dict_')) {
     const chatId = query.from.id
     const index = parseInt(query.data.replace('delete_dict_', ''), 10)
@@ -1350,6 +1401,12 @@ ${validation.error}
 
     if (userData.dictionaries.length > 0) {
       message += `\n📚 Сохранённых личных словарей: <b>${userData.dictionaries.length}</b>`
+    }
+
+    // Порядок слов имеет смысл только при нескольких активных словарях
+    if (activeNames.length > 1) {
+      const orderLabels = { sequential: 'По порядку', interleave: 'Чередование', shuffle: 'Случайно' }
+      message += `\n🔀 Порядок слов: <b>${orderLabels[getWordOrder(chatId)]}</b>`
     }
 
     message += '\n\n💡 Выберите действие:'

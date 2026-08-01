@@ -161,6 +161,12 @@ const dictionarySettingsKeyboard = {
     ],
     [
       {
+        text: '🔀 Порядок слов',
+        callback_data: 'word_order_settings',
+      },
+    ],
+    [
+      {
         text: '🔄 Обнулить индекс',
         callback_data: 'reset_index',
       },
@@ -172,6 +178,25 @@ const dictionarySettingsKeyboard = {
       },
     ],
   ],
+}
+
+// Меню выбора порядка слов при нескольких выбранных словарях.
+// currentMode: 'sequential' | 'interleave' | 'shuffle'
+function getWordOrderKeyboard(currentMode = 'sequential') {
+  const options = [
+    { mode: 'sequential', label: 'По порядку' },
+    { mode: 'interleave', label: 'Чередование' },
+    { mode: 'shuffle', label: 'Случайно' },
+  ]
+
+  const rows = options.map(opt => [{
+    text: `${currentMode === opt.mode ? '🔘' : '⚪️'} ${opt.label}`,
+    callback_data: `set_order_${opt.mode}`,
+  }])
+
+  rows.push([{ text: '🔙 Назад', callback_data: 'back_to_main' }])
+
+  return { inline_keyboard: rows }
 }
 
 function getHourKeyboard(prefix, min = -1) {
@@ -228,5 +253,6 @@ module.exports = {
   start_keyboard,
   intervalSettingsKeyboard,
   dictionarySettingsKeyboard,
+  getWordOrderKeyboard,
   getHourKeyboard,
 }
