@@ -713,7 +713,8 @@ learning - изучение</code>
   } else if (query.data === 'show_dictionary_list') {
     // Показать список сохраненных словарей для выбора
     const chatId = query.from.id
-    const keyboard = getDictionarySelectionKeyboard(chatId)
+    // refresh=true: подтягиваем актуальное число строк из Google Docs
+    const keyboard = await getDictionarySelectionKeyboard(chatId)
     const userData = getUserDictionaryList(chatId)
     
     let message = '📚 <b>Выберите словари</b>\n\n'
@@ -737,8 +738,9 @@ learning - изучение</code>
     const chatId = query.from.id
     toggleDefaultSelection(chatId)
 
-    // Обновляем клавиатуру на месте, чтобы отобразить новое состояние чекбоксов
-    const keyboard = getDictionarySelectionKeyboard(chatId)
+    // Обновляем клавиатуру на месте, чтобы отобразить новое состояние чекбоксов.
+    // refresh=false: не дёргаем Google Docs на каждый клик - используем кэш
+    const keyboard = await getDictionarySelectionKeyboard(chatId, false)
     try {
       await bot.editMessageReplyMarkup(keyboard, {
         chat_id: query.message.chat.id,
@@ -755,7 +757,8 @@ learning - изучение</code>
     const index = parseInt(query.data.replace('toggle_dict_', ''), 10)
     toggleDictionarySelection(chatId, index)
 
-    const keyboard = getDictionarySelectionKeyboard(chatId)
+    // refresh=false: используем кэш, чтобы клик по чекбоксу был мгновенным
+    const keyboard = await getDictionarySelectionKeyboard(chatId, false)
     try {
       await bot.editMessageReplyMarkup(keyboard, {
         chat_id: query.message.chat.id,

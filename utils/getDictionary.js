@@ -5,16 +5,19 @@ const {
   fetchSelectedDictionaries,
   getWordOrder
 } = require('./userDictionaries')
-const { DASH_REGEX } = require('./dashes')
+const { DASH_SEPARATOR_REGEX } = require('./dashes')
 const logger = require('./logger')
 
-// Превращает сырой текст словаря в массив валидных строк "слово - перевод"
+// Превращает сырой текст словаря в массив валидных строк "слово - перевод".
+// Строка считается валидной, только если содержит разделитель "слово — перевод"
+// (дефис/тире, окружённый пробелом хотя бы с одной стороны). Это отсекает строки,
+// где дефис стоит лишь внутри слова ("well-being") и разделителя перевода нет.
 function parseDictionaryText(text) {
   return text
     .split(/\r?\n/)
     .map(line => line.trim())
     .filter(line => line && !line.startsWith('🇮🇱') && !line.startsWith('___'))
-    .filter(line => DASH_REGEX.test(line))
+    .filter(line => DASH_SEPARATOR_REGEX.test(line))
 }
 
 // Детерминированный ГПСЧ (mulberry32) - одинаковый seed даёт одинаковый порядок,
@@ -162,5 +165,6 @@ async function getDictionary(chatId = null) {
 }
 
 module.exports = {
-  getDictionary
+  getDictionary,
+  parseDictionaryText
 }

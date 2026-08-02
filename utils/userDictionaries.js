@@ -5,6 +5,15 @@ const axios = require('axios')
 
 const USER_DICTIONARIES_FILE = path.join(__dirname, '../data/user_dictionaries.json')
 
+// Подсчёт валидных строк словаря той же логикой, что и при реальной отправке слов.
+// Ленивый require разрывает циклическую зависимость с getDictionary.js
+// (getDictionary.js импортирует функции из этого модуля).
+function countDictionaryLines(text) {
+  if (!text || typeof text !== 'string') return 0
+  const { parseDictionaryText } = require('./getDictionary')
+  return parseDictionaryText(text).length
+}
+
 // Инициализация файла словарей при первом запуске
 function initUserDictionariesFile() {
   try {
@@ -294,18 +303,14 @@ async function setUserDictionary(chatId, dictionaryUrl) {
     if (docId) {
       title = await getGoogleDocTitle(docId)
 
-      // Получаем содержимое для подсчета слов
+      // Получаем содержимое для подсчета слов.
+      // Считаем той же логикой, что и при реальной отправке слов
+      // (единый источник правды - parseDictionaryText из getDictionary.js),
+      // чтобы число в меню совпадало с фактическим количеством слов.
       const exportUrl = `https://docs.google.com/document/d/${docId}/export?format=txt`
       const response = await axios.get(exportUrl, { timeout: 15000 })
       if (response.data && typeof response.data === 'string') {
-        const lines = response.data.split(/\r?\n/)
-          .map(line => line.trim())
-          .filter(line => line && !line.startsWith('🇮🇱') && !line.startsWith('___'))
-          .filter(line => {
-            const hasValidSeparator = ['-', '—', '–', '—', '−'].some(sep => line.includes(sep))
-            return hasValidSeparator
-          })
-        wordCount = lines.length
+        wordCount = countDictionaryLines(response.data)
       }
     }
   } catch (error) {
@@ -610,13 +615,60 @@ function updateUserDictionaryWordCount(chatId, newWordCount) {
   return saveUserDictionaries(allDictionaries)
 }
 
+// Пересчитать количество слов во всех личных словарях пользователя, подтянув
+// актуальный текст из Google Docs, и обновить кэш wordCount в хранилище.
+// Возвращает Map: index -> актуальное число слов (для строк, что удалось загрузить).
+// При ошибке сети конкретный словарь пропускается (используется старый кэш).
+async function refreshUserDictionaryCounts(chatId) {
+  const allDictionaries = loadUserDictionaries()
+  const userData = migrateUserData(allDictionaries[chatId])
+  const counts = new Map()
+  let changed = false
+
+  await Promise.all(
+    userData.dictionaries.map(async (dict, index) => {
+      const text = await fetchDictionaryText(dict)
+      if (text == null) return // сеть недоступна - оставляем закэшированное число
+      const count = countDictionaryLines(text)
+      counts.set(index, count)
+      if (dict.wordCount !== count) {
+        dict.wordCount = count
+        dict.updatedAt = new Date().toISOString()
+        changed = true
+      }
+    })
+  )
+
+  if (changed) {
+    allDictionaries[chatId] = userData
+    saveUserDictionaries(allDictionaries)
+  }
+
+  return counts
+}
+
 // Создать inline-клавиатуру для выбора словарей (чекбоксами).
 // Можно отметить несколько личных словарей и/или словарь по умолчанию -
 // слова будут браться из всех отмеченных.
-function getDictionarySelectionKeyboard(chatId) {
+//
+// refresh=true (по умолчанию) - подтягивает актуальный текст словарей из
+// Google Docs и показывает live-число строк (обновляя кэш). Так меню всегда
+// согласовано с реальным словарём. При переключении чекбоксов передавайте
+// refresh=false, чтобы не дёргать сеть на каждый клик.
+async function getDictionarySelectionKeyboard(chatId, refresh = true) {
   const userData = getUserDictionaryList(chatId)
   const selected = userData.selectedIndices || []
   const keyboard = []
+
+  // Актуальные числа строк (live) - только при refresh
+  let liveCounts = null
+  if (refresh) {
+    try {
+      liveCounts = await refreshUserDictionaryCounts(chatId)
+    } catch (error) {
+      console.error(`Ошибка обновления числа слов для ${chatId}:`, error.message)
+    }
+  }
 
   // Словарь по умолчанию (тоже с чекбоксом)
   keyboard.push([{
@@ -629,7 +681,9 @@ function getDictionarySelectionKeyboard(chatId) {
     const isChecked = selected.includes(index)
     const checkbox = isChecked ? '☑️' : '⬜️'
     const shortTitle = dict.title.length > 22 ? dict.title.substring(0, 19) + '...' : dict.title
-    const wordsInfo = dict.wordCount ? ` (${dict.wordCount})` : ''
+    // Приоритет: свежее live-число, иначе закэшированное
+    const count = liveCounts && liveCounts.has(index) ? liveCounts.get(index) : dict.wordCount
+    const wordsInfo = count ? ` (${count})` : ''
 
     keyboard.push([{
       text: `${checkbox} 📚 ${shortTitle}${wordsInfo}`,
@@ -680,5 +734,6 @@ module.exports = {
   fetchSelectedDictionaries,
   getGoogleDocTitle,
   updateUserDictionaryWordCount,
+  refreshUserDictionaryCounts,
   getDictionarySelectionKeyboard
 }
