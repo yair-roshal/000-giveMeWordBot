@@ -1,6 +1,3 @@
-const getTokenJWT = require('./getTokenJWT.js')
-const changeTokenToIAM = require('./changeTokenToIAM.js')
-const translateText = require('./translateText.js')
 const getAllWordsFromFiles = require('./getAllWordsFromFiles.js')
 const { objAllDictRows } = getAllWordsFromFiles()
 const logSendedWords = require('./logSendedWords.js')
@@ -80,12 +77,9 @@ async function prepareSingleWordMessage(
 
   const responseData = response_dictionary_api.data
 
-  const IAM_TOKEN = await getIAMToken()
-
-  const { examples, phonetic, audio } = await processDictionaryData(responseData, IAM_TOKEN, firstWord)
+  const { phonetic, audio } = processDictionaryData(responseData, firstWord)
 
   const phoneticLine = phonetic ? `${phonetic} - ` : ''
-  const examplesLine = examples ? `${examples}` : ''
   const audioLine = audio ? `${audio}` : ''
 
   const linkToTranslate = `https://context.reverso.net/%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D0%BE%D0%B4/%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9/${firstWord}`
@@ -94,7 +88,6 @@ async function prepareSingleWordMessage(
     isEnglishLanguage,
     phoneticLine,
     wordLineDictionary,
-    examplesLine,
     audioLine,
     firstWord,
     linkToTranslate,
@@ -106,35 +99,11 @@ async function prepareSingleWordMessage(
   )
 }
 
-async function getIAMToken() {
-  const tokenJWT = await getTokenJWT()
-  return await changeTokenToIAM({ jwt: tokenJWT })
-}
-
-async function processDictionaryData(responseData, IAM_TOKEN, firstWord) {
-  let examples = await getExamples(responseData, IAM_TOKEN)
+function processDictionaryData(responseData, firstWord) {
   let phonetic = getPhonetic(responseData)
   let audio = getAudio(responseData, firstWord)
 
-  return { examples, phonetic, audio }
-}
-
-async function getExamples(responseData, IAM_TOKEN) {
-  let examples = ''
-  for (const meaning of responseData[0].meanings) {
-    for (const definition of meaning.definitions) {
-      if (definition.example) {
-        examples += `\r\n<b>- ${definition.example}</b>`
-        try {
-          const translatedText = await translateText(definition.example, IAM_TOKEN)
-          examples += `\r\n- ${translatedText}\r\n`
-        } catch (err) {
-          console.log('err_translateText() : ', err)
-        }
-      }
-    }
-  }
-  return examples
+  return { phonetic, audio }
 }
 
 function getPhonetic(responseData) {
@@ -159,7 +128,6 @@ function formatSingleWordMessage(
   isEnglishLanguage,
   phoneticLine,
   wordLineDictionary,
-  examplesLine,
   audioLine,
   firstWord,
   linkToTranslate,
@@ -187,14 +155,12 @@ function formatSingleWordMessage(
   
 <b><tg-spoiler>${phoneticLine}${wordLineDictionary} </tg-spoiler></b>
 
-<tg-spoiler>${examplesLine}</tg-spoiler>
-
 <a href="${audioLine}">   </a>
+
+<a href="${linkToTranslate}">Translate with Context</a>
 
 <b>Video clips :</b>
 <b>${videoClipsLinks}</b>
-
-<a href="${linkToTranslate}">Translate with Context</a>
 
 _______________________________
 <b>🧠 Mnemonic:</b>
