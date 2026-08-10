@@ -5,6 +5,7 @@ const formatDate = require('./formatDate.js')
 const logAlerts = require('./logAlerts.js')
 const dotenv = require('dotenv')
 const getMnemonic = require('./getMnemonic.js')
+const { formatFrequencyLine } = require('./wordFrequency.js')
 
 dotenv.config()
 var urlencode = require('urlencode')
@@ -140,6 +141,10 @@ function formatSingleWordMessage(
   console.log('currentIndex', currentIndex)
   console.log('dictionaryLength', dictionaryLength)
 
+  // Частотность показываем только для английских слов из top 20 000.
+  const frequencyLine = isEnglishLanguage ? formatFrequencyLine(firstWord) : ''
+  const frequencyBlock = frequencyLine ? `<b>${frequencyLine}</b>\n\n` : ''
+
   const videoClipsLinks = isEnglishLanguage
     ? `
     https://youglish.com/pronounce/${firstWord}/english/us
@@ -157,7 +162,7 @@ function formatSingleWordMessage(
 
 <a href="${audioLine}">   </a>
 
-<a href="${linkToTranslate}">Translate with Context</a>
+${frequencyBlock}<a href="${linkToTranslate}">Translate with Context</a>
 
 <b>Video clips :</b>
 <b>${videoClipsLinks}</b>
