@@ -141,7 +141,7 @@ function formatSingleWordMessage(
   console.log('currentIndex', currentIndex)
   console.log('dictionaryLength', dictionaryLength)
 
-  // Частотность показываем только для английских слов из top 20 000.
+  // Частотность показываем только для английских слов, найденных в COCA/SUBTLEX.
   const frequencyLine = isEnglishLanguage ? formatFrequencyLine(firstWord) : ''
   const frequencyBlock = frequencyLine ? `<b>${frequencyLine}</b>\n\n` : ''
 
