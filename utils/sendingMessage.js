@@ -57,6 +57,8 @@ module.exports = async function prepareMessage(
       currentIndex,
       mnemonic,
       dictionaryName,
+      firstWord,
+      isOneWord,
     )
   }
 }
@@ -192,6 +194,8 @@ function prepareMultiWordMessage(
   currentIndex,
   mnemonic,
   dictionaryName = 'Основной словарь',
+  firstWord = '',
+  isOneWord = false,
 ) {
   console.log('currentIndex', currentIndex)
   console.log('dictionaryLength', dictionaryLength)
@@ -200,11 +204,19 @@ function prepareMultiWordMessage(
     isEnglishLanguage ? 'en' : 'ru'
   }&sl=auto&tl=ru&text=${urlencode(leftWords)}&op=translate`
 
+  // Частотность дублируем и здесь: сюда попадают не только многословные фразы,
+  // но и одиночные слова, для которых не ответил dictionaryapi.dev, — рейтинги
+  // локальные и от внешнего API не зависят. Для фраз formatFrequencyLine
+  // вернёт '' (ранг ищется по одному слову), и блок просто не появится.
+  const frequencyLines =
+    isEnglishLanguage && isOneWord ? formatFrequencyLine(firstWord) : ''
+  const frequencyBlock = frequencyLines ? `<b>${frequencyLines}</b>\n\n` : ''
+
   return `<b>${isEnglishLanguage ? '(en)' : '(he)'} : ${rightWords}</b>
   
 <b><tg-spoiler>${wordLineDictionary}</tg-spoiler></b>
 
-<a href="${linkToTranslate}">Translate with Google</a>
+${frequencyBlock}<a href="${linkToTranslate}">Translate with Google</a>
 
 _______________________________
 <b>🧠 Mnemonic:</b>

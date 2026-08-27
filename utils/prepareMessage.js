@@ -86,15 +86,25 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId, diction
   let response_dictionary_api
   if (isEnglishLanguage && isOneWord) {
     response_dictionary_api = await axios
-      .get('https://api.dictionaryapi.dev/api/v2/entries/en/' + firstWord)
+      .get('https://api.dictionaryapi.dev/api/v2/entries/en/' + firstWord, {
+        timeout: 10000,
+      })
       .then(function (response_dictionary_api) {
         return response_dictionary_api
       })
       .catch(function (err) {
-        // logAlerts(err)
-
-        console.log('error_api.dictionaryapi.dev for word : ' + firstWord)
-        // console.log('axios_error_api.dictionaryapi ===', err)
+        // Причину видно в логе: 404 — слова нет в словаре (норма для форм и
+        // редких слов), остальное — сеть/таймаут/сбой самого API. Без этого
+        // отличить «нет слова» от «API лежит» было невозможно.
+        const status = err?.response?.status
+        const reason = status
+          ? `HTTP ${status}`
+          : err?.code === 'ECONNABORTED'
+            ? 'timeout'
+            : err?.code || err?.message || 'unknown'
+        console.log(
+          `error_api.dictionaryapi.dev for word : ${firstWord} — ${reason}`,
+        )
       })
   }
   // console.log('response_dictionary_api :>> ', !!response_dictionary_api)
