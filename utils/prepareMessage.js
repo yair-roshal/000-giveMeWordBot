@@ -6,6 +6,7 @@ const formatDate = require('./formatDate.js')
 // const langdetect = require('langdetect')
 const logAlerts = require('./logAlerts.js')
 const { splitByDash } = require('./dashes.js')
+const { botSignatureHtml } = require('../constants/texts.js')
 
 const {
   // startMenu,
@@ -119,6 +120,7 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId, diction
     })
 
   textMessage += `\n🆔 User ID: <b>${chatId}</b>\n\n`
+  textMessage += botSignatureHtml
 
   var optionsMessage = {
     reply_markup: JSON.stringify(give_me_keyboard),

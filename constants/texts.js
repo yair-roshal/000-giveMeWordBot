@@ -35,4 +35,8 @@ const mnemonicFallbacks = {
   generic: '🧠 Мнемоника временно недоступна.',
 }
 
-module.exports = { textMessageHtml, mnemonicFallbacks }
+// Подпись со ссылкой на бота, добавляемая в конец сообщений со словами,
+// чтобы получатель пересланного сообщения мог сам запустить бота.
+const botSignatureHtml = `\n➡️ Учить слова: <a href="${link_to_bot}">Give Me Word Bot</a>`
+
+module.exports = { textMessageHtml, mnemonicFallbacks, botSignatureHtml, link_to_bot }
