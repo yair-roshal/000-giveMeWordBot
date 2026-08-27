@@ -141,9 +141,10 @@ function formatSingleWordMessage(
   console.log('currentIndex', currentIndex)
   console.log('dictionaryLength', dictionaryLength)
 
-  // Частотность показываем только для английских слов, найденных в COCA/SUBTLEX.
-  const frequencyLine = isEnglishLanguage ? formatFrequencyLine(firstWord) : ''
-  const frequencyBlock = frequencyLine ? `<b>${frequencyLine}</b>\n\n` : ''
+  // Частотность показываем только для английских слов, найденных хотя бы
+  // в одном из рейтингов. Внутри — две строки: COCA и субтитры.
+  const frequencyLines = isEnglishLanguage ? formatFrequencyLine(firstWord) : ''
+  const frequencyBlock = frequencyLines ? `<b>${frequencyLines}</b>\n\n` : ''
 
   const videoClipsLinks = isEnglishLanguage
     ? `

@@ -1,26 +1,27 @@
-// Частотность английских слов по двум взаимодополняющим корпусам.
+// Частотность английских слов по двум независимым рейтингам.
 //
-// Слой 1 — COCA top-5000 lemmas (Corpus of Contemporary American English).
-//   Файл: data/frequency/coca_5000_lemmas.txt (строки «lemma zipf»)
+// Рейтинг 1 — COCA top-5000 lemmas (Corpus of Contemporary American English).
+//   Файл: data/frequency/coca_5000_lemmas.txt (строки «lemma rank»)
 //   Источник: https://github.com/brucewlee/COCA-WordFrequency (wordfrequency.info)
 //   Сбалансирован по регистрам: разговорная речь, худлит, газеты, академические
 //   тексты. Хранит ЛЕММЫ, поэтому «confuse» ищется напрямую, без словоформ.
+//   Порядок взят из официального ранга COCA (он учитывает не только частоту, но и
+//   разброс по регистрам), затем перенумерован сплошняком 1..4365 — в исходнике
+//   одна лемма может занимать несколько строк с разными частями речи.
 //
-// Слой 2 — SUBTLEX-подобный список по субтитрам (OpenSubtitles 2018, top 50k).
-//   Файл: data/frequency/subtlex_50k.txt (строки «word zipf»)
+// Рейтинг 2 — SUBTLEX-подобный список по субтитрам (OpenSubtitles 2018, top 50k).
+//   Файл: data/frequency/subtlex_50k.txt (строки «word rank»)
 //   Источник: https://github.com/hermitdave/FrequencyWords (content/2018/en)
 //   Частотность по речи в фильмах — лучший предиктор того, как слова реально
 //   воспринимаются людьми. Хранит СЛОВОФОРМЫ и покрывает длинный хвост.
 //
-// Почему два, а не один: COCA даёт «учебную» шкалу для ядра языка, но обрывается
-// на 5000 лемм; SUBTLEX добирает всё, что за этой границей. Ранее использовался
-// google-10000-english (веб-краулинг), где login=541 был «частотнее» hungry=8710,
-// а инфинитивы вроде «confuse» отсутствовали как класс — обе проблемы отсюда.
+// Рейтинги показываются ОТДЕЛЬНО и не смешиваются: у них разные корпусы и разные
+// размеры, поэтому #300 в COCA и #300 в SUBTLEX — величины разной природы.
+// Слово может быть в одном списке и отсутствовать в другом — это нормально и
+// само по себе информативно (напр. «login» есть только в субтитрах).
 //
-// Шкала наружу — Zipf, а не голый ранг: Zipf = log10(частота на миллиард слов),
-// то есть 7 — служебное слово вроде «the», 4 — обычное разговорное, ниже 3 —
-// редкое книжное. Значения посчитаны из реальных частот корпусов заранее и лежат
-// в файлах вторым полем, поэтому шкалы двух списков сопоставимы между собой.
+// Ранее использовался google-10000-english (веб-краулинг), где login=541 был
+// «частотнее» hungry=8710, а инфинитивы вроде «confuse» отсутствовали как класс.
 
 const fs = require('fs')
 const getPathToFolder = require('./getPathToFolder')
@@ -29,18 +30,41 @@ const logAlerts = require('./logAlerts')
 const COCA_FILE = 'data/frequency/coca_5000_lemmas.txt'
 const SUBTLEX_FILE = 'data/frequency/subtlex_50k.txt'
 
-// Границы Zipf-шкалы: [нижняя граница включительно, подпись].
-// Zipf ≈ 6+ — служебные слова, 5..6 — ядро речи, ниже 3 — редкое книжное.
-const ZIPF_SCALE = [
-  [6.0, '🟢 очень частотное'],
-  [5.0, '🟢 частотное'],
-  [4.0, '🟡 достаточно частотное'],
-  [3.0, '🟠 менее частотное'],
-  [0.0, '🔴 редкое'],
+const COCA_TOTAL = 4365
+const SUBTLEX_TOTAL = 46982
+
+// Границы шкалы в абсолютных рангах: [верхняя граница включительно, подпись].
+// Шкала общая для обоих рейтингов и намеренно НЕ масштабируется под размер
+// списка: «первая тысяча слов» — одинаково сильное утверждение и для COCA,
+// и для субтитров, а доля от списка сделала бы #8000 из 47 000 «частотным».
+const FREQUENCY_SCALE = [
+  [1000, '🟢 очень частотное'],
+  [3000, '🟢 частотное'],
+  [5000, '🟡 достаточно частотное'],
+  [10000, '🟠 менее частотное'],
+  [Infinity, '🔴 редкое'],
 ]
 
-// Ниже этого Zipf слово из SUBTLEX считаем шумом субтитров, а не лексикой.
-const MIN_ZIPF = 1.5
+// Неправильные глаголы и супплетивные формы: суффиксными правилами не выводятся,
+// а без них частотные формы вроде «went» не находят свою лемму в COCA.
+const IRREGULAR_FORMS = {
+  am: 'be', are: 'be', is: 'be', was: 'be', were: 'be', been: 'be', being: 'be',
+  bought: 'buy', brought: 'bring', built: 'build', caught: 'catch', chose: 'choose',
+  came: 'come', did: 'do', does: 'do', done: 'do', drank: 'drink', drove: 'drive',
+  ate: 'eat', eaten: 'eat', fell: 'fall', felt: 'feel', found: 'find', flew: 'fly',
+  forgot: 'forget', gave: 'give', given: 'give', went: 'go', gone: 'go', grew: 'grow',
+  had: 'have', has: 'have', heard: 'hear', held: 'hold', kept: 'keep', knew: 'know',
+  known: 'know', laid: 'lay', led: 'lead', learnt: 'learn', left: 'leave', lost: 'lose',
+  made: 'make', meant: 'mean', met: 'meet', paid: 'pay', put: 'put', read: 'read',
+  ran: 'run', said: 'say', saw: 'see', seen: 'see', sold: 'sell', sent: 'send',
+  set: 'set', shown: 'show', sang: 'sing', sat: 'sit', slept: 'sleep', spoke: 'speak',
+  spoken: 'speak', spent: 'spend', stood: 'stand', taught: 'teach', told: 'tell',
+  took: 'take', taken: 'take', thought: 'think', threw: 'throw', understood: 'understand',
+  woke: 'wake', wore: 'wear', won: 'win', wrote: 'write', written: 'write',
+  children: 'child', men: 'man', women: 'woman', feet: 'foot', teeth: 'tooth',
+}
+// Степени сравнения (better/best/worse) сюда намеренно НЕ входят: COCA хранит их
+// как самостоятельные леммы со своими рангами, и прямое попадание точнее.
 
 let cocaMap = null
 let subtlexMap = null
@@ -62,10 +86,10 @@ function loadList(file) {
     const data = fs.readFileSync(getPathToFolder(file), 'utf8')
 
     data.split('\n').forEach((line) => {
-      const [word, zipf] = line.trim().toLowerCase().split(/\s+/)
-      // Первое вхождение выигрывает: оно и есть самая высокая частота слова.
-      if (word && zipf && !map.has(word)) {
-        map.set(word, Number(zipf))
+      const [word, rank] = line.trim().toLowerCase().split(/\s+/)
+      // Первое вхождение выигрывает: оно и есть самый высокий ранг слова.
+      if (word && rank && !map.has(word)) {
+        map.set(word, Number(rank))
       }
     })
   } catch (err) {
@@ -84,13 +108,15 @@ function getSubtlex() {
   return subtlexMap || (subtlexMap = loadList(SUBTLEX_FILE))
 }
 
-// Кандидаты-леммы для словоформы: «studied» → «studi», «study», «studie»…
+// Кандидаты-леммы для словоформы: «studied» → «study», «running» → «run».
 // Нужны, чтобы найти слово в COCA, который хранит только базовые формы.
 function toLemmaCandidates(word) {
   const out = []
   const add = (w) => {
     if (w && w.length > 1 && !out.includes(w)) out.push(w)
   }
+
+  add(IRREGULAR_FORMS[word])
 
   if (word.endsWith('ies') && word.length > 4) add(word.slice(0, -3) + 'y')
   if (word.endsWith('es') && word.length > 3) add(word.slice(0, -2))
@@ -127,71 +153,70 @@ function toFormCandidates(word) {
 }
 
 // Ищем слово в одной карте: сначала как есть, потом через словоформы.
-// Среди форм берём максимум — частота леммы «размазана» по её формам,
-// и самая частая форма лучше всего отражает употребимость слова.
+// Среди форм берём лучший (наименьший) ранг — частота леммы размазана по
+// её формам, и самая частая форма лучше всего отражает употребимость слова.
 function lookup(map, word, variants) {
   const direct = map.get(word)
   if (direct !== undefined) return direct
 
   let best = null
   for (const candidate of variants) {
-    const zipf = map.get(candidate)
-    if (zipf !== undefined && (best === null || zipf > best)) best = zipf
+    const rank = map.get(candidate)
+    if (rank !== undefined && (best === null || rank < best)) best = rank
   }
 
   return best
 }
 
-// Основной результат: { zipf, source } либо null, если слова нет нигде.
-// COCA имеет приоритет — это сбалансированный по регистрам корпус;
-// SUBTLEX добирает всё, что не вошло в его 5000 лемм.
-function getFrequencyInfo(word) {
+// Ранг слова в каждом из рейтингов по отдельности.
+// { coca: number|null, subtlex: number|null } — null означает «нет в этом списке».
+function getFrequencyRanks(word) {
   const normalized = normalizeWord(word)
-  if (!normalized) return null
+  if (!normalized) return { coca: null, subtlex: null }
 
-  const cocaZipf = lookup(getCoca(), normalized, toLemmaCandidates(normalized))
-  if (cocaZipf !== null) {
-    return { zipf: Math.round(cocaZipf * 10) / 10, source: 'COCA' }
+  const lemmas = toLemmaCandidates(normalized)
+
+  return {
+    coca: lookup(getCoca(), normalized, lemmas),
+    subtlex: lookup(getSubtlex(), normalized, [...lemmas, ...toFormCandidates(normalized)]),
   }
-
-  const subZipf = lookup(getSubtlex(), normalized, [
-    ...toLemmaCandidates(normalized),
-    ...toFormCandidates(normalized),
-  ])
-  if (subZipf !== null && subZipf >= MIN_ZIPF) {
-    return { zipf: Math.round(subZipf * 10) / 10, source: 'SUBTLEX' }
-  }
-
-  return null
 }
 
-// Zipf-балл слова либо null — если слова нет ни в одном списке.
-function getFrequencyZipf(word) {
-  const info = getFrequencyInfo(word)
-  return info ? info.zipf : null
-}
+// Текстовая метка шкалы для ранга.
+function getFrequencyLabel(rank) {
+  if (rank === null || rank === undefined) return '⚪️ нет в списке'
 
-// Текстовая метка шкалы для Zipf-балла.
-function getFrequencyLabel(zipf) {
-  if (zipf === null || zipf === undefined) return '⚪️ вне частотных списков'
-
-  const level = ZIPF_SCALE.find(([minZipf]) => zipf >= minZipf)
+  const level = FREQUENCY_SCALE.find(([maxRank]) => rank <= maxRank)
   return level ? level[1] : '🔴 редкое'
 }
 
 // Готовая строка для сообщения бота, либо '' — если слово не английское
-// или его нет в списках (тогда строку в сообщение не добавляем).
+// или его нет ни в одном рейтинге (тогда строку в сообщение не добавляем).
+// Формат — две строки, по одной на рейтинг, чтобы номера не смешивались.
 function formatFrequencyLine(word) {
-  const info = getFrequencyInfo(word)
-  if (!info) return ''
+  const { coca, subtlex } = getFrequencyRanks(word)
+  if (coca === null && subtlex === null) return ''
 
-  return `Frequency: Zipf ${info.zipf.toFixed(1)} — ${getFrequencyLabel(info.zipf)}`
+  const format = (rank, total, name) => {
+    if (rank === null) return `${name}: ⚪️ нет в списке`
+
+    const formattedRank = rank.toLocaleString('en-US')
+    const formattedTotal = total.toLocaleString('en-US')
+
+    return `${name}: #${formattedRank} / ${formattedTotal} — ${getFrequencyLabel(rank)}`
+  }
+
+  return [
+    format(coca, COCA_TOTAL, 'COCA (книги, пресса, речь)'),
+    format(subtlex, SUBTLEX_TOTAL, 'Субтитры (разговорная речь)'),
+  ].join('\n')
 }
 
 module.exports = {
-  getFrequencyInfo,
-  getFrequencyZipf,
+  getFrequencyRanks,
   getFrequencyLabel,
   formatFrequencyLine,
   normalizeWord,
+  COCA_TOTAL,
+  SUBTLEX_TOTAL,
 }
