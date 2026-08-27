@@ -129,7 +129,6 @@ const sendingWordMessage = async (dictionary, currentIndex, bot, chatId, diction
       console.log('prepareMessage : ', err)
     })
 
-  textMessage += `\n🆔 User ID: <b>${chatId}</b>\n\n`
   textMessage += botSignatureHtml
 
   var optionsMessage = {
